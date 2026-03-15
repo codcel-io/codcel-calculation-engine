@@ -1,0 +1,14 @@
+blank_issues_enabled: false
+
+contact_links:
+  - name: Codcel Product Bug Report
+    url: https://codcel.io/contact/bugs
+    about: Report issues with the Codcel product, workbook conversion, generated outputs, or application-level failures.
+
+  - name: Codcel Feature Request
+    url: https://codcel.io/contact/features
+    about: Suggest broader product capabilities, language targets, integrations, or workflow improvements.
+
+  - name: Codcel Contact / Sales
+    url: https://codcel.io/contact/sales
+    about: Pricing, enterprise, partnership, or general product questions.

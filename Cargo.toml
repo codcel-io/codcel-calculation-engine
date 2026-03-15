@@ -1,0 +1,29 @@
+[package]
+name = "codcel-calculation-engine"
+version = "0.1.2"
+edition = "2021"
+authors = ["Codcel <support@codcel.io>"]
+description = "Rust implementations of Excel financial functions, developed for Codcel but available as a standalone crate."
+documentation = "https://codcel.io"
+readme = "README.md"
+license-file = "LICENSES/LICENSING.md"
+repository = "https://github.com/codcel-io/codcel-calculation-engine"
+homepage   = "https://codcel.io"
+keywords = ["excel", "finance", "codcel", "spreadsheet", "functions"]
+categories = ["mathematics", "finance"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+serde = { version= "1.0.228", features= ['derive'] }
+chrono = { version = "0.4.44", features = ["serde"] }
+regex = "1.12.3"
+unicode-segmentation = "1.12.0"
+libm = "0.2.16"
+fastrand = "2.3.0"
+nalgebra = { version = "0.34.1", default-features = false, features = ["std"] }
+statrs = { version = "0.18.0", default-features = false }
+sys-locale = "0.3.2"
+
+
+

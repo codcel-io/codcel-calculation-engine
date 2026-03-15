@@ -1,0 +1,22 @@
+// SPDX-FileCopyrightText: Copyright (c) 2026 Codcel
+// SPDX-License-Identifier: MIT OR Apache-2.0 OR Codcel-Commercial
+//
+// This file is part of Codcel (https://codcel.io).
+// See LICENSE-MIT, LICENSE-APACHE, and LICENSE-CODCEL-COMMERCIAL in the project root.
+
+use crate::value::Value;
+use crate::value_format::ValueFormat;
+use std::error::Error;
+
+/// Excel-compatible `ISNONTEXT` that checks whether a value is not text.
+/// - `value`: the cell value to test.
+/// - `_value_format`: unused; retained for signature consistency with other functions.
+///
+/// Returns `true` if the value is not a text string (including numbers, booleans,
+/// errors, and empty cells), `false` otherwise.
+pub fn codcel_is_non_text(
+    value: &Value,
+    _value_format: &ValueFormat,
+) -> Result<bool, Box<dyn Error + Send + Sync>> {
+    Ok(!value.is_excel_single_text())
+}

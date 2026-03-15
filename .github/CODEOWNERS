@@ -1,0 +1,15 @@
+# Default owner
+* @codcel-io
+
+# Legal and governance
+/LICENSES/ @codcel-io
+/CONTRIBUTING.md @codcel-io
+/README.md @codcel-io
+
+# GitHub configuration
+/.github/ @codcel-io
+
+# Rust source and cargo files
+/Cargo.toml @codcel-io
+/Cargo.lock @codcel-io
+/src/ @codcel-io
