@@ -2939,9 +2939,10 @@ impl Value {
                     .map(|values| {
                         values
                             .iter()
-                            .map(|val| {
-                                val.string(value_format)
-                                    .expect("Cannot convert empty value area to string value area")
+                            .map(|val| match val {
+                                Value::None => String::new(),
+                                other => other.string(value_format)
+                                    .expect("Cannot convert value area to string value area"),
                             })
                             .collect()
                     })
@@ -2959,10 +2960,11 @@ impl Value {
                         .map(|values| {
                             values
                                 .iter()
-                                .map(|val| {
-                                    val.string(value_format).expect(
-                                        "Cannot convert empty value area to string value area",
-                                    )
+                                .map(|val| match val {
+                                    Value::None => String::new(),
+                                    other => other.string(value_format).expect(
+                                        "Cannot convert value area to string value area",
+                                    ),
                                 })
                                 .collect()
                         })
@@ -3057,9 +3059,10 @@ impl Value {
                     .map(|values| {
                         values
                             .iter()
-                            .map(|val| {
-                                val.f64(value_format)
-                                    .expect("Cannot convert empty value area to number value area")
+                            .map(|val| match val {
+                                Value::None => 0.0,
+                                other => other.f64(value_format)
+                                    .expect("Cannot convert value area to number value area"),
                             })
                             .collect()
                     })
@@ -3077,10 +3080,11 @@ impl Value {
                         .map(|values| {
                             values
                                 .iter()
-                                .map(|val| {
-                                    val.f64(value_format).expect(
-                                        "Cannot convert empty value area to number value area",
-                                    )
+                                .map(|val| match val {
+                                    Value::None => 0.0,
+                                    other => other.f64(value_format).expect(
+                                        "Cannot convert value area to number value area",
+                                    ),
                                 })
                                 .collect()
                         })
@@ -3194,9 +3198,10 @@ impl Value {
                     .map(|values| {
                         values
                             .iter()
-                            .map(|val| {
-                                val.i32(value_format)
-                                    .expect("Cannot convert empty value area to number value area")
+                            .map(|val| match val {
+                                Value::None => 0,
+                                other => other.i32(value_format)
+                                    .expect("Cannot convert value area to number value area"),
                             })
                             .collect()
                     })
@@ -3214,10 +3219,11 @@ impl Value {
                         .map(|values| {
                             values
                                 .iter()
-                                .map(|val| {
-                                    val.i32(value_format).expect(
-                                        "Cannot convert empty value area to number value area",
-                                    )
+                                .map(|val| match val {
+                                    Value::None => 0,
+                                    other => other.i32(value_format).expect(
+                                        "Cannot convert value area to number value area",
+                                    ),
                                 })
                                 .collect()
                         })
