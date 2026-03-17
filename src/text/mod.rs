@@ -4,6 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT, LICENSE-APACHE, and LICENSE-CODCEL-COMMERCIAL in the project root.
 
+pub mod dbcs_utils;
 pub mod codcel_array_to_text;
 pub mod codcel_asc;
 pub mod codcel_bahttext;

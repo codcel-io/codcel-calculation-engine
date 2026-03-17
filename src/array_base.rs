@@ -26,6 +26,7 @@ use crate::lookup_and_reference::codcel_wraprows::codcel_wraprows;
 use crate::codcel_information;
 use crate::value::Value;
 use crate::value::vec_value_to_vec_i32;
+use crate::text::dbcs_utils::dbcs_byte_len;
 use crate::value_format::ValueFormat;
 use std::cmp::Ordering;
 use std::collections::HashMap;
@@ -588,7 +589,7 @@ pub fn lenb(area: Value, value_format: &ValueFormat) -> Result<Value, Box<dyn Er
 
         for value in row.iter() {
             let text_string = value.string(value_format)?;
-            let len_value = Value::I32(text_string.len() as i32);
+            let len_value = Value::I32(dbcs_byte_len(&text_string) as i32);
             result_row.push(len_value);
         }
 
