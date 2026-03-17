@@ -1,6 +1,6 @@
 [package]
 name = "codcel-calculation-engine"
-version = "0.1.2"
+version = "0.1.5"
 edition = "2021"
 authors = ["Codcel <support@codcel.io>"]
 description = "Rust implementations of Excel financial functions, developed for Codcel but available as a standalone crate."

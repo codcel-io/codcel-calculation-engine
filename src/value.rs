@@ -1508,19 +1508,19 @@ impl Value {
             Value::String(value) => Ok(vec![vec![value.to_owned()]]),
             Value::Bool(_value) => Ok(vec![vec![self.string(value_format)?]]),
             Value::OptionF64(value) => match value {
-                None => Err("Value cannot be None".into()),
+                None => Ok(vec![vec![String::new()]]),
                 Some(_value) => Ok(vec![vec![self.string(value_format)?]]),
             },
             Value::OptionI32(value) => match value {
-                None => Err("Value cannot be None".into()),
+                None => Ok(vec![vec![String::new()]]),
                 Some(_value) => Ok(vec![vec![self.string(value_format)?]]),
             },
             Value::OptionString(value) => match value {
-                None => Err("Value cannot be None".into()),
+                None => Ok(vec![vec![String::new()]]),
                 Some(_value) => Ok(vec![vec![self.string(value_format)?]]),
             },
             Value::OptionBool(value) => match value {
-                None => Err("Value cannot be None".into()),
+                None => Ok(vec![vec![String::new()]]),
                 Some(_value) => Ok(vec![vec![self.string(value_format)?]]),
             },
             Value::VecValue(value) => {
@@ -1561,7 +1561,7 @@ impl Value {
                     })
                     .collect()),
             },
-            Value::None => Err("Value cannot be None".into()),
+            Value::None => Ok(vec![vec![String::new()]]),
             Value::ChronoDateTime(_value) => Ok(vec![vec![self.string(value_format)?]]),
             Value::OptionChronoDateTime(value) => match value {
                 None => Err("Value cannot be None".into()),
@@ -2138,7 +2138,7 @@ impl Value {
             Value::OptionF64(value) => {
                 // TODO: PERHAPS THIS SHOULD RETURN AN EMPTY STRING
                 match value {
-                    None => Err("Cannot convert number none to string value".into()),
+                    None => Ok(String::new()),
                     Some(value) => Ok(float_to_string(
                         value.to_string(),
                         &value_format.decimal_separator,
@@ -2148,21 +2148,21 @@ impl Value {
             Value::OptionI32(value) => {
                 // TODO: PERHAPS THIS SHOULD RETURN AN EMPTY STRING
                 match value {
-                    None => Err("Cannot convert whole number none to string value".into()),
+                    None => Ok(String::new()),
                     Some(value) => Ok(value.to_string()),
                 }
             }
             Value::OptionString(value) => {
                 // TODO: PERHAPS THIS SHOULD RETURN AN EMPTY STRING
                 match value {
-                    None => Err("Cannot convert string none to string value".into()),
+                    None => Ok(String::new()),
                     Some(value) => Ok(value.to_string()),
                 }
             }
             Value::OptionBool(value) => {
                 // TODO: PERHAPS THIS SHOULD RETURN AN EMPTY STRING
                 match value {
-                    None => Err("Cannot convert boolean none to string value".into()),
+                    None => Ok(String::new()),
                     Some(value) => Ok(value.to_string().to_lowercase()),
                 }
             }
@@ -2211,7 +2211,7 @@ impl Value {
                 }
                 Err("Cannot convert empty value area to string value".into())
             }
-            Value::None => Err("Cannot convert none to string value".into()),
+            Value::None => Ok(String::new()),
             Value::ChronoDateTime(value) => Ok(date_time_to_iso(value)),
             Value::OptionChronoDateTime(value) => {
                 if let Some(value) = value {
