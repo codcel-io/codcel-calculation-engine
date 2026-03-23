@@ -15,7 +15,7 @@ pub fn codcel_acosh(value: f64) -> Result<f64, Box<dyn Error + Send + Sync>> {
     if value < 1.0 {
         Err(format!("ACOSH: Number {value:} supplied is less than 1").into())
     } else {
-        Ok(value.acosh())
+        Ok(crate::portable_math::acosh(value))
     }
 }
 

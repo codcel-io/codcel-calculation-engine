@@ -202,25 +202,25 @@ fn get_confidence_interval(
                 )
             };
 
-        let rmse = sigma_sq.sqrt();
+        let rmse = crate::portable_math::sqrt(sigma_sq);
         let frac = steps_f - h_floor as f64;
 
         if frac.abs() < CF_MIN_ABC_RESOLUTION || h_floor == h_ceil {
             // Exact integer steps
             let h = if h_floor > 0 { h_floor } else { h_ceil };
-            let factor = variance_factor(h).sqrt();
+            let factor = crate::portable_math::sqrt(variance_factor(h));
             Ok(z * rmse * factor)
         } else {
             // Fractional step: interpolate between floor and ceil
-            let pi_floor = z * rmse * variance_factor(h_floor.max(1)).sqrt();
-            let pi_ceil = z * rmse * variance_factor(h_ceil).sqrt();
+            let pi_floor = z * rmse * crate::portable_math::sqrt(variance_factor(h_floor.max(1)));
+            let pi_ceil = z * rmse * crate::portable_math::sqrt(variance_factor(h_ceil));
             Ok(pi_floor + frac * (pi_ceil - pi_floor))
         }
     } else {
         // ETS (seasonal): Monte Carlo simulation with deterministic seed
         // uses 1000 random scenarios. We use a simple LCG PRNG
         // with a fixed seed for deterministic, reproducible results.
-        let rmse = model.mse.sqrt();
+        let rmse = crate::portable_math::sqrt(model.mse);
         let steps_f = (target_date - last_x) / model.step_size;
         let n_steps = steps_f.ceil() as usize;
         if n_steps == 0 {

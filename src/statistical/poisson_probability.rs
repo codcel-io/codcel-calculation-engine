@@ -8,5 +8,5 @@ use crate::statistical::factorial::factorial;
 
 // Helper function to calculate the Poisson probability mass function
 pub(crate) fn poisson_probability(x: i32, mean: f64) -> f64 {
-    (-mean).exp() * mean.powi(x) / factorial(x)
+    crate::portable_math::exp(-mean) * mean.powi(x) / factorial(x)
 }

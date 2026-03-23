@@ -57,7 +57,7 @@ pub fn codcel_t_bill_eq(
             return Err("TBILLEQ: Cannot compute bond equivalent yield (negative discriminant).".into());
         }
 
-        let tbilleq = (-dsm_over_y + discriminant.sqrt()) / (dsm_over_y - 0.5);
+        let tbilleq = (-dsm_over_y + crate::portable_math::sqrt(discriminant)) / (dsm_over_y - 0.5);
         Ok(tbilleq)
     }
 }

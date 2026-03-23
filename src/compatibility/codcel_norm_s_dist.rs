@@ -30,7 +30,7 @@ pub fn codcel_norm_s_dist(z: f64) -> Result<f64, Box<dyn Error + Send + Sync>> {
     let x = if z < 0.0 { -z } else { z };
 
     // Calculate PDF at x
-    let pdf = (-x * x / 2.0).exp() / (2.0 * PI).sqrt();
+    let pdf = crate::portable_math::exp(-x * x / 2.0) / crate::portable_math::sqrt(2.0 * PI);
 
     // Calculate t
     let t = 1.0 / (1.0 + P * x);

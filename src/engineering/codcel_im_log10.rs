@@ -26,7 +26,7 @@ pub fn codcel_im_log10(
     let (real, imag) = parse_complex(&complex)?;
 
     // Calculate the magnitude (sqrt(x² + y²))
-    let magnitude = (real * real + imag * imag).sqrt();
+    let magnitude = crate::portable_math::sqrt(real * real + imag * imag);
 
     // Check for zero magnitude
     if magnitude == 0.0 {
@@ -34,8 +34,8 @@ pub fn codcel_im_log10(
     }
 
     // Calculate using the formula: log10(x + yi) = ln(x + yi)/ln(10)
-    let real_part = magnitude.ln() / LN_10;
-    let imag_part = imag.atan2(real) / LN_10;
+    let real_part = crate::portable_math::ln(magnitude) / LN_10;
+    let imag_part = crate::portable_math::atan2(imag, real) / LN_10;
 
     // Format the result
     format_complex(

@@ -25,7 +25,7 @@ pub fn codcel_im_tan(
     if !complex.contains('i') && !complex.contains('j') {
         if let Ok(real) = complex.parse::<f64>() {
             return Ok(number_to_string(
-                real.tan(),
+                crate::portable_math::tan(real),
                 decimal_separator,
                 use_excel_rounding,
             ));
@@ -45,10 +45,10 @@ pub fn codcel_im_tan(
     let two_x = 2.0 * real;
     let two_y = 2.0 * imag;
 
-    let sin_2x = two_x.sin();
-    let sinh_2y = two_y.sinh();
-    let cos_2x = two_x.cos();
-    let cosh_2y = two_y.cosh();
+    let sin_2x = crate::portable_math::sin(two_x);
+    let sinh_2y = crate::portable_math::sinh(two_y);
+    let cos_2x = crate::portable_math::cos(two_x);
+    let cosh_2y = crate::portable_math::cosh(two_y);
 
     // Calculate denominator
     let denominator = cos_2x + cosh_2y;

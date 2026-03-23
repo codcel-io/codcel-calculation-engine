@@ -52,7 +52,7 @@ pub fn codcel_x_irr(
 
         for (date, cash) in dates.iter().zip(cash_flows.iter()) {
             let days = days_between(&first_date, date) / 365.0;
-            let factor = (1.0 + rate).powf(days);
+            let factor = crate::portable_math::powf(1.0 + rate, days);
 
             npv += cash / factor;
             npv_derivative += -days * cash / factor / (1.0 + rate);

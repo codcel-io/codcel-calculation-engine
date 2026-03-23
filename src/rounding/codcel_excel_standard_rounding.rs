@@ -11,7 +11,7 @@ pub fn codcel_excel_standard_rounding(value: f64) -> f64 {
 
     // Get the exponent (power of 10) for the value
     let abs_value = value.abs();
-    let exponent = abs_value.log10().floor() as i32;
+    let exponent = crate::portable_math::log10(abs_value).floor() as i32;
 
     // Calculate the scale factor to normalize the number
     let scale_to_15_digits = 10.0_f64.powi(14 - exponent);

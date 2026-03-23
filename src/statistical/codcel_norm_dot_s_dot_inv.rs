@@ -51,12 +51,12 @@ pub fn codcel_norm_dot_s_dot_inv(probability: f64) -> Result<f64, Box<dyn Error 
 
     if probability < P_LOW {
         // Rational approximation for lower region
-        q = (-2.0 * (probability.ln())).sqrt();
+        q = crate::portable_math::sqrt(-2.0 * crate::portable_math::ln(probability));
         result = (((((C1 * q + C2) * q + C3) * q + C4) * q + C5) * q + C6)
             / ((((D1 * q + D2) * q + D3) * q + D4) * q + 1.0);
     } else if probability > P_HIGH {
         // Rational approximation for upper region
-        q = (-2.0 * ((1.0 - probability).ln())).sqrt();
+        q = crate::portable_math::sqrt(-2.0 * crate::portable_math::ln(1.0 - probability));
         result = -(((((C1 * q + C2) * q + C3) * q + C4) * q + C5) * q + C6)
             / ((((D1 * q + D2) * q + D3) * q + D4) * q + 1.0);
     } else {

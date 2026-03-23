@@ -27,7 +27,7 @@ pub fn codcel_st_dev_dot_p(values: Vec<f64>) -> Result<f64, Box<dyn Error + Send
     let variance = values.iter().map(|x| (x - mean).powi(2)).sum::<f64>() / n;
 
     // Return standard deviation
-    Ok(variance.sqrt())
+    Ok(crate::portable_math::sqrt(variance))
 }
 
 #[cfg(test)]

@@ -31,12 +31,12 @@ pub fn codcel_poisson(
         // Calculate cumulative probability: P(X <= x)
         let mut cumulative_prob = 0.0;
         for i in 0..=x {
-            cumulative_prob += (-mean).exp() * mean.powi(i) / factorial(i);
+            cumulative_prob += crate::portable_math::exp(-mean) * mean.powi(i) / factorial(i);
         }
         Ok(cumulative_prob)
     } else {
         // Calculate probability mass function: P(X = x)
-        let prob = (-mean).exp() * mean.powi(x) / factorial(x);
+        let prob = crate::portable_math::exp(-mean) * mean.powi(x) / factorial(x);
         Ok(prob)
     }
 }

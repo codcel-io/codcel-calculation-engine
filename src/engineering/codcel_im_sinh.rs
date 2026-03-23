@@ -25,7 +25,7 @@ pub fn codcel_im_sinh(
     if !complex.contains('i') && !complex.contains('j') {
         if let Ok(real) = complex.parse::<f64>() {
             return Ok(number_to_string(
-                real.sinh(),
+                crate::portable_math::sinh(real),
                 decimal_separator,
                 use_excel_rounding,
             ));
@@ -37,8 +37,8 @@ pub fn codcel_im_sinh(
     let (real, imag) = parse_complex(&complex)?;
 
     // Calculate using the formula: sinh(x + yi) = sinh(x)cos(y) + i*cosh(x)sin(y)
-    let real_part = real.sinh() * imag.cos();
-    let imag_part = real.cosh() * imag.sin();
+    let real_part = crate::portable_math::sinh(real) * crate::portable_math::cos(imag);
+    let imag_part = crate::portable_math::cosh(real) * crate::portable_math::sin(imag);
 
     // Format the result
     format_complex(

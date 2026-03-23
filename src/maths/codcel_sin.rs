@@ -13,7 +13,7 @@ use std::error::Error;
 /// Returns the sine of the angle.
 pub fn codcel_sin(x: f64) -> Result<f64, Box<dyn Error + Send + Sync>> {
     check_value_f64("SIN", x)?;
-    Ok(x.sin())
+    Ok(crate::portable_math::sin(x))
 }
 
 #[cfg(test)]

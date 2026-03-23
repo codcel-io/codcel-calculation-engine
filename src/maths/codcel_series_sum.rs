@@ -28,7 +28,7 @@ pub fn codcel_series_sum(
     let mut current_power = n;
 
     for &coefficient in &coefficients {
-        result += coefficient * x.powf(current_power);
+        result += coefficient * crate::portable_math::powf(x, current_power);
         current_power += m;
     }
 

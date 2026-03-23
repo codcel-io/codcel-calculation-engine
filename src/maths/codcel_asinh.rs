@@ -11,7 +11,7 @@ use std::error::Error;
 ///
 /// Returns the inverse hyperbolic sine of the argument.
 pub fn codcel_asinh(value: f64) -> Result<f64, Box<dyn Error + Send + Sync>> {
-    Ok(value.asinh())
+    Ok(crate::portable_math::asinh(value))
 }
 
 #[cfg(test)]

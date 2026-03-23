@@ -25,7 +25,7 @@ pub fn codcel_im_csc(
     if !complex.contains('i') && !complex.contains('j') {
         if let Ok(real) = complex.parse::<f64>() {
             // Check for division by zero
-            let sin_val = real.sin();
+            let sin_val = crate::portable_math::sin(real);
             if sin_val.abs() < 1e-14 {
                 return Err("IMCSC: Division by zero".into());
             }
@@ -47,10 +47,10 @@ pub fn codcel_im_csc(
     }
 
     // Calculate components
-    let sin_x = real.sin();
-    let cos_x = real.cos();
-    let sinh_y = imag.sinh();
-    let cosh_y = imag.cosh();
+    let sin_x = crate::portable_math::sin(real);
+    let cos_x = crate::portable_math::cos(real);
+    let sinh_y = crate::portable_math::sinh(imag);
+    let cosh_y = crate::portable_math::cosh(imag);
 
     // Calculate denominator first to check for division by zero
     let denominator = sin_x * sin_x + sinh_y * sinh_y;

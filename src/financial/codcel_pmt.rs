@@ -46,7 +46,7 @@ pub fn codcel_pmt(
     }
 
     let rate_per_period = rate;
-    let discount_factor = (1.0 + rate_per_period).powf(nper);
+    let discount_factor = crate::portable_math::powf(1.0 + rate_per_period, nper);
 
     // PMT formula derived from the financial formula for present value of an annuity
     let payment = -rate_per_period * (pv * discount_factor + fv)

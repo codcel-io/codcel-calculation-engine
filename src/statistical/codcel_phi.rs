@@ -12,7 +12,7 @@ use std::error::Error;
 /// Returns the probability density of the standard normal distribution at x.
 pub fn codcel_phi(x: f64) -> Result<f64, Box<dyn Error + Send + Sync>> {
     const SQRT_2PI: f64 = 2.5066282746310002; // Square root of 2π
-    Ok((-x * x / 2.0).exp() / SQRT_2PI)
+    Ok(crate::portable_math::exp(-x * x / 2.0) / SQRT_2PI)
 }
 
 pub fn codcel_phi_vec(inputs: Vec<f64>) -> Result<f64, Box<dyn Error + Send + Sync>> {

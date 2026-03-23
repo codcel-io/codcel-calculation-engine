@@ -69,7 +69,7 @@ pub fn codcel_growth(
             if y <= 0.0 {
                 return Err("All y values must be positive for logarithmic regression".into());
             }
-            Ok(y.ln())
+            Ok(crate::portable_math::ln(y))
         })
         .collect::<Result<Vec<f64>, Box<dyn Error + Send + Sync>>>()?;
 
@@ -110,7 +110,7 @@ pub fn codcel_growth(
             } else {
                 coefficients[0] * x
             };
-            predicted.exp()
+            crate::portable_math::exp(predicted)
         })
         .collect();
 

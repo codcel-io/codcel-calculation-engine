@@ -37,7 +37,7 @@ pub fn codcel_z_test(
         let variance = data.iter().map(|&x| (x - sample_mean).powi(2)).sum::<f64>()
             / (data.len() as f64 - 1.0);
 
-        variance.sqrt()
+        crate::portable_math::sqrt(variance)
     };
 
     // Check if the standard deviation is positive
@@ -46,7 +46,7 @@ pub fn codcel_z_test(
     }
 
     // Calculate the z-score
-    let z_score = (sample_mean - hyp_mean) / (std_dev / (data.len() as f64).sqrt());
+    let z_score = (sample_mean - hyp_mean) / (std_dev / crate::portable_math::sqrt(data.len() as f64));
 
     // Convert the z-score to a one-tailed probability
     let normal = Normal::new(0.0, 1.0).unwrap(); // mean = 0.0, std_dev = 1.0

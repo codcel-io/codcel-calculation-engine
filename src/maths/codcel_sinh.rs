@@ -13,7 +13,7 @@ use std::error::Error;
 /// Returns the hyperbolic sine of x.
 pub fn codcel_sinh(x: f64) -> Result<f64, Box<dyn Error + Send + Sync>> {
     check_value_f64("SINH", x)?;
-    Ok(x.sinh())
+    Ok(crate::portable_math::sinh(x))
 }
 
 #[cfg(test)]

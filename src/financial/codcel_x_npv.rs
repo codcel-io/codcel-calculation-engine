@@ -43,7 +43,7 @@ pub fn codcel_x_npv(
     let mut xnpv = 0.0;
     for (date, cash) in dates.iter().zip(cash_flows.iter()) {
         let days = days_between(&first_date, date) / 365.0; // Convert to fractional years
-        xnpv += cash / (1.0 + rate).powf(days);
+        xnpv += cash / crate::portable_math::powf(1.0 + rate, days);
     }
 
     Ok(xnpv)

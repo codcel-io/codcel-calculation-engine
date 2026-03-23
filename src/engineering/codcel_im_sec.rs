@@ -25,7 +25,7 @@ pub fn codcel_im_sec(
     if !complex.contains('i') && !complex.contains('j') {
         if let Ok(real) = complex.parse::<f64>() {
             return Ok(number_to_string(
-                1.0 / real.cos(),
+                1.0 / crate::portable_math::cos(real),
                 decimal_separator,
                 use_excel_rounding,
             ));
@@ -37,13 +37,13 @@ pub fn codcel_im_sec(
     let (real, imag) = parse_complex(&complex)?;
 
     // Calculate intermediate values
-    let cos_x = real.cos();
-    let sin_x = real.sin();
-    let cosh_y = imag.cosh();
-    let sinh_y = imag.sinh();
+    let cos_x = crate::portable_math::cos(real);
+    let sin_x = crate::portable_math::sin(real);
+    let cosh_y = crate::portable_math::cosh(imag);
+    let sinh_y = crate::portable_math::sinh(imag);
 
     // Calculate the denominator
-    let denominator = (2.0 * real).cos() + (2.0 * imag).cosh();
+    let denominator = crate::portable_math::cos(2.0 * real) + crate::portable_math::cosh(2.0 * imag);
 
     // Check for division by zero
     if denominator.abs() < 1e-14 {

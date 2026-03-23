@@ -63,7 +63,7 @@ pub fn codcel_steyx(
         .sum::<f64>();
 
     // Standard error of the estimate
-    let steyx = (sum_squared_errors / (n - 2.0)).sqrt();
+    let steyx = crate::portable_math::sqrt(sum_squared_errors / (n - 2.0));
 
     Ok(steyx)
 }

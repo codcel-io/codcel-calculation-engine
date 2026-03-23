@@ -34,7 +34,7 @@ pub fn codcel_fv(
     let fv = if rate == 0.0 {
         -(pv + pmt * nper)
     } else {
-        let factor = (1.0 + rate).powf(nper);
+        let factor = crate::portable_math::powf(1.0 + rate, nper);
         if type_ == 0 {
             -(pv * factor + pmt * (factor - 1.0) / rate)
         } else {

@@ -24,7 +24,7 @@ pub fn codcel_log(number: f64, base: Option<f64>) -> Result<f64, Box<dyn Error +
         return Err(format!("LOG: Invalid base {base}. Base must be > 0 and ≠ 1.").into());
     }
 
-    Ok(number.ln() / base.ln())
+    Ok(crate::portable_math::ln(number) / crate::portable_math::ln(base))
 }
 
 #[cfg(test)]

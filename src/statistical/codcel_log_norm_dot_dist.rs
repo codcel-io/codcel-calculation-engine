@@ -32,16 +32,16 @@ pub fn codcel_log_norm_dot_dist(
 
     if cumulative {
         // Calculate the cumulative lognormal distribution
-        let ln_x = x.ln();
-        let z = (ln_x - mean) / (std_dev * 2.0_f64.sqrt());
+        let ln_x = crate::portable_math::ln(x);
+        let z = (ln_x - mean) / (std_dev * crate::portable_math::sqrt(2.0_f64));
         let result = 0.5 * (1.0 + erf(z));
         Ok(result)
     } else {
         // Calculate the probability density function
-        let ln_x = x.ln();
+        let ln_x = crate::portable_math::ln(x);
         let exponent = -((ln_x - mean).powi(2)) / (2.0 * std_dev.powi(2));
-        let coefficient = 1.0 / (x * std_dev * (2.0 * PI).sqrt());
-        let result = coefficient * exponent.exp();
+        let coefficient = 1.0 / (x * std_dev * crate::portable_math::sqrt(2.0 * PI));
+        let result = coefficient * crate::portable_math::exp(exponent);
         Ok(result)
     }
 }

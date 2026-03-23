@@ -37,7 +37,7 @@ pub fn codcel_pv(
     }
 
     let rate_per_period = rate;
-    let discount_factor = (1.0 + rate_per_period).powf(-nper);
+    let discount_factor = crate::portable_math::powf(1.0 + rate_per_period, -nper);
 
     // PV formula derived from financial equations
     let present_value = -(pmt * (1.0 + rate_per_period * type_ as f64) * (1.0 - discount_factor)

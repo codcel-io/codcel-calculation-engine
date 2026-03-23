@@ -11,7 +11,7 @@ use std::error::Error;
 ///
 /// Returns the cosecant (1/sin) or an error when sin(angle) is zero.
 pub fn codcel_csc(angle_in_radians: f64) -> Result<f64, Box<dyn Error + Send + Sync>> {
-    let sine = angle_in_radians.sin();
+    let sine = crate::portable_math::sin(angle_in_radians);
     if sine == 0.0 {
         return Err("CSC is undefined when sine of the angle is exactly zero".into());
     }

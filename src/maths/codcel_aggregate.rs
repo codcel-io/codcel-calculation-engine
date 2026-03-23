@@ -116,7 +116,7 @@ pub fn codcel_aggregate(
                 .map(|&x| (x - mean).powi(2))
                 .sum::<f64>()
                 / (filtered_values.len() as f64 - 1.0);
-            Ok(variance.sqrt())
+            Ok(crate::portable_math::sqrt(variance))
         }
         8 => {
             // STDEV.P (population standard deviation)
@@ -130,7 +130,7 @@ pub fn codcel_aggregate(
                 .map(|&x| (x - mean).powi(2))
                 .sum::<f64>()
                 / n;
-            Ok(variance.sqrt())
+            Ok(crate::portable_math::sqrt(variance))
         }
         9 => Ok(filtered_values.iter().sum()), // SUM
         10 => {

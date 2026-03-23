@@ -28,7 +28,7 @@ fn regularized_gamma_lower(a: f64, x: f64) -> f64 {
             }
         }
 
-        sum * (-x).exp() * x.powf(a) / tgamma(a)
+        sum * crate::portable_math::exp(-x) * crate::portable_math::powf(x, a) / tgamma(a)
     } else {
         // Continued fraction
         let mut b = x + 1.0 - a;
@@ -53,7 +53,7 @@ fn regularized_gamma_lower(a: f64, x: f64) -> f64 {
                 break;
             }
         }
-        1.0 - (-x + a * x.ln() - lgamma(a)).exp() * h
+        1.0 - crate::portable_math::exp(-x + a * crate::portable_math::ln(x) - lgamma(a)) * h
     }
 }
 
@@ -82,8 +82,8 @@ pub fn codcel_chisq_dist(
     if cumulative {
         Ok(regularized_gamma_lower(a, x_scaled))
     } else {
-        let numerator = x.powf(a - 1.0) * (-x_scaled).exp();
-        let denominator = 2f64.powf(a) * tgamma(a);
+        let numerator = crate::portable_math::powf(x, a - 1.0) * crate::portable_math::exp(-x_scaled);
+        let denominator = crate::portable_math::powf(2f64, a) * tgamma(a);
         Ok(numerator / denominator)
     }
 }

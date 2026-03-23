@@ -22,7 +22,7 @@ pub fn codcel_effect(nominal_rate: f64, npery: i32) -> Result<f64, Box<dyn Error
         return Err("EFFECT: Number of periods (npery) must be greater than 0".into());
     }
 
-    let effective_rate = (1.0 + nominal_rate / npery as f64).powf(npery as f64) - 1.0;
+    let effective_rate = crate::portable_math::powf(1.0 + nominal_rate / npery as f64, npery as f64) - 1.0;
 
     Ok(effective_rate)
 }

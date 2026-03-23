@@ -13,7 +13,7 @@ use std::error::Error;
 /// Returns the hyperbolic tangent of x.
 pub fn codcel_tanh(x: f64) -> Result<f64, Box<dyn Error + Send + Sync>> {
     check_value_f64("TANH", x)?;
-    Ok(x.tanh())
+    Ok(crate::portable_math::tanh(x))
 }
 
 #[cfg(test)]

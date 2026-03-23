@@ -30,18 +30,18 @@ pub fn codcel_multinomial(numbers: Vec<i32>) -> Result<i32, Box<dyn Error + Send
 
     // Add log of numerator (sum!)
     for i in 1..=sum {
-        log_result += (i as f64).ln();
+        log_result += crate::portable_math::ln(i as f64);
     }
 
     // Subtract log of denominator (n1! * n2! * ... * nk!)
     for &n in &numbers {
         for i in 1..=n {
-            log_result -= (i as f64).ln();
+            log_result -= crate::portable_math::ln(i as f64);
         }
     }
 
     // Convert back from logarithm
-    let result = log_result.exp().round() as i64;
+    let result = crate::portable_math::exp(log_result).round() as i64;
 
     // Check if the result fits in i32
     if result > i32::MAX as i64 {

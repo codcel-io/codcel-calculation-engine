@@ -36,6 +36,7 @@ pub mod lookup_and_reference;
 pub mod lookup_reference_base;
 mod match_type_and_compare_macro;
 pub mod maths;
+pub mod portable_math;
 pub mod rounding;
 pub mod statistical;
 pub mod statistical_base;

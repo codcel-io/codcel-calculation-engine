@@ -23,7 +23,7 @@ pub fn codcel_skew_p(values: Vec<f64>) -> Result<f64, Box<dyn Error + Send + Syn
 
     // Calculate standard deviation
     let variance = values.iter().map(|x| (x - mean).powi(2)).sum::<f64>() / n; // Population variance
-    let std_dev = variance.sqrt();
+    let std_dev = crate::portable_math::sqrt(variance);
 
     if std_dev == 0.0 {
         return Err("SKEW.P: Standard deviation is zero, skewness cannot be computed.".into());

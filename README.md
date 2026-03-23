@@ -69,6 +69,21 @@ use codcel_calculation_engine::financial_base::FinancialBase;
 - Reproduces Excel's rounding behavior (banker's rounding, standard rounding)
 - Covers day-count basis conventions (30/360, actual/actual, etc.) for financial functions
 
+## Cross-Platform Determinism
+
+By default, the engine uses your platform's native math library for transcendental functions (`sin`, `cos`, `exp`, `ln`, etc.). This gives the best performance but results may differ by 1 ULP (Unit in the Last Place) between platforms (e.g., macOS vs Linux) due to differences in their C math library implementations.
+
+To get bit-identical results across all platforms, set the `CODCEL_USE_PORTABLE_MATH` environment variable to `true`. This routes all transcendental math through pure-Rust implementations from the [`libm`](https://crates.io/crates/libm) crate.
+
+```bash
+# Run tests with portable math for cross-platform consistency
+CODCEL_USE_PORTABLE_MATH=true cargo test
+```
+
+| Variable | Default | Description |
+|---|---|---|
+| `CODCEL_USE_PORTABLE_MATH` | `false` | Use pure-Rust math implementations for cross-platform determinism |
+
 ## Contributing
 
 Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) before opening a pull request.

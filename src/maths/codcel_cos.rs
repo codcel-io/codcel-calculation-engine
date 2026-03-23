@@ -16,7 +16,7 @@ pub fn codcel_cos(value: f64) -> Result<f64, Box<dyn Error + Send + Sync>> {
     // PERHAPS IF IT HAPPENS WE SHOULD RETURN 0.0?????
     check_value_f64("COS", value)?;
 
-    Ok(value.cos())
+    Ok(crate::portable_math::cos(value))
 }
 
 #[cfg(test)]

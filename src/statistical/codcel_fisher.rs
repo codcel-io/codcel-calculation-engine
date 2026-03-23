@@ -16,7 +16,7 @@ pub fn codcel_fischer(x: f64) -> Result<f64, Box<dyn Error + Send + Sync>> {
         return Err("FISHER: x must be in the range (-1, 1).".into());
     }
 
-    Ok(0.5 * ((1.0 + x).ln() - (1.0 - x).ln()))
+    Ok(0.5 * (crate::portable_math::ln(1.0 + x) - crate::portable_math::ln(1.0 - x)))
 }
 
 pub fn codcel_fischer_vec(inputs: Vec<f64>) -> Result<f64, Box<dyn Error + Send + Sync>> {

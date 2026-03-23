@@ -15,7 +15,7 @@ pub fn codcel_asin(value: f64) -> Result<f64, Box<dyn Error + Send + Sync>> {
     if !(-1.0..=1.0).contains(&value) {
         Err(format!("ASIN: Number {value:} supplied is outside the range -1 to +1").into())
     } else {
-        Ok(value.asin())
+        Ok(crate::portable_math::asin(value))
     }
 }
 

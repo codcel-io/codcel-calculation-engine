@@ -14,7 +14,7 @@ use std::error::Error;
 pub fn codcel_cosh(value: f64) -> Result<f64, Box<dyn Error + Send + Sync>> {
     check_value_f64("COSH", value)?;
 
-    Ok(value.cosh())
+    Ok(crate::portable_math::cosh(value))
 }
 
 #[cfg(test)]

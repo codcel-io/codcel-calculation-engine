@@ -31,14 +31,14 @@ pub fn codcel_z_dot_test(
     } else {
         // Compute sample standard deviation (unbiased)
         let variance = data.iter().map(|&x| (x - mean).powi(2)).sum::<f64>() / (n - 1) as f64;
-        variance.sqrt()
+        crate::portable_math::sqrt(variance)
     };
 
     if std_dev == 0.0 {
         return Err("Z.TEST: Standard deviation cannot be zero".into());
     }
 
-    let z_score = (mean - hyp_mean) / (std_dev / (n as f64).sqrt());
+    let z_score = (mean - hyp_mean) / (std_dev / crate::portable_math::sqrt(n as f64));
 
     // Compute the p-value using the standard normal distribution
     let normal = Normal::new(0.0, 1.0).map_err(|_| "Failed to create normal distribution")?;

@@ -91,7 +91,7 @@ pub fn codcel_duration(
     for k in 1..=n {
         let exponent = (k - 1) as f64 + dsc_over_e;
         let t = exponent / frequency as f64;
-        let disc = 1.0 / (1.0 + yld).powf(exponent);
+        let disc = 1.0 / crate::portable_math::powf(1.0 + yld, exponent);
 
         if k < n {
             weighted += t * cpn * disc;

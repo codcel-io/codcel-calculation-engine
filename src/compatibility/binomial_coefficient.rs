@@ -18,10 +18,10 @@ pub(crate) fn binomial_coefficient(n: u32, k: u32) -> Result<f64, Box<dyn Error 
     // Log-space computation to avoid integer overflow for large n
     let mut ln_result = 0.0;
     for i in (n - k + 1)..=n {
-        ln_result += (i as f64).ln();
+        ln_result += crate::portable_math::ln(i as f64);
     }
     for i in 2..=k {
-        ln_result -= (i as f64).ln();
+        ln_result -= crate::portable_math::ln(i as f64);
     }
-    Ok(ln_result.exp())
+    Ok(crate::portable_math::exp(ln_result))
 }

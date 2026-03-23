@@ -14,10 +14,10 @@ pub fn codcel_acoth(value: f64) -> Result<f64, Box<dyn Error + Send + Sync>> {
     if value.abs() <= 1.0 {
         Err(format!("ACOTH: Number {value} supplied must be less than -1 or greater than 1").into())
     } else if value > 1.0 {
-        Ok(0.5 * ((value + 1.0) / (value - 1.0)).ln())
+        Ok(0.5 * crate::portable_math::ln((value + 1.0) / (value - 1.0)))
     } else {
         // x < -1.0
-        Ok(0.5 * ((value + 1.0) / (value - 1.0)).ln())
+        Ok(0.5 * crate::portable_math::ln((value + 1.0) / (value - 1.0)))
     }
 }
 

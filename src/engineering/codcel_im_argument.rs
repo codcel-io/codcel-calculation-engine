@@ -16,7 +16,7 @@ pub fn codcel_im_argument(complex: String) -> Result<f64, Box<dyn Error + Send +
     let (real, imag) = parse_complex(&complex)?;
 
     // Calculate the argument (atan2 handles all quadrants correctly)
-    let argument = imag.atan2(real);
+    let argument = crate::portable_math::atan2(imag, real);
 
     // Normalize the result to be in the range (-π, π]
     let normalized = if argument <= -PI {

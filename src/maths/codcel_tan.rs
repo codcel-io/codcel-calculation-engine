@@ -14,11 +14,11 @@ use std::error::Error;
 pub fn codcel_tan(x: f64) -> Result<f64, Box<dyn Error + Send + Sync>> {
     check_value_f64("TAN", x)?;
 
-    let cos_x = x.cos();
+    let cos_x = crate::portable_math::cos(x);
     if cos_x.abs() < f64::EPSILON {
         Err("TAN: Undefined value at this angle due to division by zero".into())
     } else {
-        Ok(x.sin() / cos_x)
+        Ok(crate::portable_math::sin(x) / cos_x)
     }
 }
 

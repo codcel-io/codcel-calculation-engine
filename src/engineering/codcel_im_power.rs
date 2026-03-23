@@ -37,17 +37,17 @@ pub fn codcel_im_power(
             return if real < 0.0 && n.fract() == 0.0 {
                 // Handle negative real numbers with integer powers
                 return Ok(number_to_string(
-                    real.powf(n),
+                    crate::portable_math::powf(real, n),
                     decimal_separator,
                     use_excel_rounding,
                 ));
             } else if real < 0.0 {
                 // For negative real with non-integer power, treat as complex number
                 let (mag, arg) = (real.abs(), std::f64::consts::PI);
-                let new_mag = mag.powf(n);
+                let new_mag = crate::portable_math::powf(mag, n);
                 let new_arg = n * arg;
-                let real_part = new_mag * new_arg.cos();
-                let imag_part = new_mag * new_arg.sin();
+                let real_part = new_mag * crate::portable_math::cos(new_arg);
+                let imag_part = new_mag * crate::portable_math::sin(new_arg);
                 format_complex(
                     real_part,
                     imag_part,
@@ -57,7 +57,7 @@ pub fn codcel_im_power(
                 )
             } else {
                 return Ok(number_to_string(
-                    real.powf(n),
+                    crate::portable_math::powf(real, n),
                     decimal_separator,
                     use_excel_rounding,
                 ));
@@ -70,7 +70,7 @@ pub fn codcel_im_power(
     let (real, imag) = parse_complex(&complex)?;
 
     // Calculate magnitude and argument of the original complex number
-    let magnitude = (real * real + imag * imag).sqrt();
+    let magnitude = crate::portable_math::sqrt(real * real + imag * imag);
 
     // For zero magnitude
     if magnitude == 0.0 && n > 0.0 {
@@ -83,16 +83,16 @@ pub fn codcel_im_power(
     } else if real == 0.0 && imag < 0.0 {
         -std::f64::consts::PI / 2.0
     } else {
-        imag.atan2(real)
+        crate::portable_math::atan2(imag, real)
     };
 
     // Calculate new magnitude and argument
-    let new_magnitude = magnitude.powf(n);
+    let new_magnitude = crate::portable_math::powf(magnitude, n);
     let new_argument = n * argument;
 
     // Convert back to real and imaginary parts using the new angle
-    let real_part = new_magnitude * new_argument.cos();
-    let imag_part = new_magnitude * new_argument.sin();
+    let real_part = new_magnitude * crate::portable_math::cos(new_argument);
+    let imag_part = new_magnitude * crate::portable_math::sin(new_argument);
 
     // Excel does not zero out very small floating-point noise in IMPOWER results,
     // so use epsilon=0 to preserve all computed values.

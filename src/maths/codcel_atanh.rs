@@ -18,7 +18,7 @@ pub fn codcel_atanh(value: f64) -> Result<f64, Box<dyn Error + Send + Sync>> {
                 .into(),
         )
     } else {
-        Ok(value.atanh())
+        Ok(crate::portable_math::atanh(value))
     }
 }
 

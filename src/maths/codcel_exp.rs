@@ -11,7 +11,7 @@ use std::error::Error;
 ///
 /// Returns e^x.
 pub fn codcel_exp(x: f64) -> Result<f64, Box<dyn Error + Send + Sync>> {
-    Ok(x.exp())
+    Ok(crate::portable_math::exp(x))
 }
 
 #[cfg(test)]

@@ -34,7 +34,7 @@ pub fn codcel_dollar_fr(
     let divisor = if fraction == 1 {
         1.0_f64
     } else {
-        let digits = (fraction as f64).log10().ceil() as u32;
+        let digits = crate::portable_math::log10(fraction as f64).ceil() as u32;
         10_f64.powi(digits as i32)
     };
 

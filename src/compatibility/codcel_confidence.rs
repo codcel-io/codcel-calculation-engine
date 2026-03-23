@@ -37,7 +37,7 @@ pub fn codcel_confidence(
         .inverse_cdf(1.0 - alpha / 2.0);
 
     // Calculate margin of error: z * (standard_dev / sqrt(size))
-    let margin_of_error = z_score * (standard_dev / (size as f64).sqrt());
+    let margin_of_error = z_score * (standard_dev / crate::portable_math::sqrt(size as f64));
 
     Ok(margin_of_error)
 }

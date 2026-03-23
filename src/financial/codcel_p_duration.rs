@@ -30,7 +30,7 @@ pub fn codcel_p_duration(
         return Err("PDURATION: Future value should be greater than 0.".into());
     }
 
-    let periods = (future_value / present_value).ln() / (1.0 + rate).ln();
+    let periods = crate::portable_math::ln(future_value / present_value) / crate::portable_math::ln(1.0 + rate);
     Ok(periods)
 }
 

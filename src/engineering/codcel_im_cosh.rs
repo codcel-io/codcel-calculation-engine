@@ -25,7 +25,7 @@ pub fn codcel_im_cosh(
     if !complex.contains('i') && !complex.contains('j') {
         if let Ok(real) = complex.parse::<f64>() {
             return Ok(number_to_string(
-                real.cosh(),
+                crate::portable_math::cosh(real),
                 decimal_separator,
                 use_excel_rounding,
             ));
@@ -38,8 +38,8 @@ pub fn codcel_im_cosh(
 
     // Calculate the complex hyperbolic cosine using the formula:
     // cosh(x + yi) = cosh(x)cos(y) + i*sinh(x)sin(y)
-    let real_part = real.cosh() * imag.cos();
-    let imag_part = real.sinh() * imag.sin();
+    let real_part = crate::portable_math::cosh(real) * crate::portable_math::cos(imag);
+    let imag_part = crate::portable_math::sinh(real) * crate::portable_math::sin(imag);
 
     // Format the result
     format_complex(
@@ -61,7 +61,11 @@ mod tests {
         // =IMCOSH("3+4i") in German format
         let result = codcel_im_cosh("3+4i".to_string(), ".", true).unwrap();
         println!("{result}");
-        assert_eq!(result, "-6.58066304055116-7.58155274274655i");
+        // Last digit may differ by 1 ULP across platforms/math backends (macOS: ...4655, libm: ...4654)
+        assert!(
+            result == "-6.58066304055116-7.58155274274655i"
+                || result == "-6.58066304055116-7.58155274274654i"
+        );
     }
 
     #[test]
@@ -70,7 +74,11 @@ mod tests {
         // =IMCOSH("-3-4i") in German format
         let result = codcel_im_cosh("-3-4i".to_string(), ".", true).unwrap();
         println!("{result}");
-        assert_eq!(result, "-6.58066304055116-7.58155274274655i");
+        // Last digit may differ by 1 ULP across platforms/math backends (macOS: ...4655, libm: ...4654)
+        assert!(
+            result == "-6.58066304055116-7.58155274274655i"
+                || result == "-6.58066304055116-7.58155274274654i"
+        );
     }
 
     #[test]
@@ -97,7 +105,11 @@ mod tests {
         // =IMCOSH("3+4j") in German format
         let result = codcel_im_cosh("3+4j".to_string(), ".", true).unwrap();
         println!("{result}");
-        assert_eq!(result, "-6.58066304055116-7.58155274274655j");
+        // Last digit may differ by 1 ULP across platforms/math backends (macOS: ...4655, libm: ...4654)
+        assert!(
+            result == "-6.58066304055116-7.58155274274655j"
+                || result == "-6.58066304055116-7.58155274274654j"
+        );
     }
 
     #[test]

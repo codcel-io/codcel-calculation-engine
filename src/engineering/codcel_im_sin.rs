@@ -25,7 +25,7 @@ pub fn codcel_im_sin(
     if !complex.contains('i') && !complex.contains('j') {
         if let Ok(real) = complex.parse::<f64>() {
             return Ok(number_to_string(
-                real.sin(),
+                crate::portable_math::sin(real),
                 decimal_separator,
                 use_excel_rounding,
             ));
@@ -37,8 +37,8 @@ pub fn codcel_im_sin(
     let (real, imag) = parse_complex(&complex)?;
 
     // Calculate using the formula: sin(x + yi) = sin(x)cosh(y) + i*cos(x)sinh(y)
-    let real_part = real.sin() * imag.cosh();
-    let imag_part = real.cos() * imag.sinh();
+    let real_part = crate::portable_math::sin(real) * crate::portable_math::cosh(imag);
+    let imag_part = crate::portable_math::cos(real) * crate::portable_math::sinh(imag);
 
     // Format the result
     format_complex(
@@ -78,7 +78,8 @@ mod tests {
         // =IMSIN("4i") in German format
         let result = codcel_im_sin("4i".to_string(), ".", true).unwrap();
         println!("{result}");
-        assert!(result.contains("27.2899171971278i"));
+        // Last digit may differ by 1 ULP across platforms/math backends (macOS: ...1278, libm: ...1277)
+        assert!(result.contains("27.2899171971278i") || result.contains("27.2899171971277i"));
     }
 
     #[test]

@@ -14,7 +14,7 @@ pub fn codcel_acos(value: f64) -> Result<f64, Box<dyn Error + Send + Sync>> {
     if !(-1.0..=1.0).contains(&value) {
         Err(format!("ACOS: Number {value:} supplied is outside the range -1 to +1").into())
     } else {
-        Ok(value.acos())
+        Ok(crate::portable_math::acos(value))
     }
 }
 

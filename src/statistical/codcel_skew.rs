@@ -24,7 +24,7 @@ pub fn codcel_skew(values: Vec<f64>) -> Result<f64, Box<dyn Error + Send + Sync>
 
     // Calculate standard deviation
     let variance = values.iter().map(|x| (x - mean).powi(2)).sum::<f64>() / (n - 1.0);
-    let std_dev = variance.sqrt();
+    let std_dev = crate::portable_math::sqrt(variance);
 
     // Calculate skewness (Excel's method)
     let skewness = values

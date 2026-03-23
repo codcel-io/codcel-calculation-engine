@@ -27,8 +27,8 @@ pub(crate) fn binomial_pmf(
 
     // Log-domain computation for numerical stability
     let ln_coef = ln_binomial_coefficient(trials, successes)?;
-    let ln_prob = (successes as f64) * probability.ln()
-        + ((trials - successes) as f64) * (1.0 - probability).ln();
+    let ln_prob = (successes as f64) * crate::portable_math::ln(probability)
+        + ((trials - successes) as f64) * crate::portable_math::ln(1.0 - probability);
 
-    Ok((ln_coef + ln_prob).exp())
+    Ok(crate::portable_math::exp(ln_coef + ln_prob))
 }

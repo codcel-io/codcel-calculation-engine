@@ -25,7 +25,7 @@ pub fn codcel_im_cot(
     if !complex.contains('i') && !complex.contains('j') {
         if let Ok(real) = complex.parse::<f64>() {
             // Check for division by zero
-            let tan_val = real.tan();
+            let tan_val = crate::portable_math::tan(real);
             if tan_val.abs() < 1e-14 {
                 return Err("IMCOT: Division by zero".into());
             }
@@ -50,10 +50,10 @@ pub fn codcel_im_cot(
     let two_x = 2.0 * real;
     let two_y = 2.0 * imag;
 
-    let sin_2x = two_x.sin();
-    let sinh_2y = two_y.sinh();
-    let cosh_2y = two_y.cosh();
-    let cos_2x = two_x.cos();
+    let sin_2x = crate::portable_math::sin(two_x);
+    let sinh_2y = crate::portable_math::sinh(two_y);
+    let cosh_2y = crate::portable_math::cosh(two_y);
+    let cos_2x = crate::portable_math::cos(two_x);
 
     let denominator = cosh_2y - cos_2x;
 

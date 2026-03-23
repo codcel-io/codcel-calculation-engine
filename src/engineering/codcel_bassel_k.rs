@@ -86,7 +86,7 @@ fn bessel_k0_series(x: f64) -> f64 {
         }
     }
 
-    -(x_half.ln() + GAMMA) * i0 + series_sum
+    -(crate::portable_math::ln(x_half) + GAMMA) * i0 + series_sum
 }
 
 /// K_1(x) via series expansion (derived from A&S 9.6.11 with n=1):
@@ -115,15 +115,15 @@ fn bessel_k1_series(x: f64) -> f64 {
         factor *= t / ((k as f64 + 1.0) * (k as f64 + 2.0));
     }
 
-    1.0 / x + x_half.ln() * i1 - (x / 4.0) * series
+    1.0 / x + crate::portable_math::ln(x_half) * i1 - (x / 4.0) * series
 }
 
 /// Asymptotic expansion for K_ν(x), valid for large x:
 /// K_ν(x) ≈ sqrt(π/(2x)) * exp(-x) * Σ_{k=0}^N a_k(ν) / x^k
 /// where a_k(ν) = [(4ν²-1²)(4ν²-3²)...(4ν²-(2k-1)²)] / (k! * 8^k)
 fn bessel_k_asymptotic(x: f64, n: i32) -> f64 {
-    let pi_factor = (PI / (2.0 * x)).sqrt();
-    let exp_factor = (-x).exp();
+    let pi_factor = crate::portable_math::sqrt(PI / (2.0 * x));
+    let exp_factor = crate::portable_math::exp(-x);
     let nu = n as f64;
     let four_nu_sq = 4.0 * nu * nu;
 

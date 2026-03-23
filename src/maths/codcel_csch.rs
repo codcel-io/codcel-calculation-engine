@@ -12,7 +12,7 @@ use std::error::Error;
 /// Returns the hyperbolic cosecant (1/sinh) or an error when x is zero.
 pub fn codcel_csch(x: f64) -> Result<f64, Box<dyn Error + Send + Sync>> {
     // Check if sinh(x) is zero (CSCH is undefined for x = 0)
-    let sinh = x.sinh();
+    let sinh = crate::portable_math::sinh(x);
     if sinh == 0.0 {
         return Err("CSCH is undefined for x = 0".into());
     }

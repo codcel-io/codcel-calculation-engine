@@ -28,10 +28,10 @@ pub fn codcel_log_norm_dist(
     }
 
     // Calculate the cumulative lognormal distribution
-    let ln_x = x.ln();
+    let ln_x = crate::portable_math::ln(x);
 
     // Using the error function (erf) to calculate the cumulative distribution
-    let z = (ln_x - mean) / (std_dev * 2.0_f64.sqrt());
+    let z = (ln_x - mean) / (std_dev * crate::portable_math::sqrt(2.0_f64));
 
     // The cumulative distribution is related to the error function:
     // CDF = 0.5 * (1 + erf(z/√2))

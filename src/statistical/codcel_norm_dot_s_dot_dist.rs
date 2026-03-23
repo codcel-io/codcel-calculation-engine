@@ -32,7 +32,7 @@ pub fn codcel_norm_dot_s_dot_dist(
 
         let x = if z < 0.0 { -z } else { z };
 
-        let pdf = (-x * x / 2.0).exp() / (2.0 * PI).sqrt();
+        let pdf = crate::portable_math::exp(-x * x / 2.0) / crate::portable_math::sqrt(2.0 * PI);
         let t = 1.0 / (1.0 + P * x);
         let poly = t * (B1 + t * (B2 + t * (B3 + t * (B4 + t * B5))));
         let cdf = 1.0 - pdf * poly;
@@ -41,7 +41,7 @@ pub fn codcel_norm_dot_s_dot_dist(
         Ok(result)
     } else {
         // Calculate the probability density function (PDF)
-        let pdf = (-z * z / 2.0).exp() / (2.0 * PI).sqrt();
+        let pdf = crate::portable_math::exp(-z * z / 2.0) / crate::portable_math::sqrt(2.0 * PI);
         Ok(pdf)
     }
 }

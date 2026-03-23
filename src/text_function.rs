@@ -768,7 +768,7 @@ fn format_scientific(
     let (mantissa, exponent) = if abs_value == 0.0 {
         (0.0, 0i32)
     } else {
-        let exp = abs_value.log10().floor() as i32;
+        let exp = crate::portable_math::log10(abs_value).floor() as i32;
         let man = abs_value / 10f64.powi(exp);
         (man, exp)
     };

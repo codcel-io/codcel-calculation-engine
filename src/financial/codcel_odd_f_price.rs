@@ -114,15 +114,15 @@ fn odd_f_price_short(
     let dsc_e = dsc / e;
 
     // Term 1: PV of redemption
-    let term1 = redemption / (1.0 + yld).powf((n - 1) as f64 + dsc_e);
+    let term1 = redemption / crate::portable_math::powf(1.0 + yld, (n - 1) as f64 + dsc_e);
 
     // Term 2: PV of the odd (short) first coupon
-    let term2 = coupon * (dfc / e) / (1.0 + yld).powf(dsc_e);
+    let term2 = coupon * (dfc / e) / crate::portable_math::powf(1.0 + yld, dsc_e);
 
     // Term 3: PV of regular coupons (k=2 to N)
     let mut term3 = 0.0;
     for k in 2..=n {
-        term3 += coupon / (1.0 + yld).powf((k - 1) as f64 + dsc_e);
+        term3 += coupon / crate::portable_math::powf(1.0 + yld, (k - 1) as f64 + dsc_e);
     }
 
     // Term 4: Accrued interest
@@ -253,15 +253,15 @@ fn odd_f_price_long(
     let dsc_e = dsc / e;
 
     // Term 1: PV of redemption
-    let term1 = redemption / (1.0 + yld).powf((n - 1) as f64 + nq as f64 + dsc_e);
+    let term1 = redemption / crate::portable_math::powf(1.0 + yld, (n - 1) as f64 + nq as f64 + dsc_e);
 
     // Term 2: PV of the odd (long) first coupon
-    let term2 = coupon * dc_nl_sum / (1.0 + yld).powf(nq as f64 + dsc_e);
+    let term2 = coupon * dc_nl_sum / crate::portable_math::powf(1.0 + yld, nq as f64 + dsc_e);
 
     // Term 3: PV of regular coupons (k=2 to N)
     let mut term3 = 0.0;
     for k in 2..=n {
-        term3 += coupon / (1.0 + yld).powf((k - 1) as f64 + nq as f64 + dsc_e);
+        term3 += coupon / crate::portable_math::powf(1.0 + yld, (k - 1) as f64 + nq as f64 + dsc_e);
     }
 
     // Term 4: Accrued interest

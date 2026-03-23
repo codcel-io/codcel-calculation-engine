@@ -23,7 +23,7 @@ pub fn codcel_nominal(effect_rate: f64, npery: i32) -> Result<f64, Box<dyn Error
             "NOMINAL: Number of compounding periods per year must be greater than zero".into(),
         );
     }
-    Ok(npery as f64 * ((1.0 + effect_rate).powf(1.0 / npery as f64) - 1.0))
+    Ok(npery as f64 * (crate::portable_math::powf(1.0 + effect_rate, 1.0 / npery as f64) - 1.0))
 }
 
 #[cfg(test)]

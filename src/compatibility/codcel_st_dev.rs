@@ -29,7 +29,7 @@ pub fn codcel_st_dev(array: Vec<f64>) -> Result<f64, Box<dyn Error + Send + Sync
         .sum::<f64>()
         / (len as f64 - 1.0);
 
-    Ok(variance.sqrt())
+    Ok(crate::portable_math::sqrt(variance))
 }
 
 #[cfg(test)]

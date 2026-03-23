@@ -25,7 +25,7 @@ pub fn codcel_im_exp(
     if !complex.contains('i') && !complex.contains('j') {
         if let Ok(real) = complex.parse::<f64>() {
             return Ok(number_to_string(
-                real.exp(),
+                crate::portable_math::exp(real),
                 decimal_separator,
                 use_excel_rounding,
             ));
@@ -37,9 +37,9 @@ pub fn codcel_im_exp(
     let (real, imag) = parse_complex(&complex)?;
 
     // Calculate using Euler's formula: exp(x + yi) = exp(x)(cos(y) + i*sin(y))
-    let exp_x = real.exp();
-    let real_part = exp_x * imag.cos();
-    let imag_part = exp_x * imag.sin();
+    let exp_x = crate::portable_math::exp(real);
+    let real_part = exp_x * crate::portable_math::cos(imag);
+    let imag_part = exp_x * crate::portable_math::sin(imag);
 
     // Format the result
     format_complex(

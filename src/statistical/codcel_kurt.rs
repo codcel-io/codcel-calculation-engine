@@ -30,7 +30,7 @@ pub fn codcel_kurt(values: Vec<f64>) -> Result<f64, Box<dyn Error + Send + Sync>
         return Err("KURT: Division by zero: variance is 0".into());
     }
 
-    let std_dev = variance.sqrt();
+    let std_dev = crate::portable_math::sqrt(variance);
 
     // Sum of standardized values raised to 4th power: Σ((xᵢ - x̄)/s)⁴
     let sum_z4: f64 = values.iter().map(|x| ((x - mean) / std_dev).powi(4)).sum();

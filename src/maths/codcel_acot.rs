@@ -13,7 +13,7 @@ use std::error::Error;
 /// Returns the angle in radians (0 to π) or an error when `value` is NaN or infinite.
 pub fn codcel_acot(value: f64) -> Result<f64, Box<dyn Error + Send + Sync>> {
     check_value_f64("ACOT", value)?;
-    let result = (1.0 / value).atan();
+    let result = crate::portable_math::atan(1.0 / value);
     if value < 0.0 {
         Ok(std::f64::consts::PI + result)
     } else {

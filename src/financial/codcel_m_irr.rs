@@ -61,7 +61,7 @@ pub fn codcel_m_irr(
     }
 
     // Calculate MIRR
-    let mirr = (-fv_positive / npv_negative).powf(1.0 / n_periods) - 1.0;
+    let mirr = crate::portable_math::powf(-fv_positive / npv_negative, 1.0 / n_periods) - 1.0;
 
     Ok(mirr)
 }

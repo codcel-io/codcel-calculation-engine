@@ -53,7 +53,7 @@ pub fn codcel_logest(
     }
 
     // Take logarithm of y values for linear regression
-    let ln_ys: Vec<f64> = known_ys.iter().map(|&y| y.ln()).collect();
+    let ln_ys: Vec<f64> = known_ys.iter().map(|&y| crate::portable_math::ln(y)).collect();
 
     // Calculate means
     let mean_x = known_xs.iter().sum::<f64>() / known_xs.len() as f64;
@@ -102,8 +102,8 @@ pub fn codcel_logest(
     };
 
     // Convert back to exponential form
-    let m = slope.exp(); // m in y = b * m^x
-    let b = if constant { intercept.exp() } else { 1.0 }; // b in y = b * m^x
+    let m = crate::portable_math::exp(slope); // m in y = b * m^x
+    let b = if constant { crate::portable_math::exp(intercept) } else { 1.0 }; // b in y = b * m^x
 
     if !stats {
         // Return just the coefficients
@@ -156,17 +156,17 @@ pub fn codcel_logest(
     let r_squared = if sst == 0.0 { 0.0 } else { 1.0 - (sse / sst) };
 
     // Standard error of the regression
-    let se_regression = (sse / df).sqrt();
+    let se_regression = crate::portable_math::sqrt(sse / df);
 
     // Standard errors of coefficients
     let se_slope = if variance_x == 0.0 {
         f64::NAN
     } else {
-        se_regression / variance_x.sqrt()
+        se_regression / crate::portable_math::sqrt(variance_x)
     };
 
     let se_intercept = if constant {
-        se_regression * ((1.0 / n) + (mean_x.powi(2) / variance_x)).sqrt()
+        se_regression * crate::portable_math::sqrt((1.0 / n) + (mean_x.powi(2) / variance_x))
     } else {
         f64::NAN
     };
@@ -192,7 +192,7 @@ pub fn codcel_logest(
         // First row: coefficients
         result.push(vec![m, b]);
         // Second row: standard errors
-        result.push(vec![se_slope.exp(), se_intercept.exp()]);
+        result.push(vec![crate::portable_math::exp(se_slope), crate::portable_math::exp(se_intercept)]);
         // Third row: R-squared and standard error of the regression
         result.push(vec![r_squared, se_regression]);
         // Fourth row: F-statistic and degrees of freedom
@@ -203,7 +203,7 @@ pub fn codcel_logest(
         // First row: coefficient
         result.push(vec![m]);
         // Second row: standard error
-        result.push(vec![se_slope.exp()]);
+        result.push(vec![crate::portable_math::exp(se_slope)]);
         // Third row: R-squared and standard error of the regression
         result.push(vec![r_squared, se_regression]);
         // Fourth row: F-statistic and degrees of freedom

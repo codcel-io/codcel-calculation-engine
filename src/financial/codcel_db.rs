@@ -38,7 +38,7 @@ pub fn codcel_db(
         return Err("DB: Invalid input parameters".into());
     }
 
-    let rate = ((1.0 - (salvage / cost).powf(1.0 / life)) * 1000.0).round() / 1000.0;
+    let rate = ((1.0 - crate::portable_math::powf(salvage / cost, 1.0 / life)) * 1000.0).round() / 1000.0;
 
     let mut book_value = cost;
     for p in 1..=period {

@@ -15,7 +15,7 @@ pub fn codcel_log10(value: f64) -> Result<f64, Box<dyn Error + Send + Sync>> {
         return Err("LOG10: Input must be a positive number".into());
     }
 
-    Ok(value.log10())
+    Ok(crate::portable_math::log10(value))
 }
 
 #[cfg(test)]

@@ -29,7 +29,7 @@ pub fn codcel_log_inv(
 
     // Calculate the inverse of the log-normal cumulative distribution
     let z = statrs::distribution::Normal::new(0.0, 1.0)?.inverse_cdf(p);
-    let result = (mean + z * std_dev).exp();
+    let result = crate::portable_math::exp(mean + z * std_dev);
 
     Ok(result)
 }

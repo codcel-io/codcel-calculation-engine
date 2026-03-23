@@ -28,7 +28,7 @@ pub fn codcel_im_csch(
                 return Err("Division by zero in IMCSCH".into());
             }
             return Ok(number_to_string(
-                1.0 / real.sinh(),
+                1.0 / crate::portable_math::sinh(real),
                 decimal_separator,
                 use_excel_rounding,
             ));
@@ -45,10 +45,10 @@ pub fn codcel_im_csch(
     }
 
     // Calculate components
-    let sinh_x = real.sinh();
-    let cosh_x = real.cosh();
-    let sin_y = imag.sin();
-    let cos_y = imag.cos();
+    let sinh_x = crate::portable_math::sinh(real);
+    let cosh_x = crate::portable_math::cosh(real);
+    let sin_y = crate::portable_math::sin(imag);
+    let cos_y = crate::portable_math::cos(imag);
 
     // Calculate denominator first to check for division by zero
     let denominator = sinh_x * sinh_x + sin_y * sin_y;

@@ -32,12 +32,12 @@ pub fn codcel_weibull_dist(
 
     if cumulative {
         // Cumulative distribution function
-        let cumulative_result = 1.0 - (-((x / beta).powf(alpha))).exp();
+        let cumulative_result = 1.0 - crate::portable_math::exp(-crate::portable_math::powf(x / beta, alpha));
         Ok(cumulative_result)
     } else {
         // Probability density function
         let pdf_result =
-            (alpha / beta) * (x / beta).powf(alpha - 1.0) * (-((x / beta).powf(alpha))).exp();
+            (alpha / beta) * crate::portable_math::powf(x / beta, alpha - 1.0) * crate::portable_math::exp(-crate::portable_math::powf(x / beta, alpha));
         Ok(pdf_result)
     }
 }

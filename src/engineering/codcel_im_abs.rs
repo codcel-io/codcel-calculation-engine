@@ -13,7 +13,7 @@ use std::error::Error;
 ///   Returns an error when the input format is invalid.
 pub fn codcel_im_abs(complex: String) -> Result<f64, Box<dyn Error + Send + Sync>> {
     let (real, imag) = parse_complex(&complex)?;
-    Ok((real.powi(2) + imag.powi(2)).sqrt())
+    Ok(crate::portable_math::sqrt(real.powi(2) + imag.powi(2)))
 }
 
 #[cfg(test)]

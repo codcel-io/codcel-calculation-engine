@@ -40,7 +40,7 @@ pub fn codcel_confidence_t(
     };
 
     // Calculate the confidence interval width
-    let confidence = t * (standard_deviation / (size as f64).sqrt());
+    let confidence = t * (standard_deviation / crate::portable_math::sqrt(size as f64));
 
     Ok(confidence)
 }

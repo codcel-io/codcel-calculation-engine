@@ -50,7 +50,7 @@ pub fn codcel_rate(
         if r.abs() < 1e-12 {
             fv + pv * (1.0 + nper * r) + pmt * (1.0 + r * w) * nper
         } else {
-            let tmp = (1.0 + r).powf(nper);
+            let tmp = crate::portable_math::powf(1.0 + r, nper);
             fv + pv * tmp + pmt * (1.0 + r * w) * (tmp - 1.0) / r
         }
     };
@@ -60,8 +60,8 @@ pub fn codcel_rate(
         if r.abs() < 1e-12 {
             pv * nper + pmt * w * nper + pmt * nper * (nper - 1.0) / 2.0
         } else {
-            let tmp = (1.0 + r).powf(nper);
-            let dtmp = nper * (1.0 + r).powf(nper - 1.0);
+            let tmp = crate::portable_math::powf(1.0 + r, nper);
+            let dtmp = nper * crate::portable_math::powf(1.0 + r, nper - 1.0);
             let d_pv = pv * dtmp;
             // Product rule: d/dr [pmt * (1+r*w) * ((1+r)^n - 1) / r]
             let u = 1.0 + r * w;

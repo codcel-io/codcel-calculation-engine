@@ -25,7 +25,7 @@ pub fn codcel_im_cos(
     if !complex.contains('i') && !complex.contains('j') {
         if let Ok(real) = complex.parse::<f64>() {
             return Ok(number_to_string(
-                real.cos(),
+                crate::portable_math::cos(real),
                 decimal_separator,
                 use_excel_rounding,
             ));
@@ -38,8 +38,8 @@ pub fn codcel_im_cos(
 
     // Calculate the complex cosine using the formula:
     // cos(x + yi) = cos(x)cosh(y) - i*sin(x)sinh(y)
-    let real_part = real.cos() * imag.cosh();
-    let imag_part = -(real.sin() * imag.sinh());
+    let real_part = crate::portable_math::cos(real) * crate::portable_math::cosh(imag);
+    let imag_part = -(crate::portable_math::sin(real) * crate::portable_math::sinh(imag));
 
     // Format the result
     format_complex(

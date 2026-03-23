@@ -13,7 +13,7 @@ use std::error::Error;
 /// Returns the secant (1/cos) or an error when cos(x) is zero.
 pub fn codcel_sec(x: f64) -> Result<f64, Box<dyn Error + Send + Sync>> {
     check_value_f64("SEC", x)?;
-    let cos_x = x.cos();
+    let cos_x = crate::portable_math::cos(x);
     if cos_x.abs() < f64::EPSILON {
         Err("SEC: cannot divide by zero".into())
     } else {

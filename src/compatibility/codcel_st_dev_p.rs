@@ -17,7 +17,7 @@ pub fn codcel_st_dev_p(array: Vec<f64>) -> Result<f64, Box<dyn std::error::Error
     let mean = array.iter().sum::<f64>() / array.len() as f64;
     let variance = array.iter().map(|&x| (x - mean).powi(2)).sum::<f64>() / array.len() as f64;
 
-    Ok(variance.sqrt())
+    Ok(crate::portable_math::sqrt(variance))
 }
 
 #[cfg(test)]

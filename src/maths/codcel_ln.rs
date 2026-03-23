@@ -17,7 +17,7 @@ pub fn codcel_ln(value: f64) -> Result<f64, Box<dyn Error + Send + Sync>> {
         // Return an error if the input is invalid (<= 0)
         return Err("Input to LN must be greater than 0".into());
     }
-    Ok(value.ln()) // Compute the natural logarithm
+    Ok(crate::portable_math::ln(value)) // Compute the natural logarithm
 }
 
 #[cfg(test)]

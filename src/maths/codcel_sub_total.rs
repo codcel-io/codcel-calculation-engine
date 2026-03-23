@@ -75,7 +75,7 @@ pub fn codcel_sub_total(
                 .map(|&x| (x - mean).powi(2))
                 .sum::<f64>()
                 / (n - 1.0);
-            Ok(variance.sqrt())
+            Ok(crate::portable_math::sqrt(variance))
         }
         8 => {
             // STDEV.P (population standard deviation)
@@ -86,7 +86,7 @@ pub fn codcel_sub_total(
                 .map(|&x| (x - mean).powi(2))
                 .sum::<f64>()
                 / n;
-            Ok(variance.sqrt())
+            Ok(crate::portable_math::sqrt(variance))
         }
         9 => Ok(filtered_values.iter().sum()), // SUM (same as function_code 1 in Excel)
         10 => {

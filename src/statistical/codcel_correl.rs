@@ -43,7 +43,7 @@ pub fn codcel_correl(x: Vec<f64>, y: Vec<f64>) -> Result<f64, Box<dyn Error + Se
     }
 
     // Calculate and return the correlation coefficient
-    Ok(numerator / (x_denominator.sqrt() * y_denominator.sqrt()))
+    Ok(numerator / (crate::portable_math::sqrt(x_denominator) * crate::portable_math::sqrt(y_denominator)))
 }
 
 #[cfg(test)]

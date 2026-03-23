@@ -22,7 +22,7 @@ pub fn codcel_geo_mean(values: Vec<f64>) -> Result<f64, Box<dyn Error + Send + S
     let product: f64 = values.iter().product();
     let n: f64 = values.len() as f64;
 
-    Ok(product.powf(1.0 / n))
+    Ok(crate::portable_math::powf(product, 1.0 / n))
 }
 
 #[cfg(test)]

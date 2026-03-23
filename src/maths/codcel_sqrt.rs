@@ -16,7 +16,7 @@ pub fn codcel_sqrt(value: f64) -> Result<f64, Box<dyn Error + Send + Sync>> {
     if value < 0.0 {
         return Err(format!("SQRT: Input must be non-negative: {value:}").into());
     }
-    Ok(value.sqrt())
+    Ok(crate::portable_math::sqrt(value))
 }
 
 #[cfg(test)]

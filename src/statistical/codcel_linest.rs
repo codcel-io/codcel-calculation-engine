@@ -142,13 +142,13 @@ pub fn codcel_linest(
     let r_squared = if sst == 0.0 { 0.0 } else { 1.0 - (sse / sst) };
 
     // Standard error of regression
-    let se_regression = (sse / df_residual).sqrt();
+    let se_regression = crate::portable_math::sqrt(sse / df_residual);
 
     // Standard errors of coefficients: sqrt(diag((X^T X)^{-1}) * MSE)
     let mse = sse / df_residual;
     let xtx_inv = xtx.lu().solve(&DMatrix::identity(p, p));
     let se_coeffs: Vec<f64> = if let Some(inv) = xtx_inv {
-        (0..p).map(|j| (inv[(j, j)] * mse).sqrt()).collect()
+        (0..p).map(|j| crate::portable_math::sqrt(inv[(j, j)] * mse)).collect()
     } else {
         vec![f64::NAN; p]
     };

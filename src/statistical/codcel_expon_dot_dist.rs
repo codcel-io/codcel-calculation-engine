@@ -28,10 +28,10 @@ pub fn codcel_expon_dot_dist(
 
     if cumulative {
         // Calculate the cumulative distribution function (CDF)
-        Ok(1.0 - (-lambda * x).exp())
+        Ok(1.0 - crate::portable_math::exp(-lambda * x))
     } else {
         // Calculate the probability density function (PDF)
-        Ok(lambda * (-lambda * x).exp())
+        Ok(lambda * crate::portable_math::exp(-lambda * x))
     }
 }
 

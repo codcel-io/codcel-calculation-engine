@@ -27,7 +27,7 @@ pub fn codcel_stdeva(values: Vec<f64>) -> Result<f64, Box<dyn Error + Send + Syn
 
     let variance = values.iter().map(|x| (x - mean).powi(2)).sum::<f64>() / (n - 1.0);
 
-    Ok(variance.sqrt())
+    Ok(crate::portable_math::sqrt(variance))
 }
 
 #[cfg(test)]

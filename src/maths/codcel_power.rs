@@ -27,7 +27,7 @@ pub fn codcel_power(base: f64, exponent: f64) -> Result<f64, Box<dyn Error + Sen
     }
 
     // Calculate the power
-    let result = base.powf(exponent);
+    let result = crate::portable_math::powf(base, exponent);
 
     Ok(result)
 }

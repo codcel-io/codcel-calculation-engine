@@ -22,12 +22,12 @@ pub(crate) fn ln_binomial_coefficient(n: i32, k: i32) -> Result<f64, Box<dyn Err
 
     // Calculate ln(n! / (n-k)!) = ln(n) + ln(n-1) + ... + ln(n-k+1)
     for i in (n - k + 1)..=n {
-        ln_result += (i as f64).ln();
+        ln_result += crate::portable_math::ln(i as f64);
     }
 
     // Subtract ln(k!)
     for i in 2..=k {
-        ln_result -= (i as f64).ln();
+        ln_result -= crate::portable_math::ln(i as f64);
     }
 
     Ok(ln_result)

@@ -165,7 +165,7 @@ fn format_15_significant_digits(number: f64) -> String {
     }
 
     let abs = number.abs();
-    let exponent = abs.log10().floor() as i32;
+    let exponent = crate::portable_math::log10(abs).floor() as i32;
 
     // For very small numbers (|x| < 0.0001), use scientific notation like Excel
     if exponent < -4 {

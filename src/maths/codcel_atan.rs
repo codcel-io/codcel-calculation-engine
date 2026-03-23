@@ -11,7 +11,7 @@ use std::error::Error;
 ///
 /// Returns the angle in radians (-π/2 to π/2).
 pub fn codcel_atan(value: f64) -> Result<f64, Box<dyn Error + Send + Sync>> {
-    Ok(value.atan())
+    Ok(crate::portable_math::atan(value))
 }
 
 #[cfg(test)]

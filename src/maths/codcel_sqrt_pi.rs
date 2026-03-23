@@ -16,7 +16,7 @@ pub fn codcel_sqrt_pi(value: f64) -> Result<f64, Box<dyn Error + Send + Sync>> {
     if value < 0.0 {
         return Err(format!("SQRTPI: Input must be non-negative: {value:}").into());
     }
-    Ok((value * std::f64::consts::PI).sqrt())
+    Ok(crate::portable_math::sqrt(value * std::f64::consts::PI))
 }
 
 #[cfg(test)]

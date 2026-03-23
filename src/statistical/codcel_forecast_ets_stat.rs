@@ -176,7 +176,7 @@ pub fn codcel_forecast_ets_stat(
                 }
                 7 => {
                     // RMSE = sqrt(MSE) where MSE = SSE/(n-1)
-                    Ok((sum_sq_err / count).sqrt())
+                    Ok(crate::portable_math::sqrt(sum_sq_err / count))
                 }
                 _ => unreachable!(),
             }

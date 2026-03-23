@@ -106,11 +106,11 @@ pub fn codcel_price(
 
         // Present value of coupon payments
         for k in 1..=n {
-            price += coupon / (1.0 + yld_per_period).powf((k - 1) as f64 + dsc_over_e);
+            price += coupon / crate::portable_math::powf(1.0 + yld_per_period, (k - 1) as f64 + dsc_over_e);
         }
 
         // Present value of redemption
-        price += redemption / (1.0 + yld_per_period).powf((n - 1) as f64 + dsc_over_e);
+        price += redemption / crate::portable_math::powf(1.0 + yld_per_period, (n - 1) as f64 + dsc_over_e);
 
         Ok(price - accrued_interest)
     }

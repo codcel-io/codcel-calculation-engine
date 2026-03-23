@@ -26,7 +26,7 @@ pub fn codcel_im_sqrt(
         if let Ok(real) = complex.parse::<f64>() {
             if real >= 0.0 {
                 return Ok(number_to_string(
-                    real.sqrt(),
+                    crate::portable_math::sqrt(real),
                     decimal_separator,
                     use_excel_rounding,
                 ));
@@ -41,20 +41,20 @@ pub fn codcel_im_sqrt(
     let (real, imag) = parse_complex(&complex)?;
 
     // Calculate the magnitude (r) and argument (θ) of the complex number
-    let magnitude = (real * real + imag * imag).sqrt();
-    let argument = imag.atan2(real);
+    let magnitude = crate::portable_math::sqrt(real * real + imag * imag);
+    let argument = crate::portable_math::atan2(imag, real);
 
     // Calculate square root components:
     // r' = √r
     // θ' = θ/2
-    let sqrt_magnitude = magnitude.sqrt();
+    let sqrt_magnitude = crate::portable_math::sqrt(magnitude);
     let half_argument = argument / 2.0;
 
     // Convert back to rectangular form:
     // x = r'*cos(θ')
     // y = r'*sin(θ')
-    let real_part = sqrt_magnitude * half_argument.cos();
-    let imag_part = sqrt_magnitude * half_argument.sin();
+    let real_part = sqrt_magnitude * crate::portable_math::cos(half_argument);
+    let imag_part = sqrt_magnitude * crate::portable_math::sin(half_argument);
 
     // Format the result. Excel preserves floating-point noise in IMSQRT results
     // (e.g. sqrt(-1) = 6.12e-17+i), so use epsilon=0.

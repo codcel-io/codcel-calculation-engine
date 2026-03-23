@@ -13,7 +13,7 @@ use std::ops::{Add, Sub};
 /// Returns the inverse Fisher transformation: (e^(2y) - 1) / (e^(2y) + 1),
 /// which maps values back to the range (-1, 1).
 pub fn codcel_fischer_inv(y: f64) -> Result<f64, Box<dyn Error + Send + Sync>> {
-    Ok((2.0 * y).exp().sub(1.0) / (2.0 * y).exp().add(1.0))
+    Ok(crate::portable_math::exp(2.0 * y).sub(1.0) / crate::portable_math::exp(2.0 * y).add(1.0))
 }
 
 pub fn codcel_fischer_inv_vec(inputs: Vec<f64>) -> Result<f64, Box<dyn Error + Send + Sync>> {

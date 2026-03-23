@@ -13,7 +13,7 @@ use std::error::Error;
 /// Returns the hyperbolic secant (1/cosh).
 pub fn codcel_sech(x: f64) -> Result<f64, Box<dyn Error + Send + Sync>> {
     check_value_f64("SECH", x)?;
-    Ok(1.0 / x.cosh())
+    Ok(1.0 / crate::portable_math::cosh(x))
 }
 
 #[cfg(test)]

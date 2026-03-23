@@ -60,7 +60,7 @@ pub fn codcel_n_per(
         );
     }
 
-    Ok(ratio.ln() / (1.0 + rate).ln())
+    Ok(crate::portable_math::ln(ratio) / crate::portable_math::ln(1.0 + rate))
 }
 
 #[cfg(test)]

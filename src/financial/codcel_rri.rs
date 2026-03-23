@@ -28,7 +28,7 @@ pub fn codcel_rri(nper: f64, pv: f64, fv: f64) -> Result<f64, Box<dyn Error + Se
 
     // Calculate the rate using the formula:
     // RATE = (FV / PV)^(1 / NPER) - 1
-    let rate = (fv / pv).powf(1.0 / nper) - 1.0;
+    let rate = crate::portable_math::powf(fv / pv, 1.0 / nper) - 1.0;
 
     Ok(rate)
 }
