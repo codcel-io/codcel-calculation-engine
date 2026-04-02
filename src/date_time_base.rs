@@ -232,40 +232,18 @@ pub fn iso_to_time(iso: &str) -> Result<NaiveTime, Box<dyn Error + Send + Sync>>
     Err(format!("Unsupported time format: {iso}").into())
 }
 
-pub fn year(
-    date_time: Value,
-    value_format: &ValueFormat,
-) -> Result<Value, Box<dyn Error + Send + Sync>> {
-    let date_time = date_time.date_time(value_format)?;
-    Ok(Value::I32(codcel_year(date_time)?))
-}
-
-pub fn month(
-    date_time: Value,
-    value_format: &ValueFormat,
-) -> Result<Value, Box<dyn Error + Send + Sync>> {
-    let date_time = date_time.date_time(value_format)?;
-    Ok(Value::I32(codcel_month(date_time)?))
-}
-
-pub fn day(
-    date_time: Value,
-    value_format: &ValueFormat,
-) -> Result<Value, Box<dyn Error + Send + Sync>> {
-    let date_time = date_time.date_time(value_format)?;
-    Ok(Value::I32(codcel_day(date_time)?))
-}
-
-pub fn hour(
-    time: Value,
-    value_format: &ValueFormat,
-) -> Result<Value, Box<dyn Error + Send + Sync>> {
-    match time {
+fn map_value_elementwise<F>(
+    value: Value,
+    op: F,
+) -> Result<Value, Box<dyn Error + Send + Sync>>
+where
+    F: Fn(Value) -> Result<Value, Box<dyn Error + Send + Sync>>,
+{
+    match value {
         Value::VecValue(vec) => {
             let mut results = Vec::with_capacity(vec.len());
             for elem in vec {
-                let t = elem.time(value_format)?;
-                results.push(Value::I32(codcel_hour(t)?));
+                results.push(op(elem)?);
             }
             Ok(Value::VecValue(results))
         }
@@ -274,34 +252,56 @@ pub fn hour(
             for row in rows {
                 let mut result_row = Vec::with_capacity(row.len());
                 for elem in row {
-                    let t = elem.time(value_format)?;
-                    result_row.push(Value::I32(codcel_hour(t)?));
+                    result_row.push(op(elem)?);
                 }
                 result_rows.push(result_row);
             }
             Ok(Value::AreaValue(result_rows))
         }
-        single => {
-            let t = single.time(value_format)?;
-            Ok(Value::I32(codcel_hour(t)?))
-        }
+        single => op(single),
     }
+}
+
+pub fn year(
+    date_time: Value,
+    value_format: &ValueFormat,
+) -> Result<Value, Box<dyn Error + Send + Sync>> {
+    map_value_elementwise(date_time, |v| Ok(Value::I32(codcel_year(v.date_time(value_format)?)?)))
+}
+
+pub fn month(
+    date_time: Value,
+    value_format: &ValueFormat,
+) -> Result<Value, Box<dyn Error + Send + Sync>> {
+    map_value_elementwise(date_time, |v| Ok(Value::I32(codcel_month(v.date_time(value_format)?)?)))
+}
+
+pub fn day(
+    date_time: Value,
+    value_format: &ValueFormat,
+) -> Result<Value, Box<dyn Error + Send + Sync>> {
+    map_value_elementwise(date_time, |v| Ok(Value::I32(codcel_day(v.date_time(value_format)?)?)))
+}
+
+pub fn hour(
+    time: Value,
+    value_format: &ValueFormat,
+) -> Result<Value, Box<dyn Error + Send + Sync>> {
+    map_value_elementwise(time, |v| Ok(Value::I32(codcel_hour(v.time(value_format)?)?)))
 }
 
 pub fn minute(
     time: Value,
     value_format: &ValueFormat,
 ) -> Result<Value, Box<dyn Error + Send + Sync>> {
-    let time = time.time(value_format)?;
-    Ok(Value::I32(codcel_minute(time)?))
+    map_value_elementwise(time, |v| Ok(Value::I32(codcel_minute(v.time(value_format)?)?)))
 }
 
 pub fn second(
     time: Value,
     value_format: &ValueFormat,
 ) -> Result<Value, Box<dyn Error + Send + Sync>> {
-    let time = time.time(value_format)?;
-    Ok(Value::I32(codcel_second(time)?))
+    map_value_elementwise(time, |v| Ok(Value::I32(codcel_second(v.time(value_format)?)?)))
 }
 
 pub fn date(
