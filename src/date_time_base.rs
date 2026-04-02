@@ -260,8 +260,32 @@ pub fn hour(
     time: Value,
     value_format: &ValueFormat,
 ) -> Result<Value, Box<dyn Error + Send + Sync>> {
-    let time = time.time(value_format)?;
-    Ok(Value::I32(codcel_hour(time)?))
+    match time {
+        Value::VecValue(vec) => {
+            let mut results = Vec::with_capacity(vec.len());
+            for elem in vec {
+                let t = elem.time(value_format)?;
+                results.push(Value::I32(codcel_hour(t)?));
+            }
+            Ok(Value::VecValue(results))
+        }
+        Value::AreaValue(rows) => {
+            let mut result_rows = Vec::with_capacity(rows.len());
+            for row in rows {
+                let mut result_row = Vec::with_capacity(row.len());
+                for elem in row {
+                    let t = elem.time(value_format)?;
+                    result_row.push(Value::I32(codcel_hour(t)?));
+                }
+                result_rows.push(result_row);
+            }
+            Ok(Value::AreaValue(result_rows))
+        }
+        single => {
+            let t = single.time(value_format)?;
+            Ok(Value::I32(codcel_hour(t)?))
+        }
+    }
 }
 
 pub fn minute(
