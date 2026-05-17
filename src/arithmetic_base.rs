@@ -113,6 +113,28 @@ fn remove_quotes(input: &str) -> String {
     }
 }
 
+// Excel-compatible coercion: an empty/missing cell evaluates to 0 in numeric context.
+// Used by the scalar fallback of `add`/`subtract`/`multiply`/`divide` so that Lotus-style
+// leading-plus formulas like `=+A1` (parsed as `BinOp(None, Add, A1)`) don't propagate
+// "Cannot convert none to number value" errors.
+fn value_to_f64_or_zero(
+    value: Value,
+    value_format: &ValueFormat,
+) -> Result<f64, Box<dyn Error + Send + Sync>> {
+    match value {
+        Value::None
+        | Value::OptionF64(None)
+        | Value::OptionI32(None)
+        | Value::OptionString(None)
+        | Value::OptionBool(None)
+        | Value::OptionChronoDateTime(None)
+        | Value::OptionTime(None)
+        | Value::OptionVecValue(None)
+        | Value::OptionAreaValue(None) => Ok(0.0),
+        other => other.f64(value_format),
+    }
+}
+
 // Converts a String, &str, i32 into a f64, or just returns the f64
 /// Converts a generic value to a floating-point number (`f64`).
 ///
@@ -412,8 +434,8 @@ pub fn multiply(
     }
 
     // Single value multiplication
-    let lhs = lhs.f64(value_format)?;
-    let rhs = rhs.f64(value_format)?;
+    let lhs = value_to_f64_or_zero(lhs, value_format)?;
+    let rhs = value_to_f64_or_zero(rhs, value_format)?;
     Ok(Value::F64(codcel_multiply(lhs, rhs)?))
 }
 
@@ -506,8 +528,8 @@ pub fn add(
         _ => {}
     }
 
-    let lhs = lhs.f64(value_format)?;
-    let rhs = rhs.f64(value_format)?;
+    let lhs = value_to_f64_or_zero(lhs, value_format)?;
+    let rhs = value_to_f64_or_zero(rhs, value_format)?;
     Ok(Value::F64(codcel_add(lhs, rhs)?))
 }
 
@@ -627,8 +649,8 @@ pub fn divide(
         _ => {}
     }
 
-    let lhs = lhs.f64(value_format)?;
-    let rhs = rhs.f64(value_format)?;
+    let lhs = value_to_f64_or_zero(lhs, value_format)?;
+    let rhs = value_to_f64_or_zero(rhs, value_format)?;
     Ok(Value::F64(codcel_divide(lhs, rhs)?))
 }
 
@@ -1861,8 +1883,8 @@ pub fn subtract(
         _ => {}
     }
 
-    let lhs = lhs.f64(value_format)?;
-    let rhs = rhs.f64(value_format)?;
+    let lhs = value_to_f64_or_zero(lhs, value_format)?;
+    let rhs = value_to_f64_or_zero(rhs, value_format)?;
     Ok(Value::F64(codcel_subtract(lhs, rhs)?))
 }
 
