@@ -9,6 +9,7 @@ use crate::date_time_base::{
     date_time_to_excel, date_time_to_iso, date_time_to_time, excel_to_date_time, excel_to_time,
     force_string_to_date_time, force_string_to_time, time_to_date_time, time_to_excel, time_to_iso,
 };
+use crate::excel_error::{err_to_box, ExcelError};
 use crate::value_format::ValueFormat;
 use chrono::{DateTime, NaiveTime, Utc};
 use serde::{Deserialize, Serialize};
@@ -34,6 +35,7 @@ pub enum Value {
     OptionTime(Option<NaiveTime>),
     Time(NaiveTime),
     None,
+    Error(ExcelError),
 }
 
 impl PartialOrd for Value {
@@ -83,6 +85,10 @@ impl PartialOrd for Value {
             (Value::OptionAreaValue(None), _) => Some(std::cmp::Ordering::Less),
             (_, Value::OptionAreaValue(None)) => Some(std::cmp::Ordering::Greater),
 
+            // Errors are incomparable to other values (Excel sorts them last, but we don't
+            // need a total ordering — None matches the existing incompatible-types fallback).
+            (Value::Error(_), _) | (_, Value::Error(_)) => None,
+
             // Fallback for mismatched types
             _ => None, // Return None for comparisons between incompatible types
         }
@@ -118,6 +124,7 @@ impl PartialEq for Value {
             (Value::OptionChronoDateTime(Some(a)), Value::OptionChronoDateTime(Some(b))) => a == b,
             (Value::Time(a), Value::Time(b)) => a == b,
             (Value::OptionTime(Some(a)), Value::OptionTime(Some(b))) => a == b,
+            (Value::Error(a), Value::Error(b)) => a == b,
             _ => false,
         }
     }
@@ -171,6 +178,7 @@ impl Hash for Value {
             Value::Time(v) => v.hash(state),
             Value::OptionTime(None) => None::<String>.hash(state),
             Value::OptionTime(Some(v)) => v.hash(state),
+            Value::Error(e) => e.hash(state),
         }
     }
 }
@@ -184,6 +192,7 @@ impl Value {
             Value::AreaValue(v) | Value::OptionAreaValue(Some(v)) => {
                 v.iter().map(|r| r.len()).sum::<usize>() <= 100
             }
+            Value::Error(_) => true,
             _ => true, // scalars are always cheap to clone
         }
     }
@@ -203,6 +212,7 @@ impl Value {
             Value::Time(t) => time_to_iso(t),
             Value::OptionTime(Some(t)) => time_to_iso(t),
             Value::None => "".to_string(),
+            Value::Error(e) => e.display().to_string(),
             _ => format!("{self:?}"), // Fallback for complex types
         }
     }
@@ -256,6 +266,7 @@ impl Value {
             Value::OptionChronoDateTime(_) => single_value,
             Value::Time(_) => single_value,
             Value::OptionTime(_) => single_value,
+            Value::Error(_) => single_value,
         }
     }
 
@@ -424,6 +435,7 @@ impl Value {
                 Some(value) => time_to_excel(value),
             },
             Value::Time(value) => time_to_excel(value),
+            Value::Error(e) => Err(err_to_box(*e)),
         }
     }
 
@@ -506,6 +518,7 @@ impl Value {
                 Some(value) => Ok(time_to_date_time(*value)?),
             },
             Value::Time(value) => Ok(time_to_date_time(*value)?),
+            Value::Error(e) => Err(err_to_box(*e)),
         }
     }
 
@@ -592,6 +605,7 @@ impl Value {
                 Some(value) => Ok(Some(time_to_date_time(*value)?)),
             },
             Value::Time(value) => Ok(Some(time_to_date_time(*value)?)),
+            Value::Error(e) => Err(err_to_box(*e)),
         }
     }
 
@@ -667,6 +681,7 @@ impl Value {
                 Some(value) => Ok(*value),
             },
             Value::Time(value) => Ok(*value),
+            Value::Error(e) => Err(err_to_box(*e)),
         }
     }
 
@@ -754,6 +769,7 @@ impl Value {
                 Some(value) => Ok(Some(*value)),
             },
             Value::Time(value) => Ok(Some(*value)),
+            Value::Error(e) => Err(err_to_box(*e)),
         }
     }
 
@@ -839,6 +855,7 @@ impl Value {
                 Some(value) => Ok(Some(time_to_excel(value)?)),
             },
             Value::Time(value) => Ok(Some(time_to_excel(value)?)),
+            Value::Error(e) => Err(err_to_box(*e)),
         }
     }
 
@@ -955,6 +972,7 @@ impl Value {
                 }
             }
             Value::Time(value) => Ok(vec![time_to_excel(value)?]),
+            Value::Error(e) => Err(err_to_box(*e)),
         }
     }
 
@@ -1008,6 +1026,7 @@ impl Value {
             Value::OptionChronoDateTime(value) => Ok(vec![Value::OptionChronoDateTime(*value)]),
             Value::OptionTime(value) => Ok(vec![Value::OptionTime(*value)]),
             Value::Time(value) => Ok(vec![Value::Time(*value)]),
+            Value::Error(e) => Ok(vec![Value::Error(*e)]),
         }
     }
 
@@ -1091,6 +1110,7 @@ impl Value {
                 }
             }
             Value::Time(value) => integer(time_to_excel(value)?, &value_format.decimal_separator),
+            Value::Error(e) => Err(err_to_box(*e)),
         }
     }
 
@@ -1137,6 +1157,7 @@ impl Value {
                 Some(value) => Ok(vec![vec![Value::Time(*value)]]),
             },
             Value::Time(value) => Ok(vec![vec![Value::Time(*value)]]),
+            Value::Error(e) => Ok(vec![vec![Value::Error(*e)]]),
         }
     }
 
@@ -1185,6 +1206,7 @@ impl Value {
                 Some(value) => Ok(Some(vec![vec![Value::Time(*value)]])),
             },
             Value::Time(value) => Ok(Some(vec![vec![Value::Time(*value)]])),
+            Value::Error(e) => Ok(Some(vec![vec![Value::Error(*e)]])),
         }
     }
 
@@ -1237,6 +1259,7 @@ impl Value {
                 Some(value) => Ok(Some(vec![Value::Time(*value)])),
             },
             Value::Time(value) => Ok(Some(vec![Value::Time(*value)])),
+            Value::Error(e) => Ok(Some(vec![Value::Error(*e)])),
         }
     }
 
@@ -1315,6 +1338,7 @@ impl Value {
                 Some(_value) => Ok(vec![vec![self.f64(value_format)?]]),
             },
             Value::Time(_value) => Ok(vec![vec![self.f64(value_format)?]]),
+            Value::Error(e) => Err(err_to_box(*e)),
         }
     }
 
@@ -1416,6 +1440,7 @@ impl Value {
                 Some(value) => Ok(vec![vec![time_to_date_time(*value)?]]),
             },
             Value::Time(value) => Ok(vec![vec![time_to_date_time(*value)?]]),
+            Value::Error(e) => Err(err_to_box(*e)),
         }
     }
 
@@ -1494,6 +1519,7 @@ impl Value {
                 Some(_value) => Ok(vec![vec![self.bool(value_format)?]]),
             },
             Value::Time(_value) => Ok(vec![vec![self.bool(value_format)?]]),
+            Value::Error(e) => Err(err_to_box(*e)),
         }
     }
 
@@ -1572,6 +1598,7 @@ impl Value {
                 Some(_value) => Ok(vec![vec![self.string(value_format)?]]),
             },
             Value::Time(_value) => Ok(vec![vec![self.string(value_format)?]]),
+            Value::Error(e) => Err(err_to_box(*e)),
         }
     }
 
@@ -1654,6 +1681,7 @@ impl Value {
                 Some(_value) => Ok(Some(vec![vec![self.f64(value_format)?]])),
             },
             Value::Time(_value) => Ok(Some(vec![vec![self.f64(value_format)?]])),
+            Value::Error(e) => Err(err_to_box(*e)),
         }
     }
 
@@ -1732,6 +1760,7 @@ impl Value {
                 Some(_value) => Ok(vec![vec![self.i32(value_format)?]]),
             },
             Value::Time(_value) => Ok(vec![vec![self.i32(value_format)?]]),
+            Value::Error(e) => Err(err_to_box(*e)),
         }
     }
 
@@ -1814,6 +1843,7 @@ impl Value {
                 Some(_value) => Ok(Some(vec![vec![self.i32(value_format)?]])),
             },
             Value::Time(_value) => Ok(Some(vec![vec![self.i32(value_format)?]])),
+            Value::Error(e) => Err(err_to_box(*e)),
         }
     }
 
@@ -1896,6 +1926,7 @@ impl Value {
                 Some(_value) => Ok(Some(vec![vec![self.bool(value_format)?]])),
             },
             Value::Time(_value) => Ok(Some(vec![vec![self.bool(value_format)?]])),
+            Value::Error(e) => Err(err_to_box(*e)),
         }
     }
 
@@ -1993,6 +2024,7 @@ impl Value {
                 time_to_excel(value)?,
                 &value_format.decimal_separator,
             )?)),
+            Value::Error(e) => Err(err_to_box(*e)),
         }
     }
 
@@ -2123,6 +2155,7 @@ impl Value {
                 time_to_excel(value)?,
                 &value_format.decimal_separator,
             )?]),
+            Value::Error(e) => Err(err_to_box(*e)),
         }
     }
 
@@ -2228,6 +2261,7 @@ impl Value {
                 }
             }
             Value::Time(value) => Ok(time_to_iso(value)),
+            Value::Error(e) => Err(err_to_box(*e)),
         }
     }
 
@@ -2355,6 +2389,7 @@ impl Value {
                 }
             }
             Value::Time(value) => Ok(Some(time_to_iso(value))),
+            Value::Error(e) => Err(err_to_box(*e)),
         }
     }
 
@@ -2464,6 +2499,7 @@ impl Value {
                 }
             }
             Value::Time(value) => Ok(vec![time_to_iso(value)]),
+            Value::Error(e) => Err(err_to_box(*e)),
         }
     }
 
@@ -2542,6 +2578,7 @@ impl Value {
                 }
             }
             Value::Time(value) => time_to_iso(value),
+            Value::Error(e) => e.display().to_string(),
         }
     }
 
@@ -2615,6 +2652,7 @@ impl Value {
             }
             Value::OptionTime(_) => Err("Cannot convert time to boolean value".into()),
             Value::Time(_) => Err("Cannot convert time to boolean value".into()),
+            Value::Error(e) => Err(err_to_box(*e)),
         }
     }
 
@@ -2708,6 +2746,7 @@ impl Value {
                 }
             }
             Value::Time(_) => Err("Cannot convert time to boolean value".into()),
+            Value::Error(e) => Err(err_to_box(*e)),
         }
     }
 
@@ -2760,6 +2799,7 @@ impl Value {
                 }
             }
             Value::Time(value) => Ok(Some(Value::Time(*value))),
+            Value::Error(e) => Ok(Some(Value::Error(*e))),
         }
     }
 
@@ -2868,6 +2908,7 @@ impl Value {
             }
             Value::OptionTime(_) => Err("Cannot convert time to boolean value list".into()),
             Value::Time(_) => Err("Cannot convert time to boolean value list".into()),
+            Value::Error(e) => Err(err_to_box(*e)),
         }
     }
 
@@ -2987,6 +3028,7 @@ impl Value {
                 Some(value) => Ok(vec![vec![time_to_iso(value)]]),
             },
             Value::Time(value) => Ok(vec![vec![time_to_iso(value)]]),
+            Value::Error(e) => Err(err_to_box(*e)),
         }
     }
     pub fn area_f64(
@@ -3113,6 +3155,7 @@ impl Value {
                 }
             }
             Value::Time(value) => Ok(vec![vec![time_to_excel(value)?]]),
+            Value::Error(e) => Err(err_to_box(*e)),
         }
     }
 
@@ -3264,6 +3307,7 @@ impl Value {
                 time_to_excel(value)?,
                 &value_format.decimal_separator,
             )?]]),
+            Value::Error(e) => Err(err_to_box(*e)),
         }
     }
 
@@ -3435,6 +3479,7 @@ impl Value {
             }
             Value::OptionTime(_) => Err("Cannot convert time to boolean value area".into()),
             Value::Time(_) => Err("Cannot convert time to boolean value area".into()),
+            Value::Error(e) => Err(err_to_box(*e)),
         }
     }
 
@@ -3457,6 +3502,7 @@ impl Value {
             Value::OptionTime(value) => value.is_none(),
             Value::Time(_) => false,
             Value::None => true,
+            Value::Error(_) => false,
         }
     }
 }
@@ -3547,6 +3593,10 @@ pub fn some_bool(value: bool) -> Value {
 
 pub fn none() -> Value {
     Value::None
+}
+
+pub fn error(value: ExcelError) -> Value {
+    Value::Error(value)
 }
 
 pub fn area_f64(value: Vec<Vec<f64>>) -> Value {

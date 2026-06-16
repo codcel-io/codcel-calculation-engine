@@ -4,25 +4,22 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT, LICENSE-APACHE, and LICENSE-CODCEL-COMMERCIAL in the project root.
 
+use crate::excel_error::{error_type, ExcelError};
 use crate::value::Value;
 use crate::value_format::ValueFormat;
 use std::error::Error;
 
-/// Excel-compatible `ISERR` that checks whether a value is an error other than #N/A.
+/// Excel-compatible `ISERR` that checks whether a value is an error other than `#N/A`.
 /// - `value`: the cell value to test.
 /// - `_value_format`: unused; retained for signature consistency with other functions.
-///
-/// Returns `true` if the value is an error (represented as `f64::NAN`), `false` otherwise.
-/// Note: In this engine all error types are represented uniformly as NaN,
-/// so ISERR behaves identically to ISERROR.
 pub fn codcel_iserr(
     value: &Value,
     _value_format: &ValueFormat,
 ) -> Result<bool, Box<dyn Error + Send + Sync>> {
-    Ok(match value {
-        Value::F64(v) if v.is_nan() => true,
-        Value::OptionF64(Some(v)) if v.is_nan() => true,
-        _ => false,
+    Ok(match error_type(value) {
+        Some(ExcelError::Na) => false,
+        Some(_) => true,
+        None => false,
     })
 }
 
@@ -43,19 +40,48 @@ mod tests {
         }
     }
 
-    // --- TRUE cases ---
+    // --- TRUE cases (typed errors other than #N/A) ---
 
     #[test]
-    fn test_iserr_with_nan_f64() {
-        assert!(codcel_iserr(&Value::F64(f64::NAN), &default_format()).unwrap());
+    fn test_iserr_with_typed_error_variants() {
+        for e in [
+            ExcelError::Null,
+            ExcelError::Div0,
+            ExcelError::Value,
+            ExcelError::Ref,
+            ExcelError::Name,
+            ExcelError::Num,
+        ] {
+            assert!(codcel_iserr(&Value::Error(e), &default_format()).unwrap());
+        }
     }
 
     #[test]
-    fn test_iserr_with_nan_option_f64() {
-        assert!(codcel_iserr(&Value::OptionF64(Some(f64::NAN)), &default_format()).unwrap());
+    fn test_iserr_with_legacy_string_errors() {
+        // Database functions historically return error strings; these are not #N/A.
+        assert!(codcel_iserr(&Value::String("#NUM!".to_string()), &default_format()).unwrap());
+        assert!(codcel_iserr(&Value::String("#DIV/0!".to_string()), &default_format()).unwrap());
+        assert!(codcel_iserr(&Value::String("#VALUE!".to_string()), &default_format()).unwrap());
     }
 
     // --- FALSE cases ---
+
+    #[test]
+    fn test_iserr_with_na_typed_is_false() {
+        assert!(!codcel_iserr(&Value::Error(ExcelError::Na), &default_format()).unwrap());
+    }
+
+    #[test]
+    fn test_iserr_with_nan_f64_is_false() {
+        // Legacy NaN errors are treated as #N/A, which ISERR excludes.
+        assert!(!codcel_iserr(&Value::F64(f64::NAN), &default_format()).unwrap());
+        assert!(!codcel_iserr(&Value::OptionF64(Some(f64::NAN)), &default_format()).unwrap());
+    }
+
+    #[test]
+    fn test_iserr_with_legacy_na_string_is_false() {
+        assert!(!codcel_iserr(&Value::String("#N/A".to_string()), &default_format()).unwrap());
+    }
 
     #[test]
     fn test_iserr_with_number() {

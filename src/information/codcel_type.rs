@@ -4,6 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT, LICENSE-APACHE, and LICENSE-CODCEL-COMMERCIAL in the project root.
 
+use crate::excel_error::is_error;
 use crate::value::Value;
 use crate::value_format::ValueFormat;
 use std::error::Error;
@@ -22,14 +23,14 @@ pub fn codcel_type(
     value: &Value,
     _value_format: &ValueFormat,
 ) -> Result<f64, Box<dyn Error + Send + Sync>> {
+    // Errors first — covers typed Value::Error, legacy NaN, and string sentinels.
+    if is_error(value) {
+        return Ok(16.0);
+    }
     match value {
         // Logical values (must be checked before numbers since booleans can coerce to numbers)
         Value::Bool(_) => Ok(4.0),
         Value::OptionBool(Some(_)) => Ok(4.0),
-
-        // Error values (NaN represents errors in Excel)
-        Value::F64(v) if v.is_nan() => Ok(16.0),
-        Value::OptionF64(Some(v)) if v.is_nan() => Ok(16.0),
 
         // Numbers (including dates and times, which are stored as numbers in Excel)
         Value::F64(_) => Ok(1.0),
@@ -61,6 +62,9 @@ pub fn codcel_type(
         | Value::OptionAreaValue(None)
         | Value::OptionChronoDateTime(None)
         | Value::OptionTime(None) => Ok(1.0),
+
+        // Unreachable: errors handled above.
+        Value::Error(_) => Ok(16.0),
     }
 }
 

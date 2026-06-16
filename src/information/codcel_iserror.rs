@@ -4,26 +4,20 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT, LICENSE-APACHE, and LICENSE-CODCEL-COMMERCIAL in the project root.
 
+use crate::excel_error::is_error;
 use crate::value::Value;
 use crate::value_format::ValueFormat;
 use std::error::Error;
 
-/// Excel-compatible `ISERROR` that checks whether a value is any error.
+/// Excel-compatible `ISERROR` that checks whether a value is any error
+/// (`#N/A`, `#VALUE!`, `#REF!`, `#DIV/0!`, `#NUM!`, `#NAME?`, `#NULL!`).
 /// - `value`: the cell value to test.
 /// - `_value_format`: unused; retained for signature consistency with other functions.
-///
-/// Returns `true` if the value is an error (represented as `f64::NAN`), `false` otherwise.
-/// In this engine all error types (#N/A, #VALUE!, #REF!, #DIV/0!, #NUM!, #NAME?, #NULL!)
-/// are represented uniformly as NaN.
 pub fn codcel_iserror(
     value: &Value,
     _value_format: &ValueFormat,
 ) -> Result<bool, Box<dyn Error + Send + Sync>> {
-    Ok(match value {
-        Value::F64(v) if v.is_nan() => true,
-        Value::OptionF64(Some(v)) if v.is_nan() => true,
-        _ => false,
-    })
+    Ok(is_error(value))
 }
 
 #[cfg(test)]

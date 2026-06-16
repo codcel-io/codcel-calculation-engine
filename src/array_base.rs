@@ -543,21 +543,10 @@ fn transpose_internal(area: &Vec<Vec<Value>>) -> Vec<Vec<Value>> {
     transposed
 }
 
-pub fn iserr(
-    value: Value,
-    strict_type_conversion: bool,
-    value_format: &ValueFormat,
-) -> Result<Value, Box<dyn Error + Send + Sync>> {
-    codcel_information::iserr(value, strict_type_conversion, value_format)
-}
-
-pub fn iserror(
-    value: Value,
-    strict_type_conversion: bool,
-    value_format: &ValueFormat,
-) -> Result<Value, Box<dyn Error + Send + Sync>> {
-    codcel_information::iserror(value, strict_type_conversion, value_format)
-}
+// Re-export information functions so generated code (which wildcards both
+// `array_base::*` and `codcel_information::*`) sees the same symbol from both
+// paths rather than two ambiguous wrappers.
+pub use codcel_information::{error_type, iserr, iserror, isna};
 
 pub fn len(area: Value, value_format: &ValueFormat) -> Result<Value, Box<dyn Error + Send + Sync>> {
     let values = area.area_of_value()?;

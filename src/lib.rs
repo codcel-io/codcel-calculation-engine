@@ -29,6 +29,7 @@ pub mod date_and_time;
 pub mod date_time_base;
 pub mod engineering;
 pub mod engineering_base;
+pub mod excel_error;
 pub mod financial;
 pub mod financial_base;
 mod information;
