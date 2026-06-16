@@ -17,7 +17,7 @@ pub(crate) fn neg_binom_pmf(
     let combinations = binomial_coefficient(failures + successes - 1, successes - 1)?;
 
     // Compute the probability: P(X = failures)
-    let prob = combinations as f64
+    let prob = combinations
         * probability.powi(successes as i32)
         * (1.0 - probability).powi(failures as i32);
 

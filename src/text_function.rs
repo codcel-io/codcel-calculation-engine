@@ -701,10 +701,10 @@ fn is_pattern_format(section: &FormatSection) -> bool {
                 saw_digit = true;
             }
             FormatToken::LiteralChar('-') | FormatToken::LiteralChar(' ')
-            | FormatToken::LiteralChar('(') | FormatToken::LiteralChar(')') => {
-                if saw_digit {
-                    saw_literal_after_digit = true;
-                }
+            | FormatToken::LiteralChar('(') | FormatToken::LiteralChar(')')
+                if saw_digit =>
+            {
+                saw_literal_after_digit = true;
             }
             _ => {}
         }

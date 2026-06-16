@@ -313,7 +313,7 @@ pub fn filter_array(
     let include_elements = include.to_flatterned_vec_value()?;
 
     let mut results: Vec<Value> = Vec::new();
-    for (elem, inc) in array_elements.into_iter().zip(include_elements.into_iter()) {
+    for (elem, inc) in array_elements.into_iter().zip(include_elements) {
         // Check if include value is truthy (non-zero number, true boolean, non-empty string)
         let is_truthy: bool = inc.bool(value_format).unwrap_or_default();
         if is_truthy {
