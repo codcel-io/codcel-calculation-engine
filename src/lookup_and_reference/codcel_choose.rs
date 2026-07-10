@@ -7,7 +7,6 @@
 // Returns a value or a list of values from a given list based on 1-based indices.
 
 use std::error::Error;
-use std::fmt::Debug;
 
 /// Selects items from `values` using 1-based positions from `indices`, mirroring Excel's `CHOOSE`.
 ///
@@ -17,12 +16,10 @@ use std::fmt::Debug;
 ///
 /// # Errors
 /// Returns an error when an index is less than 1 or greater than the length of `values`.
-pub fn codcel_choose<T: Clone + Debug>(
+pub fn codcel_choose<T: Clone>(
     indices: Vec<i32>,
     values: &[T],
 ) -> Result<Vec<T>, Box<dyn Error + Send + Sync>> {
-    println!("indices {:?}", &indices);
-    println!("values {:?}", &values);
     indices
         .iter()
         .map(|&index| choose_result(index, values))

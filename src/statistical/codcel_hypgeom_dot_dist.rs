@@ -63,10 +63,7 @@ pub fn codcel_hypgeom_dot_dist(
         let min_x = lower_bound as u64;
         let mut cumulative_prob = 0.0;
         for i in min_x..=x_int {
-            match hypergeom_prob(i, k_int, m_int, n_int) {
-                Ok(prob) => cumulative_prob += prob,
-                Err(e) => return Err(e),
-            }
+            cumulative_prob += hypergeom_prob(i, k_int, m_int, n_int)?;
         }
         Ok(cumulative_prob)
     } else {

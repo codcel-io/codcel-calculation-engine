@@ -154,7 +154,7 @@ pub fn float<T: ToF64 + Debug>(
     value: T,
     decimal_separator: &str,
 ) -> Result<f64, Box<dyn Error + Send + Sync>> {
-    let string_value = format!("{:?}", &value);
+    let string_value = format!("{:?}", value);
     match value.to_f64() {
         Ok(value) => Ok(value),
         Err(_) => {
@@ -163,7 +163,7 @@ pub fn float<T: ToF64 + Debug>(
                 return Ok(value);
             }
 
-            Err(format!("Cannot convert {:#?} to a number", &string_value).into())
+            Err(format!("Cannot convert {:#?} to a number", string_value).into())
         }
     }
 }
@@ -292,7 +292,7 @@ pub fn integer<T: ToI32 + Debug>(
     value: T,
     decimal_separator: &str,
 ) -> Result<i32, Box<dyn Error + Send + Sync>> {
-    let string_value = format!("{:?}", &value);
+    let string_value = format!("{:?}", value);
     match value.to_i32() {
         Ok(value) => Ok(value),
         Err(_) => {
@@ -301,7 +301,7 @@ pub fn integer<T: ToI32 + Debug>(
                 return Ok(value);
             }
 
-            Err(format!("Cannot convert {:#?} to a whole number", &string_value).into())
+            Err(format!("Cannot convert {:#?} to a whole number", string_value).into())
         }
     }
 }
@@ -324,7 +324,7 @@ pub fn boolean<T: ToBool + Debug>(
     value: T,
     decimal_separator: &str,
 ) -> Result<bool, Box<dyn Error + Send + Sync>> {
-    let string_value = format!("{:?}", &value);
+    let string_value = format!("{:?}", value);
     match value.to_bool() {
         Ok(value) => Ok(value),
         Err(_) => {
@@ -333,7 +333,7 @@ pub fn boolean<T: ToBool + Debug>(
                 return Ok(value);
             }
 
-            Err(format!("Cannot convert {:#?} to a boolean", &string_value).into())
+            Err(format!("Cannot convert {:#?} to a boolean", string_value).into())
         }
     }
 }
