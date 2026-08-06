@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: Copyright (c) 2026 Codcel
-// SPDX-License-Identifier: MIT OR Apache-2.0 OR Codcel-Commercial
+// SPDX-License-Identifier: MIT OR Apache-2.0
 //
 // This file is part of Codcel (https://codcel.io).
-// See LICENSE-MIT, LICENSE-APACHE, and LICENSE-CODCEL-COMMERCIAL in the project root.
+// See LICENSE-MIT and LICENSE-APACHE in the project root.
 
 /// Returns true if the character is a DBCS "wide" character (counts as 2 bytes in Excel's *B functions).
 /// In Excel's DBCS encoding, CJK and related East Asian characters are 2 bytes; everything else is 1 byte.

@@ -254,9 +254,32 @@ A Pull Request may be rejected if it:
 
 ## Licensing
 
-By submitting a contribution to this repository, you agree that your contribution will be licensed under the same terms as this project.
+This project is dual licensed under the MIT License ([LICENSE-MIT](LICENSE-MIT)) and the
+Apache License, Version 2.0 ([LICENSE-APACHE](LICENSE-APACHE)), at the user's option.
 
-See the repository licensing files for details.
+Unless you explicitly state otherwise, any contribution you intentionally submit for
+inclusion in this repository, as defined in the Apache-2.0 license, shall be dual
+licensed as above, without any additional terms or conditions.
+
+### Developer Certificate of Origin
+
+Contributions must be signed off under the [Developer Certificate of Origin](https://developercertificate.org). Signing off certifies that you wrote the
+contribution, or otherwise have the right to submit it under the licenses above.
+
+Add the sign-off by committing with `-s`:
+
+```bash
+git commit -s -m "Fix YEARFRAC basis 4 rounding"
+```
+
+This appends a trailer to your commit message:
+
+```
+Signed-off-by: Your Name <your.email@example.com>
+```
+
+The name and email must match those on the commit. Pull requests whose commits are not
+signed off cannot be merged.
 
 ---
 

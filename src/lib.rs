@@ -1,14 +1,18 @@
-/*!
-SPDX-FileCopyrightText: Copyright (c) 2026 Codcel.
-SPDX-License-Identifier: MIT OR Apache-2.0 OR Codcel-Commercial
+// SPDX-FileCopyrightText: Copyright (c) 2026 Codcel
+// SPDX-License-Identifier: MIT OR Apache-2.0
+//
+// This file is part of Codcel (https://codcel.io).
+// See LICENSE-MIT and LICENSE-APACHE in the project root.
 
-Codcel Calculation Engine
-https://codcel.io
-
-Licensing: MIT or Apache-2.0 for permitted uses, or the Codcel Commercial License for
-Automated Code Generation Systems (excluding Codcel itself). See the LICENSE files
-in the project root for full terms.
-*/
+//! Codcel Calculation Engine
+//!
+//! Rust implementations of Excel-compatible functions, covering the financial,
+//! statistical, mathematical, engineering, text, date and lookup categories.
+//! Excel behavioural fidelity is preserved, including banker's rounding, the
+//! 1900 and 1904 date serial systems, and the Lotus 1-2-3 1900 leap-year bug.
+//!
+//! Set `CODCEL_USE_PORTABLE_MATH=true` to compute transcendental functions via
+//! `libm` for bit-identical results across platforms.
 
 
 

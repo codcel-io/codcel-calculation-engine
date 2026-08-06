@@ -9,6 +9,8 @@
 
 # Codcel Calculation Engine
 
+[![License: MIT OR Apache-2.0](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-blue.svg)](#licensing)
+
 A high-performance Rust library implementing 460+ Excel-compatible functions — financial, statistical, mathematical, engineering, text, date/time, and more.
 
 ## Overview
@@ -50,7 +52,7 @@ use codcel_calculation_engine::financial::codcel_npv::codcel_npv;
 
 fn main() {
     let rate = 0.08;
-    let cash_flows = vec![−1000.0, 300.0, 400.0, 500.0];
+    let cash_flows = vec![-1000.0, 300.0, 400.0, 500.0];
     let npv = codcel_npv(rate, cash_flows).unwrap();
     println!("NPV: {npv:.2}");
 }
@@ -96,24 +98,21 @@ This calculation engine is one of several open-source components that power Codc
 
 ## Licensing
 
-This project is available under **multiple licenses**:
+Licensed under either of
 
-- **MIT License** (LICENSE-MIT)
-- **Apache License 2.0** (LICENSE-APACHE)
-- **Codcel Commercial License** (LICENSE-CODCEL-COMMERCIAL)
+- MIT License ([LICENSE-MIT](LICENSE-MIT) or <https://opensource.org/licenses/MIT>)
+- Apache License, Version 2.0 ([LICENSE-APACHE](LICENSE-APACHE) or <https://www.apache.org/licenses/LICENSE-2.0>)
 
-This licensing model is intended to keep the Excel calculation logic
-open and auditable, while protecting Codcel from direct competition
-in automated spreadsheet-to-code platforms.
+at your option. There are no field-of-use restrictions and no commercial carve-outs.
 
-### Which license should I use?
+This crate is the calculation core of [Codcel](https://codcel.io), a commercial
+product. It is published under permissive terms so that anyone — including customers
+whose generated code depends on it — can read, audit and verify exactly how every
+number is computed. Contributions are welcome, but support is best effort.
 
-- If you are an individual developer, company, or library author using
-  these Excel functions directly in your application, you may choose
-  **MIT or Apache-2.0**.
+### Contribution
 
-- If you are using this software as part of an **Automated Code Generation
-  System (excluding Codcel itself)**, you must use the
-  **Codcel Commercial License**.
-
-See LICENSE-CODCEL-COMMERCIAL for details.
+Unless you explicitly state otherwise, any contribution intentionally submitted for
+inclusion in this crate by you, as defined in the Apache-2.0 license, shall be dual
+licensed as above, without any additional terms or conditions. Contributions require
+a Developer Certificate of Origin sign-off — see [CONTRIBUTING.md](CONTRIBUTING.md).

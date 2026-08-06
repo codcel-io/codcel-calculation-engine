@@ -32,3 +32,4 @@ Explain briefly.
 - [ ] I ran `cargo test`
 - [ ] I ran formatting / linting where applicable
 - [ ] I updated docs if needed
+- [ ] I signed off my commits under the DCO (`git commit -s`)

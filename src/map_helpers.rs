@@ -1,12 +1,13 @@
-/*!
-SPDX-FileCopyrightText: Copyright (c) 2026 Codcel.
-SPDX-License-Identifier: MIT OR Apache-2.0 OR Codcel-Commercial
+// SPDX-FileCopyrightText: Copyright (c) 2026 Codcel
+// SPDX-License-Identifier: MIT OR Apache-2.0
+//
+// This file is part of Codcel (https://codcel.io).
+// See LICENSE-MIT and LICENSE-APACHE in the project root.
 
-Helper functions for MAP operations over Value arrays.
-
-These functions enable applying async transformations to arrays while preserving
-their structure (1D VecValue or 2D AreaValue).
-*/
+//! Helper functions for MAP operations over Value arrays.
+//!
+//! These functions enable applying async transformations to arrays while preserving
+//! their structure (1D VecValue or 2D AreaValue).
 
 use std::error::Error;
 use std::future::Future;

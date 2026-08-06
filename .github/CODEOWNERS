@@ -2,7 +2,8 @@
 * @codcel-io
 
 # Legal and governance
-/LICENSES/ @codcel-io
+/LICENSE-APACHE @codcel-io
+/LICENSE-MIT @codcel-io
 /CONTRIBUTING.md @codcel-io
 /README.md @codcel-io
 

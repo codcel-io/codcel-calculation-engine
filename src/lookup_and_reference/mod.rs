@@ -1,8 +1,8 @@
 // SPDX-FileCopyrightText: Copyright (c) 2026 Codcel
-// SPDX-License-Identifier: MIT OR Apache-2.0 OR Codcel-Commercial
+// SPDX-License-Identifier: MIT OR Apache-2.0
 //
 // This file is part of Codcel (https://codcel.io).
-// See LICENSE-MIT, LICENSE-APACHE, and LICENSE-CODCEL-COMMERCIAL in the project root.
+// See LICENSE-MIT and LICENSE-APACHE in the project root.
 
 pub mod codcel_address;
 pub mod codcel_areas;
