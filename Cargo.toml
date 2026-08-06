@@ -15,14 +15,14 @@ categories = ["mathematics", "finance"]
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-serde = { version= "1.0.228", features= ['derive'] }
-chrono = { version = "0.4.44", features = ["serde"] }
-regex = "1.12.3"
-unicode-segmentation = "1.13.2"
+serde = { version= "1.0.229", features= ['derive'] }
+chrono = { version = "0.4.45", features = ["serde"] }
+regex = "1.13.1"
+unicode-segmentation = "1.13.3"
 libm = "0.2.16"
-fastrand = "2.4.1"
-nalgebra = { version = "0.34.2", default-features = false, features = ["std"] }
-statrs = { version = "0.18.0", default-features = false }
+fastrand = "2.5.0"
+nalgebra = { version = "0.35.0", default-features = false, features = ["std"] }
+statrs = { version = "0.19.0", default-features = false }
 sys-locale = "0.3.2"
 
 
