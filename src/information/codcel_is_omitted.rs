@@ -78,6 +78,10 @@ mod tests {
     fn test_is_omitted_with_option_some_values() {
         // Option types with Some values should return FALSE
         assert!(!codcel_is_omitted(&Value::OptionF64(Some(42.0)), &default_format()).unwrap());
-        assert!(!codcel_is_omitted(&Value::OptionString(Some("test".to_string())), &default_format()).unwrap());
+        assert!(!codcel_is_omitted(
+            &Value::OptionString(Some("test".to_string())),
+            &default_format()
+        )
+        .unwrap());
     }
 }

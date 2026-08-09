@@ -15,13 +15,13 @@ pub type WeekendMask = [bool; 7];
 pub fn parse_weekend_mask(code: i32) -> Result<WeekendMask, Box<dyn Error + Send + Sync>> {
     //                                Mon    Tue    Wed    Thu    Fri    Sat    Sun
     match code {
-        1 => Ok([false, false, false, false, false, true, true]),   // Sat, Sun
-        2 => Ok([true, false, false, false, false, false, true]),   // Sun, Mon
-        3 => Ok([true, true, false, false, false, false, false]),   // Mon, Tue
-        4 => Ok([false, true, true, false, false, false, false]),   // Tue, Wed
-        5 => Ok([false, false, true, true, false, false, false]),   // Wed, Thu
-        6 => Ok([false, false, false, true, true, false, false]),   // Thu, Fri
-        7 => Ok([false, false, false, false, true, true, false]),   // Fri, Sat
+        1 => Ok([false, false, false, false, false, true, true]), // Sat, Sun
+        2 => Ok([true, false, false, false, false, false, true]), // Sun, Mon
+        3 => Ok([true, true, false, false, false, false, false]), // Mon, Tue
+        4 => Ok([false, true, true, false, false, false, false]), // Tue, Wed
+        5 => Ok([false, false, true, true, false, false, false]), // Wed, Thu
+        6 => Ok([false, false, false, true, true, false, false]), // Thu, Fri
+        7 => Ok([false, false, false, false, true, true, false]), // Fri, Sat
         11 => Ok([false, false, false, false, false, false, true]), // Sun only
         12 => Ok([true, false, false, false, false, false, false]), // Mon only
         13 => Ok([false, true, false, false, false, false, false]), // Tue only
@@ -35,7 +35,9 @@ pub fn parse_weekend_mask(code: i32) -> Result<WeekendMask, Box<dyn Error + Send
 
 /// Parses a 7-character weekend string where each character is '0' (workday) or '1' (weekend),
 /// indexed from Monday (position 0) to Sunday (position 6).
-pub fn parse_weekend_string(weekend_str: &str) -> Result<WeekendMask, Box<dyn Error + Send + Sync>> {
+pub fn parse_weekend_string(
+    weekend_str: &str,
+) -> Result<WeekendMask, Box<dyn Error + Send + Sync>> {
     if weekend_str.len() != 7 {
         return Err("NETWORKDAYS.INTL: Weekend string must be exactly 7 characters".into());
     }
@@ -47,11 +49,7 @@ pub fn parse_weekend_string(weekend_str: &str) -> Result<WeekendMask, Box<dyn Er
             '0' => {
                 all_ones = false;
             }
-            _ => {
-                return Err(
-                    "NETWORKDAYS.INTL: Weekend string must contain only 0 and 1".into(),
-                )
-            }
+            _ => return Err("NETWORKDAYS.INTL: Weekend string must contain only 0 and 1".into()),
         }
     }
     if all_ones {

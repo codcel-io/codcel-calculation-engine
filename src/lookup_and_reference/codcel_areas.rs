@@ -12,9 +12,7 @@ use std::error::Error;
 /// When the transpiler encounters AREAS with a MultipleArea parameter,
 /// it packages the areas as a `Value::VecValue(vec![...])`.
 /// Each element in the vec represents one contiguous area.
-pub fn codcel_areas(
-    reference: Value,
-) -> Result<Value, Box<dyn Error + Send + Sync>> {
+pub fn codcel_areas(reference: Value) -> Result<Value, Box<dyn Error + Send + Sync>> {
     match reference {
         Value::VecValue(vec) => Ok(Value::I32(vec.len() as i32)),
         _ => Ok(Value::I32(1)),
@@ -35,12 +33,10 @@ mod tests {
     #[test]
     fn areas_single_area() {
         // AREAS(A1:B2) => 1
-        let input = Value::VecValue(vec![
-            Value::AreaValue(vec![
-                vec![Value::I32(1), Value::I32(2)],
-                vec![Value::I32(3), Value::I32(4)],
-            ]),
-        ]);
+        let input = Value::VecValue(vec![Value::AreaValue(vec![
+            vec![Value::I32(1), Value::I32(2)],
+            vec![Value::I32(3), Value::I32(4)],
+        ])]);
         assert_eq!(i(&codcel_areas(input).unwrap()), 1);
     }
 

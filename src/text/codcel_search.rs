@@ -18,7 +18,9 @@ pub(crate) fn build_wildcard_pattern(substring: &str) -> String {
     let mut i = 0;
     while i < chars.len() {
         match chars[i] {
-            '~' if i + 1 < chars.len() && (chars[i + 1] == '?' || chars[i + 1] == '*' || chars[i + 1] == '~') => {
+            '~' if i + 1 < chars.len()
+                && (chars[i + 1] == '?' || chars[i + 1] == '*' || chars[i + 1] == '~') =>
+            {
                 // Escaped wildcard or tilde: treat next char as literal
                 pattern.push_str(&regex::escape(&chars[i + 1].to_string()));
                 i += 2;
@@ -82,7 +84,10 @@ pub fn codcel_search(
     let regex = Regex::new(&regex_str)?;
 
     // Adjust the text to start from the specified character position
-    let byte_offset = text.char_indices().nth(start_position - 1).map_or(text.len(), |(i, _)| i);
+    let byte_offset = text
+        .char_indices()
+        .nth(start_position - 1)
+        .map_or(text.len(), |(i, _)| i);
     let adjusted_text = &text[byte_offset..];
 
     // Find the first match and return its character position in the original text

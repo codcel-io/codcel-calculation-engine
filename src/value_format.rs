@@ -42,14 +42,17 @@ impl ValueFormat {
     /// Maps the language to locale-appropriate formatting conventions.
     /// For unknown languages, returns sensible defaults (period decimal, comma thousands, `$`).
     pub fn from_language(lang: &str) -> ValueFormat {
-        Self::from_language_internal(lang, &ValueFormat {
-            decimal_separator: ".".to_string(),
-            currency_symbol: "$".to_string(),
-            thousands_separator: ",".to_string(),
-            use_excel_rounding: false,
-            language: "en".to_string(),
-            allow_lotus_1_2_3_1900_date_bug: true,
-        })
+        Self::from_language_internal(
+            lang,
+            &ValueFormat {
+                decimal_separator: ".".to_string(),
+                currency_symbol: "$".to_string(),
+                thousands_separator: ",".to_string(),
+                use_excel_rounding: false,
+                language: "en".to_string(),
+                allow_lotus_1_2_3_1900_date_bug: true,
+            },
+        )
     }
 
     /// Creates a `ValueFormat` from a language tag with `CODCEL_*` env var overrides.
@@ -68,7 +71,8 @@ impl ValueFormat {
         let lang = parts.first().map(|s| s.to_lowercase()).unwrap_or_default();
 
         // Extract region subtag (2-letter uppercase, e.g. "PT" from "en-PT")
-        let region = parts.get(1)
+        let region = parts
+            .get(1)
             .filter(|r| r.len() == 2 && r.chars().all(|c| c.is_ascii_alphabetic()))
             .map(|r| r.to_uppercase());
 
@@ -84,7 +88,9 @@ impl ValueFormat {
             match lang.as_str() {
                 // Comma decimal, period thousands
                 "de" | "it" | "es" | "nl" | "ro" | "hr" | "sl" | "el" | "tr" => (",", ".", "€"),
-                "fr" | "pl" | "cs" | "sv" | "fi" | "hu" | "sk" | "et" | "lv" | "lt" => (",", " ", "€"),
+                "fr" | "pl" | "cs" | "sv" | "fi" | "hu" | "sk" | "et" | "lv" | "lt" => {
+                    (",", " ", "€")
+                }
                 "pt" => (",", ".", "R$"),
                 "da" => (",", ".", "kr"),
                 "no" | "nb" | "nn" => (",", " ", "kr"),
@@ -137,8 +143,9 @@ impl ValueFormat {
     fn format_for_region(region: &str) -> Option<(&'static str, &'static str, &'static str)> {
         match region {
             // Eurozone — comma decimal, period thousands
-            "DE" | "AT" | "ES" | "IT" | "NL" | "PT" | "GR" | "CY" | "LU"
-            | "HR" | "SI" => Some((",", ".", "€")),
+            "DE" | "AT" | "ES" | "IT" | "NL" | "PT" | "GR" | "CY" | "LU" | "HR" | "SI" => {
+                Some((",", ".", "€"))
+            }
             // Eurozone — comma decimal, space thousands
             "FR" | "BE" | "FI" | "SK" | "EE" | "LV" | "LT" => Some((",", " ", "€")),
             // Eurozone — period decimal (exceptions)

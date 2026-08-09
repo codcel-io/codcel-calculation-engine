@@ -7,14 +7,14 @@
 pub mod codcel_cell;
 pub mod codcel_error_type;
 pub mod codcel_is_blank;
-pub mod codcel_iserr;
-pub mod codcel_iserror;
 pub mod codcel_is_even;
 pub mod codcel_is_non_text;
 pub mod codcel_is_number;
 pub mod codcel_is_odd;
 pub mod codcel_is_omitted;
 pub mod codcel_is_text;
+pub mod codcel_iserr;
+pub mod codcel_iserror;
 pub mod codcel_isna;
 pub mod codcel_n;
 pub mod codcel_na;

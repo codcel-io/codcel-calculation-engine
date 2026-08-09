@@ -87,49 +87,95 @@ mod tests {
 
     #[test]
     fn test_type_number_f64() {
-        assert_eq!(codcel_type(&Value::F64(42.0), &default_format()).unwrap(), 1.0);
-        assert_eq!(codcel_type(&Value::F64(0.0), &default_format()).unwrap(), 1.0);
-        assert_eq!(codcel_type(&Value::F64(-3.14), &default_format()).unwrap(), 1.0);
+        assert_eq!(
+            codcel_type(&Value::F64(42.0), &default_format()).unwrap(),
+            1.0
+        );
+        assert_eq!(
+            codcel_type(&Value::F64(0.0), &default_format()).unwrap(),
+            1.0
+        );
+        assert_eq!(
+            codcel_type(&Value::F64(-3.14), &default_format()).unwrap(),
+            1.0
+        );
     }
 
     #[test]
     fn test_type_number_i32() {
-        assert_eq!(codcel_type(&Value::I32(42), &default_format()).unwrap(), 1.0);
+        assert_eq!(
+            codcel_type(&Value::I32(42), &default_format()).unwrap(),
+            1.0
+        );
         assert_eq!(codcel_type(&Value::I32(0), &default_format()).unwrap(), 1.0);
     }
 
     #[test]
     fn test_type_number_option() {
-        assert_eq!(codcel_type(&Value::OptionF64(Some(1.0)), &default_format()).unwrap(), 1.0);
-        assert_eq!(codcel_type(&Value::OptionI32(Some(1)), &default_format()).unwrap(), 1.0);
+        assert_eq!(
+            codcel_type(&Value::OptionF64(Some(1.0)), &default_format()).unwrap(),
+            1.0
+        );
+        assert_eq!(
+            codcel_type(&Value::OptionI32(Some(1)), &default_format()).unwrap(),
+            1.0
+        );
     }
 
     #[test]
     fn test_type_text() {
-        assert_eq!(codcel_type(&Value::String("hello".to_string()), &default_format()).unwrap(), 2.0);
-        assert_eq!(codcel_type(&Value::String("".to_string()), &default_format()).unwrap(), 2.0);
+        assert_eq!(
+            codcel_type(&Value::String("hello".to_string()), &default_format()).unwrap(),
+            2.0
+        );
+        assert_eq!(
+            codcel_type(&Value::String("".to_string()), &default_format()).unwrap(),
+            2.0
+        );
     }
 
     #[test]
     fn test_type_text_option() {
-        assert_eq!(codcel_type(&Value::OptionString(Some("hello".to_string())), &default_format()).unwrap(), 2.0);
+        assert_eq!(
+            codcel_type(
+                &Value::OptionString(Some("hello".to_string())),
+                &default_format()
+            )
+            .unwrap(),
+            2.0
+        );
     }
 
     #[test]
     fn test_type_logical() {
-        assert_eq!(codcel_type(&Value::Bool(true), &default_format()).unwrap(), 4.0);
-        assert_eq!(codcel_type(&Value::Bool(false), &default_format()).unwrap(), 4.0);
+        assert_eq!(
+            codcel_type(&Value::Bool(true), &default_format()).unwrap(),
+            4.0
+        );
+        assert_eq!(
+            codcel_type(&Value::Bool(false), &default_format()).unwrap(),
+            4.0
+        );
     }
 
     #[test]
     fn test_type_logical_option() {
-        assert_eq!(codcel_type(&Value::OptionBool(Some(true)), &default_format()).unwrap(), 4.0);
+        assert_eq!(
+            codcel_type(&Value::OptionBool(Some(true)), &default_format()).unwrap(),
+            4.0
+        );
     }
 
     #[test]
     fn test_type_error() {
-        assert_eq!(codcel_type(&Value::F64(f64::NAN), &default_format()).unwrap(), 16.0);
-        assert_eq!(codcel_type(&Value::OptionF64(Some(f64::NAN)), &default_format()).unwrap(), 16.0);
+        assert_eq!(
+            codcel_type(&Value::F64(f64::NAN), &default_format()).unwrap(),
+            16.0
+        );
+        assert_eq!(
+            codcel_type(&Value::OptionF64(Some(f64::NAN)), &default_format()).unwrap(),
+            16.0
+        );
     }
 
     #[test]
@@ -150,15 +196,31 @@ mod tests {
 
     #[test]
     fn test_type_datetime() {
-        assert_eq!(codcel_type(&Value::ChronoDateTime(Utc::now()), &default_format()).unwrap(), 1.0);
-        assert_eq!(codcel_type(&Value::OptionChronoDateTime(Some(Utc::now())), &default_format()).unwrap(), 1.0);
+        assert_eq!(
+            codcel_type(&Value::ChronoDateTime(Utc::now()), &default_format()).unwrap(),
+            1.0
+        );
+        assert_eq!(
+            codcel_type(
+                &Value::OptionChronoDateTime(Some(Utc::now())),
+                &default_format()
+            )
+            .unwrap(),
+            1.0
+        );
     }
 
     #[test]
     fn test_type_time() {
         let time = NaiveTime::from_hms_opt(12, 0, 0).unwrap();
-        assert_eq!(codcel_type(&Value::Time(time), &default_format()).unwrap(), 1.0);
-        assert_eq!(codcel_type(&Value::OptionTime(Some(time)), &default_format()).unwrap(), 1.0);
+        assert_eq!(
+            codcel_type(&Value::Time(time), &default_format()).unwrap(),
+            1.0
+        );
+        assert_eq!(
+            codcel_type(&Value::OptionTime(Some(time)), &default_format()).unwrap(),
+            1.0
+        );
     }
 
     #[test]
@@ -169,9 +231,21 @@ mod tests {
 
     #[test]
     fn test_type_option_none() {
-        assert_eq!(codcel_type(&Value::OptionF64(None), &default_format()).unwrap(), 1.0);
-        assert_eq!(codcel_type(&Value::OptionI32(None), &default_format()).unwrap(), 1.0);
-        assert_eq!(codcel_type(&Value::OptionString(None), &default_format()).unwrap(), 1.0);
-        assert_eq!(codcel_type(&Value::OptionBool(None), &default_format()).unwrap(), 1.0);
+        assert_eq!(
+            codcel_type(&Value::OptionF64(None), &default_format()).unwrap(),
+            1.0
+        );
+        assert_eq!(
+            codcel_type(&Value::OptionI32(None), &default_format()).unwrap(),
+            1.0
+        );
+        assert_eq!(
+            codcel_type(&Value::OptionString(None), &default_format()).unwrap(),
+            1.0
+        );
+        assert_eq!(
+            codcel_type(&Value::OptionBool(None), &default_format()).unwrap(),
+            1.0
+        );
     }
 }

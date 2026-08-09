@@ -85,8 +85,8 @@ fn odd_f_price_short(
     maturity: DateTime<Utc>,
     issue: DateTime<Utc>,
     first_coupon: DateTime<Utc>,
-    coupon: f64,     // = 100 * rate / freq
-    yld: f64,        // = yield_rate / freq
+    coupon: f64, // = 100 * rate / freq
+    yld: f64,    // = yield_rate / freq
     redemption: f64,
     frequency: i32,
     basis: i32,
@@ -144,8 +144,8 @@ fn odd_f_price_long(
     maturity: DateTime<Utc>,
     issue: DateTime<Utc>,
     first_coupon: DateTime<Utc>,
-    coupon: f64,     // = 100 * rate / freq
-    yld: f64,        // = yield_rate / freq
+    coupon: f64, // = 100 * rate / freq
+    yld: f64,    // = yield_rate / freq
     redemption: f64,
     frequency: i32,
     basis: i32,
@@ -174,7 +174,7 @@ fn odd_f_price_long(
 
     // Compute DC_i, NL_i, A_i for each quasi-coupon period
     let mut dc_nl_sum = 0.0; // sum of DC_i / NL_i (for the odd coupon fraction)
-    let mut a_nl_sum = 0.0;  // sum of A_i / NL_i (for accrued interest)
+    let mut a_nl_sum = 0.0; // sum of A_i / NL_i (for accrued interest)
 
     for i in 0..nc {
         let period_start = quasi_dates[i];
@@ -253,7 +253,8 @@ fn odd_f_price_long(
     let dsc_e = dsc / e;
 
     // Term 1: PV of redemption
-    let term1 = redemption / crate::portable_math::powf(1.0 + yld, (n - 1) as f64 + nq as f64 + dsc_e);
+    let term1 =
+        redemption / crate::portable_math::powf(1.0 + yld, (n - 1) as f64 + nq as f64 + dsc_e);
 
     // Term 2: PV of the odd (long) first coupon
     let term2 = coupon * dc_nl_sum / crate::portable_math::powf(1.0 + yld, nq as f64 + dsc_e);
@@ -397,9 +398,17 @@ mod tests {
         // Rate: 0.075, Yield: 0.06, Redemption: 100, Freq: 2, Basis: 0
         // Expected: 106.73614795309982
         let result = codcel_odd_f_price(
-            dt(2023, 5, 1), dt(2028, 9, 1), dt(2023, 2, 1), dt(2023, 9, 1),
-            0.075, 0.06, 100.0, 2, Some(0),
-        ).unwrap();
+            dt(2023, 5, 1),
+            dt(2028, 9, 1),
+            dt(2023, 2, 1),
+            dt(2023, 9, 1),
+            0.075,
+            0.06,
+            100.0,
+            2,
+            Some(0),
+        )
+        .unwrap();
         println!("ofp_semi_std: {result}");
         assert!((result - 106.73614795309982).abs() < 0.000001);
     }
@@ -410,9 +419,17 @@ mod tests {
         // Rate: 0.02, Yield: 0.05, Redemption: 100, Freq: 2, Basis: 0
         // Expected: 93.68901442820814
         let result = codcel_odd_f_price(
-            dt(2022, 4, 1), dt(2024, 7, 1), dt(2022, 2, 1), dt(2022, 7, 1),
-            0.02, 0.05, 100.0, 2, Some(0),
-        ).unwrap();
+            dt(2022, 4, 1),
+            dt(2024, 7, 1),
+            dt(2022, 2, 1),
+            dt(2022, 7, 1),
+            0.02,
+            0.05,
+            100.0,
+            2,
+            Some(0),
+        )
+        .unwrap();
         println!("ofp_low_coup: {result}");
         assert!((result - 93.68901442820814).abs() < 0.000001);
     }
@@ -423,9 +440,17 @@ mod tests {
         // Rate: 0.05, Yield: 0.05, Redemption: 100, Freq: 2, Basis: 0
         // Expected: 99.96951219512198
         let result = codcel_odd_f_price(
-            dt(2024, 1, 1), dt(2027, 7, 1), dt(2023, 10, 1), dt(2024, 7, 1),
-            0.05, 0.05, 100.0, 2, Some(0),
-        ).unwrap();
+            dt(2024, 1, 1),
+            dt(2027, 7, 1),
+            dt(2023, 10, 1),
+            dt(2024, 7, 1),
+            0.05,
+            0.05,
+            100.0,
+            2,
+            Some(0),
+        )
+        .unwrap();
         println!("ofp_par_bond: {result}");
         assert!((result - 99.96951219512198).abs() < 0.000001);
     }
@@ -436,9 +461,17 @@ mod tests {
         // Rate: 0.05, Yield: 0.0, Redemption: 105, Freq: 2, Basis: 0
         // Expected: 131.25
         let result = codcel_odd_f_price(
-            dt(2022, 4, 1), dt(2027, 7, 1), dt(2022, 2, 15), dt(2022, 7, 1),
-            0.05, 0.0, 105.0, 2, Some(0),
-        ).unwrap();
+            dt(2022, 4, 1),
+            dt(2027, 7, 1),
+            dt(2022, 2, 15),
+            dt(2022, 7, 1),
+            0.05,
+            0.0,
+            105.0,
+            2,
+            Some(0),
+        )
+        .unwrap();
         println!("ofp_zero_yld: {result}");
         assert!((result - 131.25).abs() < 0.000001);
     }
@@ -449,9 +482,17 @@ mod tests {
         // Rate: 0.0, Yield: 0.05, Redemption: 100, Freq: 2, Basis: 0
         // Expected: 76.52878028253171
         let result = codcel_odd_f_price(
-            dt(2022, 2, 1), dt(2027, 7, 1), dt(2021, 11, 1), dt(2022, 7, 1),
-            0.0, 0.05, 100.0, 2, Some(0),
-        ).unwrap();
+            dt(2022, 2, 1),
+            dt(2027, 7, 1),
+            dt(2021, 11, 1),
+            dt(2022, 7, 1),
+            0.0,
+            0.05,
+            100.0,
+            2,
+            Some(0),
+        )
+        .unwrap();
         println!("ofp_zero_coup: {result}");
         assert!((result - 76.52878028253171).abs() < 0.000001);
     }
@@ -462,9 +503,17 @@ mod tests {
         // Rate: 0.03, Yield: 0.04, Redemption: 100, Freq: 2, Basis: 1
         // Expected: 91.59259282956167
         let result = codcel_odd_f_price(
-            dt(2020, 3, 1), dt(2030, 7, 1), dt(2019, 11, 1), dt(2020, 7, 1),
-            0.03, 0.04, 100.0, 2, Some(1),
-        ).unwrap();
+            dt(2020, 3, 1),
+            dt(2030, 7, 1),
+            dt(2019, 11, 1),
+            dt(2020, 7, 1),
+            0.03,
+            0.04,
+            100.0,
+            2,
+            Some(1),
+        )
+        .unwrap();
         println!("ofp_discount: {result}");
         assert!((result - 91.59259282956167).abs() < 0.000001);
     }
@@ -475,9 +524,17 @@ mod tests {
         // Rate: 0.055, Yield: 0.055, Redemption: 100, Freq: 1, Basis: 0
         // Expected: 100.00883513602
         let result = codcel_odd_f_price(
-            dt(2022, 10, 1), dt(2027, 1, 1), dt(2022, 7, 1), dt(2023, 1, 1),
-            0.055, 0.055, 100.0, 1, Some(0),
-        ).unwrap();
+            dt(2022, 10, 1),
+            dt(2027, 1, 1),
+            dt(2022, 7, 1),
+            dt(2023, 1, 1),
+            0.055,
+            0.055,
+            100.0,
+            1,
+            Some(0),
+        )
+        .unwrap();
         println!("ofp_ann_par_eq: {result}");
         assert!((result - 100.00883513602).abs() < 0.000001);
     }

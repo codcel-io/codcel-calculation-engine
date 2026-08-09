@@ -61,7 +61,11 @@ pub fn codcel_midb<S: AsRef<str>>(
         return Ok(String::new());
     }
 
-    Ok(text.chars().skip(start_char_idx).take(end_char_idx - start_char_idx).collect())
+    Ok(text
+        .chars()
+        .skip(start_char_idx)
+        .take(end_char_idx - start_char_idx)
+        .collect())
 }
 
 #[cfg(test)]

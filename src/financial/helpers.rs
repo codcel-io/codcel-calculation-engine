@@ -76,7 +76,12 @@ pub(crate) fn get_previous_coupon_date(
     maturity: NaiveDate,
     frequency: i32,
 ) -> Result<NaiveDate, Box<dyn Error + Send + Sync>> {
-    get_previous_coupon_date_eom(settlement, maturity, frequency, is_last_day_of_month(maturity))
+    get_previous_coupon_date_eom(
+        settlement,
+        maturity,
+        frequency,
+        is_last_day_of_month(maturity),
+    )
 }
 
 pub(crate) fn get_previous_coupon_date_eom(

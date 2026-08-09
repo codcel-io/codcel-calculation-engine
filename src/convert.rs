@@ -171,8 +171,15 @@ impl Unit {
 
             Newton | Dyne | PoundForce | Pond => UnitCategory::Force,
 
-            Joule | Erg | ITCalorie | ThermochemicalCalorie | ElectronVolt | HorsepowerHour
-            | WattHour | FootPound | Btu => UnitCategory::Energy,
+            Joule
+            | Erg
+            | ITCalorie
+            | ThermochemicalCalorie
+            | ElectronVolt
+            | HorsepowerHour
+            | WattHour
+            | FootPound
+            | Btu => UnitCategory::Energy,
 
             Horsepower | MetricHorsepower | Watt => UnitCategory::Power,
 
@@ -366,12 +373,12 @@ fn exact_unit_match(unit: &str) -> Option<Unit> {
         "survey_mi" => Some(Unit::USSurveyMile),
 
         // Hardcoded metric distance variants (kept for backward compat, also matched by prefix)
-        "km" => Some(Unit::Meter),   // handled via prefix path, but keep for exact match
-        "cm" => Some(Unit::Meter),   // handled via prefix path
-        "mm" => Some(Unit::Meter),   // handled via prefix path
+        "km" => Some(Unit::Meter), // handled via prefix path, but keep for exact match
+        "cm" => Some(Unit::Meter), // handled via prefix path
+        "mm" => Some(Unit::Meter), // handled via prefix path
         "µm" | "um" => Some(Unit::Meter), // handled via prefix path
-        "nm" => Some(Unit::Meter),   // handled via prefix path
-        "pm" => Some(Unit::Meter),   // handled via prefix path
+        "nm" => Some(Unit::Meter), // handled via prefix path
+        "pm" => Some(Unit::Meter), // handled via prefix path
 
         // Time
         "yr" => Some(Unit::Year),

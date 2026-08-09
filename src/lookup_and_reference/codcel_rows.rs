@@ -8,9 +8,7 @@ use crate::value::Value;
 use std::error::Error;
 
 /// Returns the number of rows in an array, like Excel's `ROWS`.
-pub fn codcel_rows(
-    array: Vec<Vec<Value>>,
-) -> Result<Value, Box<dyn Error + Send + Sync>> {
+pub fn codcel_rows(array: Vec<Vec<Value>>) -> Result<Value, Box<dyn Error + Send + Sync>> {
     Ok(Value::I32(array.len() as i32))
 }
 

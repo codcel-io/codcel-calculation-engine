@@ -82,6 +82,7 @@ use crate::statistical::codcel_rsq::codcel_rsq;
 use crate::statistical::codcel_skew::codcel_skew;
 use crate::statistical::codcel_skew_p::codcel_skew_p;
 use crate::statistical::codcel_slope::codcel_slope;
+use crate::statistical::codcel_small::codcel_small;
 use crate::statistical::codcel_st_dev_dot_p::codcel_st_dev_dot_p;
 use crate::statistical::codcel_st_dev_s::codcel_st_dev_s;
 use crate::statistical::codcel_standardize::codcel_standardize_vec;
@@ -102,7 +103,6 @@ use crate::statistical::codcel_weibull_dist::codcel_weibull_dist;
 use crate::statistical::codcel_z_dot_test::codcel_z_dot_test;
 use crate::value::{area_f64, flatten_value_to_vec_f64, vec_f64, vec_value_to_vec_f64, Value};
 use crate::value_format::ValueFormat;
-use crate::statistical::codcel_small::codcel_small;
 use std::error::Error;
 
 // Probability Distributions (29 functions)
@@ -1328,39 +1328,36 @@ pub fn average(
         return Ok(Value::F64(0.0));
     }
 
-    let (sum, count) = values.iter().fold(
-        (0.0, 0),
-        |(acc_sum, acc_count), value| {
-            if value.is_array() || value.is_area() {
-                // Excel AVERAGE ignores non-numeric cells in ranges/arrays
-                match value.area_of_value() {
-                    Ok(area) => {
-                        let mut local_sum = 0.0;
-                        let mut local_count = 0;
-                        for row in &area {
-                            for cell in row {
-                                if let Ok(val) = cell.f64(value_format) {
-                                    local_sum += val;
-                                    local_count += 1;
-                                }
+    let (sum, count) = values.iter().fold((0.0, 0), |(acc_sum, acc_count), value| {
+        if value.is_array() || value.is_area() {
+            // Excel AVERAGE ignores non-numeric cells in ranges/arrays
+            match value.area_of_value() {
+                Ok(area) => {
+                    let mut local_sum = 0.0;
+                    let mut local_count = 0;
+                    for row in &area {
+                        for cell in row {
+                            if let Ok(val) = cell.f64(value_format) {
+                                local_sum += val;
+                                local_count += 1;
                             }
                         }
-                        (acc_sum + local_sum, acc_count + local_count)
                     }
-                    Err(_) => (acc_sum, acc_count),
+                    (acc_sum + local_sum, acc_count + local_count)
                 }
-            } else if is_non_numeric_cell(value) {
-                // The transpiler expands ranges into individual values.
-                // Excel AVERAGE ignores text, booleans, and empty cells in ranges.
-                (acc_sum, acc_count)
-            } else {
-                match value.f64(value_format) {
-                    Ok(val) => (acc_sum + val, acc_count + 1),
-                    Err(_) => (acc_sum, acc_count),
-                }
+                Err(_) => (acc_sum, acc_count),
             }
-        },
-    );
+        } else if is_non_numeric_cell(value) {
+            // The transpiler expands ranges into individual values.
+            // Excel AVERAGE ignores text, booleans, and empty cells in ranges.
+            (acc_sum, acc_count)
+        } else {
+            match value.f64(value_format) {
+                Ok(val) => (acc_sum + val, acc_count + 1),
+                Err(_) => (acc_sum, acc_count),
+            }
+        }
+    });
 
     if count == 0 {
         return Ok(Value::F64(0.0));
@@ -1374,10 +1371,7 @@ pub fn average(
 fn is_non_numeric_cell(value: &Value) -> bool {
     matches!(
         value,
-        Value::String(_)
-            | Value::OptionString(_)
-            | Value::Bool(_)
-            | Value::OptionBool(_)
+        Value::String(_) | Value::OptionString(_) | Value::Bool(_) | Value::OptionBool(_)
     )
 }
 
@@ -1413,17 +1407,13 @@ pub fn average_a(
         } else if value.is_area() {
             match value {
                 Value::AreaValue(area) => {
-                    let (s, c) = average_a_fold_values(
-                        area.iter().flat_map(|row| row.iter()),
-                        value_format,
-                    );
+                    let (s, c) =
+                        average_a_fold_values(area.iter().flat_map(|row| row.iter()), value_format);
                     (acc_sum + s, acc_count + c)
                 }
                 Value::OptionAreaValue(Some(area)) => {
-                    let (s, c) = average_a_fold_values(
-                        area.iter().flat_map(|row| row.iter()),
-                        value_format,
-                    );
+                    let (s, c) =
+                        average_a_fold_values(area.iter().flat_map(|row| row.iter()), value_format);
                     (acc_sum + s, acc_count + c)
                 }
                 _ => (acc_sum, acc_count),
@@ -1586,38 +1576,35 @@ pub fn ave_dev(
     }
 
     // First pass: compute sum and count, skipping non-numeric values
-    let (sum, count) = values.iter().fold(
-        (0.0, 0),
-        |(acc_sum, acc_count), value| {
-            if value.is_array() {
-                match value.vec_f64(value_format) {
-                    Ok(array_values) => {
-                        let array_sum: f64 = array_values.iter().sum();
-                        let array_count = array_values.len();
-                        (acc_sum + array_sum, acc_count + array_count)
-                    }
-                    Err(_) => (acc_sum, acc_count),
+    let (sum, count) = values.iter().fold((0.0, 0), |(acc_sum, acc_count), value| {
+        if value.is_array() {
+            match value.vec_f64(value_format) {
+                Ok(array_values) => {
+                    let array_sum: f64 = array_values.iter().sum();
+                    let array_count = array_values.len();
+                    (acc_sum + array_sum, acc_count + array_count)
                 }
-            } else if value.is_area() {
-                match value.area_f64(value_format) {
-                    Ok(area_values) => {
-                        let area_sum: f64 = area_values.iter().flat_map(|row| row.iter()).sum();
-                        let area_count: usize = area_values.iter().map(|row| row.len()).sum();
-                        (acc_sum + area_sum, acc_count + area_count)
-                    }
-                    Err(_) => (acc_sum, acc_count),
-                }
-            } else if is_non_numeric_cell(value) {
-                // Skip text, booleans, empty strings from expanded ranges
-                (acc_sum, acc_count)
-            } else {
-                match value.f64(value_format) {
-                    Ok(val) => (acc_sum + val, acc_count + 1),
-                    Err(_) => (acc_sum, acc_count),
-                }
+                Err(_) => (acc_sum, acc_count),
             }
-        },
-    );
+        } else if value.is_area() {
+            match value.area_f64(value_format) {
+                Ok(area_values) => {
+                    let area_sum: f64 = area_values.iter().flat_map(|row| row.iter()).sum();
+                    let area_count: usize = area_values.iter().map(|row| row.len()).sum();
+                    (acc_sum + area_sum, acc_count + area_count)
+                }
+                Err(_) => (acc_sum, acc_count),
+            }
+        } else if is_non_numeric_cell(value) {
+            // Skip text, booleans, empty strings from expanded ranges
+            (acc_sum, acc_count)
+        } else {
+            match value.f64(value_format) {
+                Ok(val) => (acc_sum + val, acc_count + 1),
+                Err(_) => (acc_sum, acc_count),
+            }
+        }
+    });
 
     if count == 0 {
         return Ok(Value::F64(0.0));
@@ -1727,7 +1714,11 @@ pub fn chisq_test(
 
     // Use original range dimensions for degrees of freedom
     let num_rows = actual_area.len();
-    let num_cols = if num_rows > 0 { actual_area[0].len() } else { 0 };
+    let num_cols = if num_rows > 0 {
+        actual_area[0].len()
+    } else {
+        0
+    };
 
     // Compute chi-squared statistic, skipping non-numeric cells
     let mut chi_squared_statistic = 0.0;
@@ -2276,7 +2267,9 @@ pub fn stdeva(
     value_format: &ValueFormat,
 ) -> Result<Value, Box<dyn Error + Send + Sync>> {
     if values.is_empty() {
-        return Err("STDEVA: At least two values are required to calculate standard deviation.".into());
+        return Err(
+            "STDEVA: At least two values are required to calculate standard deviation.".into(),
+        );
     }
 
     let mut collected_values: Vec<f64> = Vec::new();
@@ -2318,7 +2311,9 @@ pub fn stdevpa(
     value_format: &ValueFormat,
 ) -> Result<Value, Box<dyn Error + Send + Sync>> {
     if values.is_empty() {
-        return Err("STDEVPA: At least one value is required to calculate standard deviation.".into());
+        return Err(
+            "STDEVPA: At least one value is required to calculate standard deviation.".into(),
+        );
     }
 
     let mut collected_values: Vec<f64> = Vec::new();

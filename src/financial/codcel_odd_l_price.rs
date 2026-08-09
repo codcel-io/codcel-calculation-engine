@@ -84,8 +84,8 @@ pub fn codcel_odd_l_price(
     // For basis 1/2/3 (actual-day bases), use iterative stepping so that the
     // clamped day-of-month is carried forward. This produces correct period
     // lengths for the NL denominator (which uses actual calendar days).
-    let base_is_eom = last_interest.day()
-        == days_in_month(last_interest.year(), last_interest.month());
+    let base_is_eom =
+        last_interest.day() == days_in_month(last_interest.year(), last_interest.month());
     let use_eom_mult = (basis == 0 || basis == 4) && base_is_eom;
     let use_multiplicative = basis == 0 || basis == 4;
     let mut quasi_dates = vec![last_interest];
@@ -138,7 +138,11 @@ pub fn codcel_odd_l_price(
         } else {
             quasi_dates[i + 1]
         };
-        let start_date = if i == 0 { last_interest } else { quasi_dates[i] };
+        let start_date = if i == 0 {
+            last_interest
+        } else {
+            quasi_dates[i]
+        };
         dc_per_period.push(day_count_dc(start_date, end_date, basis) / e);
     }
     let dc_nl_sum: f64 = dc_per_period.iter().sum();
@@ -146,7 +150,11 @@ pub fn codcel_odd_l_price(
     let mut a_per_period = vec![0.0; nc];
     for i in 0..=sp {
         let e = nl(quasi_dates[i], quasi_dates[i + 1]);
-        let ps = if i == 0 { last_interest } else { quasi_dates[i] };
+        let ps = if i == 0 {
+            last_interest
+        } else {
+            quasi_dates[i]
+        };
         let a_days = if i == sp {
             day_count_adsc(ps, settlement, basis)
         } else {
@@ -186,10 +194,13 @@ pub fn codcel_odd_l_price(
         };
 
         if i == sp {
-            let ps = if i == 0 { last_interest } else { quasi_dates[i] };
+            let ps = if i == 0 {
+                last_interest
+            } else {
+                quasi_dates[i]
+            };
             let pe = quasi_dates[sp + 1];
-            let pe_is_feb_eom = pe.month() == 2
-                && pe.day() == days_in_month(pe.year(), 2);
+            let pe_is_feb_eom = pe.month() == 2 && pe.day() == days_in_month(pe.year(), 2);
             let use_derived = basis == 0 && ps.day() != 31 && !pe_is_feb_eom;
             if use_derived {
                 // Derived DSC: preserves full-period day count consistency
@@ -452,7 +463,11 @@ fn add_months_from_base(base: DateTime<Utc>, total_months: i32, eom: bool) -> Da
     }
 
     let max_day = days_in_month(year, month as u32);
-    let day = if eom { max_day } else { base.day().min(max_day) };
+    let day = if eom {
+        max_day
+    } else {
+        base.day().min(max_day)
+    };
 
     Utc.with_ymd_and_hms(year, month as u32, day, 0, 0, 0)
         .unwrap()

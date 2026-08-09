@@ -64,12 +64,8 @@ mod tests {
     fn test_networkdays_basic() {
         // =NETWORKDAYS(DATE(2024, 1, 1), DATE(2024, 1, 15))
         // Jan 1 (Mon) to Jan 15 (Mon): 11 working days
-        let result = codcel_networkdays(
-            create_date(2024, 1, 1),
-            create_date(2024, 1, 15),
-            None,
-        )
-        .unwrap();
+        let result =
+            codcel_networkdays(create_date(2024, 1, 1), create_date(2024, 1, 15), None).unwrap();
         assert_eq!(result, 11);
     }
 
@@ -90,36 +86,24 @@ mod tests {
     fn test_networkdays_january_2023() {
         // =NETWORKDAYS(DATE(2023, 1, 1), DATE(2023, 1, 31))
         // Jan 1 2023 is Sunday, Jan 31 is Tuesday: 22 working days
-        let result = codcel_networkdays(
-            create_date(2023, 1, 1),
-            create_date(2023, 1, 31),
-            None,
-        )
-        .unwrap();
+        let result =
+            codcel_networkdays(create_date(2023, 1, 1), create_date(2023, 1, 31), None).unwrap();
         assert_eq!(result, 22);
     }
 
     #[test]
     fn test_networkdays_same_day_weekday() {
         // Same day, a Monday
-        let result = codcel_networkdays(
-            create_date(2024, 1, 1),
-            create_date(2024, 1, 1),
-            None,
-        )
-        .unwrap();
+        let result =
+            codcel_networkdays(create_date(2024, 1, 1), create_date(2024, 1, 1), None).unwrap();
         assert_eq!(result, 1);
     }
 
     #[test]
     fn test_networkdays_same_day_weekend() {
         // Same day, a Saturday (Jan 6, 2024)
-        let result = codcel_networkdays(
-            create_date(2024, 1, 6),
-            create_date(2024, 1, 6),
-            None,
-        )
-        .unwrap();
+        let result =
+            codcel_networkdays(create_date(2024, 1, 6), create_date(2024, 1, 6), None).unwrap();
         assert_eq!(result, 0);
     }
 
@@ -127,12 +111,8 @@ mod tests {
     fn test_networkdays_negative_direction() {
         // start > end should return negative
         // =NETWORKDAYS(DATE(2024, 1, 15), DATE(2024, 1, 1))
-        let result = codcel_networkdays(
-            create_date(2024, 1, 15),
-            create_date(2024, 1, 1),
-            None,
-        )
-        .unwrap();
+        let result =
+            codcel_networkdays(create_date(2024, 1, 15), create_date(2024, 1, 1), None).unwrap();
         assert_eq!(result, -11);
     }
 
@@ -178,12 +158,8 @@ mod tests {
     fn test_networkdays_full_week() {
         // Monday to Friday = 5 working days
         // Jan 8, 2024 (Mon) to Jan 12, 2024 (Fri)
-        let result = codcel_networkdays(
-            create_date(2024, 1, 8),
-            create_date(2024, 1, 12),
-            None,
-        )
-        .unwrap();
+        let result =
+            codcel_networkdays(create_date(2024, 1, 8), create_date(2024, 1, 12), None).unwrap();
         assert_eq!(result, 5);
     }
 
@@ -191,12 +167,8 @@ mod tests {
     fn test_networkdays_weekend_only() {
         // Saturday to Sunday = 0 working days
         // Jan 6, 2024 (Sat) to Jan 7, 2024 (Sun)
-        let result = codcel_networkdays(
-            create_date(2024, 1, 6),
-            create_date(2024, 1, 7),
-            None,
-        )
-        .unwrap();
+        let result =
+            codcel_networkdays(create_date(2024, 1, 6), create_date(2024, 1, 7), None).unwrap();
         assert_eq!(result, 0);
     }
 }

@@ -56,9 +56,7 @@ pub fn codcel_forecast_ets(
         s => {
             let s = s as usize;
             if n < 2 * s {
-                return Err(
-                    "FORECAST.ETS: need at least 2 complete seasonal periods.".into(),
-                );
+                return Err("FORECAST.ETS: need at least 2 complete seasonal periods.".into());
             }
             s
         }
@@ -94,10 +92,7 @@ mod tests {
         let values = vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0];
         let timeline = vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0];
         let result = codcel_forecast_ets(9.0, values, timeline, Some(0), None, None).unwrap();
-        assert!(
-            (result - 9.0).abs() < 1.0,
-            "Expected ~9.0, got {result}"
-        );
+        assert!((result - 9.0).abs() < 1.0, "Expected ~9.0, got {result}");
     }
 
     #[test]
@@ -105,10 +100,7 @@ mod tests {
         let values = vec![5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0];
         let timeline = vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0];
         let result = codcel_forecast_ets(9.0, values, timeline, Some(0), None, None).unwrap();
-        assert!(
-            (result - 5.0).abs() < 0.5,
-            "Expected ~5.0, got {result}"
-        );
+        assert!((result - 5.0).abs() < 0.5, "Expected ~5.0, got {result}");
     }
 
     #[test]
@@ -116,10 +108,7 @@ mod tests {
         let values = vec![10.0, 20.0, 30.0, 10.0, 20.0, 30.0, 10.0, 20.0, 30.0];
         let timeline = vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0];
         let result = codcel_forecast_ets(10.0, values, timeline, Some(3), None, None).unwrap();
-        assert!(
-            (result - 10.0).abs() < 5.0,
-            "Expected ~10.0, got {result}"
-        );
+        assert!((result - 10.0).abs() < 5.0, "Expected ~10.0, got {result}");
     }
 
     #[test]
@@ -127,18 +116,14 @@ mod tests {
         let values = vec![10.0, 20.0, 30.0, 10.0, 20.0, 30.0, 10.0, 20.0, 30.0];
         let timeline = vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0];
         let result = codcel_forecast_ets(10.0, values, timeline, Some(1), None, None).unwrap();
-        assert!(
-            (result - 10.0).abs() < 8.0,
-            "Expected ~10.0, got {result}"
-        );
+        assert!((result - 10.0).abs() < 8.0, "Expected ~10.0, got {result}");
     }
 
     #[test]
     fn test_forecast_ets_duplicate_timeline_average() {
         let values = vec![10.0, 20.0, 30.0, 40.0, 50.0, 60.0];
         let timeline = vec![1.0, 1.0, 2.0, 3.0, 4.0, 5.0];
-        let result =
-            codcel_forecast_ets(6.0, values, timeline, Some(0), None, Some(1)).unwrap();
+        let result = codcel_forecast_ets(6.0, values, timeline, Some(0), None, Some(1)).unwrap();
         assert!(result.is_finite(), "Result should be finite, got {result}");
     }
 
@@ -146,8 +131,7 @@ mod tests {
     fn test_forecast_ets_duplicate_timeline_sum() {
         let values = vec![10.0, 20.0, 30.0, 40.0, 50.0, 60.0];
         let timeline = vec![1.0, 1.0, 2.0, 3.0, 4.0, 5.0];
-        let result =
-            codcel_forecast_ets(6.0, values, timeline, Some(0), None, Some(7)).unwrap();
+        let result = codcel_forecast_ets(6.0, values, timeline, Some(0), None, Some(7)).unwrap();
         assert!(result.is_finite(), "Result should be finite, got {result}");
     }
 
@@ -155,8 +139,7 @@ mod tests {
     fn test_forecast_ets_missing_data_interpolation() {
         let values = vec![10.0, 20.0, 40.0, 50.0, 60.0];
         let timeline = vec![1.0, 2.0, 4.0, 5.0, 6.0];
-        let result =
-            codcel_forecast_ets(7.0, values, timeline, Some(0), Some(1), None).unwrap();
+        let result = codcel_forecast_ets(7.0, values, timeline, Some(0), Some(1), None).unwrap();
         assert!(result.is_finite(), "Result should be finite, got {result}");
     }
 
@@ -164,14 +147,14 @@ mod tests {
     fn test_forecast_ets_missing_data_zeros() {
         let values = vec![10.0, 20.0, 40.0, 50.0, 60.0];
         let timeline = vec![1.0, 2.0, 4.0, 5.0, 6.0];
-        let result =
-            codcel_forecast_ets(7.0, values, timeline, Some(0), Some(0), None).unwrap();
+        let result = codcel_forecast_ets(7.0, values, timeline, Some(0), Some(0), None).unwrap();
         assert!(result.is_finite(), "Result should be finite, got {result}");
     }
 
     #[test]
     fn test_forecast_ets_error_mismatched_arrays() {
-        let result = codcel_forecast_ets(5.0, vec![1.0, 2.0, 3.0], vec![1.0, 2.0], None, None, None);
+        let result =
+            codcel_forecast_ets(5.0, vec![1.0, 2.0, 3.0], vec![1.0, 2.0], None, None, None);
         assert!(result.is_err());
     }
 
@@ -183,28 +166,47 @@ mod tests {
 
     #[test]
     fn test_forecast_ets_error_invalid_seasonality() {
-        let result = codcel_forecast_ets(5.0, vec![1.0, 2.0, 3.0, 4.0], vec![1.0, 2.0, 3.0, 4.0], Some(-1), None, None);
+        let result = codcel_forecast_ets(
+            5.0,
+            vec![1.0, 2.0, 3.0, 4.0],
+            vec![1.0, 2.0, 3.0, 4.0],
+            Some(-1),
+            None,
+            None,
+        );
         assert!(result.is_err());
     }
 
     #[test]
     fn test_forecast_ets_error_invalid_aggregation() {
-        let result = codcel_forecast_ets(5.0, vec![1.0, 2.0, 3.0, 4.0], vec![1.0, 2.0, 3.0, 4.0], None, None, Some(8));
+        let result = codcel_forecast_ets(
+            5.0,
+            vec![1.0, 2.0, 3.0, 4.0],
+            vec![1.0, 2.0, 3.0, 4.0],
+            None,
+            None,
+            Some(8),
+        );
         assert!(result.is_err());
     }
 
     #[test]
     fn test_forecast_ets_error_invalid_data_completion() {
-        let result = codcel_forecast_ets(5.0, vec![1.0, 2.0, 3.0, 4.0], vec![1.0, 2.0, 3.0, 4.0], None, Some(2), None);
+        let result = codcel_forecast_ets(
+            5.0,
+            vec![1.0, 2.0, 3.0, 4.0],
+            vec![1.0, 2.0, 3.0, 4.0],
+            None,
+            Some(2),
+            None,
+        );
         assert!(result.is_err());
     }
 
     #[test]
     fn test_forecast_ets_seasonal_with_trend() {
         let values = vec![
-            100.0, 120.0, 140.0, 110.0,
-            110.0, 130.0, 150.0, 120.0,
-            120.0, 140.0, 160.0, 130.0,
+            100.0, 120.0, 140.0, 110.0, 110.0, 130.0, 150.0, 120.0, 120.0, 140.0, 160.0, 130.0,
         ];
         let timeline: Vec<f64> = (1..=12).map(|i| i as f64).collect();
         let result = codcel_forecast_ets(13.0, values, timeline, Some(4), None, None).unwrap();
@@ -220,15 +222,14 @@ mod tests {
         let timeline = vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0];
         let result = codcel_forecast_ets(9.0, values, timeline, None, None, None).unwrap();
         assert!(result.is_finite(), "Result should be finite, got {result}");
-        assert!(
-            (result - 9.0).abs() < 2.0,
-            "Expected ~9.0, got {result}"
-        );
+        assert!((result - 9.0).abs() < 2.0, "Expected ~9.0, got {result}");
     }
 
     #[test]
     fn test_detect_seasonality_quarterly_data() {
-        let values = vec![110.0, 130.0, 150.0, 145.0, 130.0, 150.0, 170.0, 165.0, 150.0, 170.0, 190.0, 185.0];
+        let values = vec![
+            110.0, 130.0, 150.0, 145.0, 130.0, 150.0, 170.0, 165.0, 150.0, 170.0, 190.0, 185.0,
+        ];
         let period = detect_seasonality(&values);
         println!("Quarterly data seasonality period: {period}");
         assert_eq!(period, 4, "Expected seasonality period 4, got {period}");
@@ -238,7 +239,10 @@ mod tests {
     fn test_detect_seasonality_constant() {
         let values = vec![5.0, 5.0, 5.0, 5.0, 5.0, 5.0];
         let period = detect_seasonality(&values);
-        assert_eq!(period, 0, "Expected no seasonality for constant data, got {period}");
+        assert_eq!(
+            period, 0,
+            "Expected no seasonality for constant data, got {period}"
+        );
     }
 
     #[test]
@@ -256,8 +260,12 @@ mod tests {
     #[test]
     fn test_forecast_ets_seasonality_too_large() {
         let result = codcel_forecast_ets(
-            10.0, vec![1.0, 2.0, 3.0, 4.0, 5.0], vec![1.0, 2.0, 3.0, 4.0, 5.0],
-            Some(4), None, None,
+            10.0,
+            vec![1.0, 2.0, 3.0, 4.0, 5.0],
+            vec![1.0, 2.0, 3.0, 4.0, 5.0],
+            Some(4),
+            None,
+            None,
         );
         assert!(result.is_err());
     }
@@ -265,7 +273,9 @@ mod tests {
     /// Debug test matching the failing generated code scenario
     #[test]
     fn test_forecast_ets_debug_generated() {
-        let values = vec![100.0, 120.0, 135.0, 160.0, 110.0, 130.0, 145.0, 170.0, 115.0, 140.0, 155.0, 180.0];
+        let values = vec![
+            100.0, 120.0, 135.0, 160.0, 110.0, 130.0, 145.0, 170.0, 115.0, 140.0, 155.0, 180.0,
+        ];
         let timeline: Vec<f64> = (1..=12).map(|i| i as f64).collect();
 
         let step = 1.0;
@@ -276,8 +286,15 @@ mod tests {
         model_eds.init_data();
         model_eds.beta = 0.0;
         model_eds.calc_alpha_beta_gamma_bisection();
-        println!("bisect alpha={}, gamma={}", model_eds.alpha, model_eds.gamma);
-        println!("bisect base[n-1]={}, trend[n-1]={}", model_eds.base[model_eds.n-1], model_eds.trend[model_eds.n-1]);
+        println!(
+            "bisect alpha={}, gamma={}",
+            model_eds.alpha, model_eds.gamma
+        );
+        println!(
+            "bisect base[n-1]={}, trend[n-1]={}",
+            model_eds.base[model_eds.n - 1],
+            model_eds.trend[model_eds.n - 1]
+        );
         println!("bisect forecast: {}", model_eds.get_forecast(13.0));
 
         println!("\n=== EDS (Nelder-Mead concentrated MLE) ===");
@@ -286,12 +303,17 @@ mod tests {
         model_eds2.beta = 0.0;
         model_eds2.optimize_eds_nelder_mead();
         println!("NM alpha={}, gamma={}", model_eds2.alpha, model_eds2.gamma);
-        println!("NM base[n-1]={}, trend[n-1]={}", model_eds2.base[model_eds2.n-1], model_eds2.trend[model_eds2.n-1]);
+        println!(
+            "NM base[n-1]={}, trend[n-1]={}",
+            model_eds2.base[model_eds2.n - 1],
+            model_eds2.trend[model_eds2.n - 1]
+        );
         println!("NM forecast: {}", model_eds2.get_forecast(13.0));
 
         // Test full codcel_forecast_ets function with auto-detect (matching generated code)
         println!("\n=== Full codcel_forecast_ets with auto-detect ===");
-        let result = codcel_forecast_ets(13.0, values.clone(), timeline.clone(), None, None, None).unwrap();
+        let result =
+            codcel_forecast_ets(13.0, values.clone(), timeline.clone(), None, None, None).unwrap();
         println!("result: {result}");
 
         println!("\nExpected (Excel with auto-detect): 127.57984213486753");
@@ -301,11 +323,12 @@ mod tests {
     /// Expected: 170.0
     #[test]
     fn test_forecast_ets_excel_quarterly_seas4() {
-        let values = vec![110.0, 130.0, 150.0, 145.0, 130.0, 150.0, 170.0, 165.0, 150.0, 170.0, 190.0, 185.0];
+        let values = vec![
+            110.0, 130.0, 150.0, 145.0, 130.0, 150.0, 170.0, 165.0, 150.0, 170.0, 190.0, 185.0,
+        ];
         let timeline = vec![
-            43831.0, 43922.0, 44013.0, 44105.0,
-            44197.0, 44287.0, 44378.0, 44470.0,
-            44562.0, 44652.0, 44743.0, 44835.0,
+            43831.0, 43922.0, 44013.0, 44105.0, 44197.0, 44287.0, 44378.0, 44470.0, 44562.0,
+            44652.0, 44743.0, 44835.0,
         ];
         let result = codcel_forecast_ets(44927.0, values, timeline, Some(4), None, None).unwrap();
         println!("Excel quarterly seas=4 result: {result}");
@@ -323,11 +346,12 @@ mod tests {
     /// We accept a tolerance of 0.2 for the EDS case.
     #[test]
     fn test_forecast_ets_excel_quarterly_noseas() {
-        let values = vec![110.0, 130.0, 150.0, 145.0, 130.0, 150.0, 170.0, 165.0, 150.0, 170.0, 190.0, 185.0];
+        let values = vec![
+            110.0, 130.0, 150.0, 145.0, 130.0, 150.0, 170.0, 165.0, 150.0, 170.0, 190.0, 185.0,
+        ];
         let timeline = vec![
-            43831.0, 43922.0, 44013.0, 44105.0,
-            44197.0, 44287.0, 44378.0, 44470.0,
-            44562.0, 44652.0, 44743.0, 44835.0,
+            43831.0, 43922.0, 44013.0, 44105.0, 44197.0, 44287.0, 44378.0, 44470.0, 44562.0,
+            44652.0, 44743.0, 44835.0,
         ];
         let result = codcel_forecast_ets(44927.0, values, timeline, Some(0), None, None).unwrap();
         println!("Excel quarterly no-seas result: {result}");
@@ -336,5 +360,4 @@ mod tests {
             "Expected ~191.25, got {result}"
         );
     }
-
 }

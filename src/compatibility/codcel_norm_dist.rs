@@ -31,8 +31,8 @@ pub fn codcel_norm_dist(
     } else {
         // Compute the probability density function (PDF)
         let z = (x - mean) / std_dev;
-        let pdf =
-            (1.0 / (std_dev * crate::portable_math::sqrt(2.0 * std::f64::consts::PI))) * crate::portable_math::exp(-0.5 * z.powi(2));
+        let pdf = (1.0 / (std_dev * crate::portable_math::sqrt(2.0 * std::f64::consts::PI)))
+            * crate::portable_math::exp(-0.5 * z.powi(2));
         Ok(pdf)
     }
 }

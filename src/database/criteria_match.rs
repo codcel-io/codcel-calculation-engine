@@ -58,10 +58,7 @@ pub(crate) fn resolve_field(
         .get(&label.trim().to_lowercase())
         .copied()
         .ok_or_else(|| {
-            format!(
-                "Database function: field '{label}' did not match any database header"
-            )
-            .into()
+            format!("Database function: field '{label}' did not match any database header").into()
         })
 }
 
@@ -91,11 +88,7 @@ pub(crate) fn match_db_criteria(
     let mut criteria_to_db: Vec<Option<usize>> = Vec::with_capacity(criteria_header_row.len());
     for header in criteria_header_row.iter() {
         if let Ok(name) = header.string(value_format) {
-            criteria_to_db.push(
-                database_headers
-                    .get(&name.trim().to_lowercase())
-                    .copied(),
-            );
+            criteria_to_db.push(database_headers.get(&name.trim().to_lowercase()).copied());
         } else {
             criteria_to_db.push(None);
         }
@@ -177,7 +170,11 @@ pub(crate) fn collect_numeric_column(
     matched_rows: &[usize],
     value_format: &ValueFormat,
 ) -> Vec<f64> {
-    let data_rows = if database.len() >= 2 { &database[1..] } else { return Vec::new(); };
+    let data_rows = if database.len() >= 2 {
+        &database[1..]
+    } else {
+        return Vec::new();
+    };
     matched_rows
         .iter()
         .filter_map(|&i| data_rows.get(i).and_then(|row| row.get(field_idx)))
@@ -248,16 +245,14 @@ mod tests {
     #[test]
     fn resolve_field_by_header_case_insensitive() {
         let database = db();
-        let idx =
-            resolve_field(&database, &Value::String("salary".into()), &vf()).unwrap();
+        let idx = resolve_field(&database, &Value::String("salary".into()), &vf()).unwrap();
         assert_eq!(idx, 2);
     }
 
     #[test]
     fn resolve_field_invalid_label_errors() {
         let database = db();
-        let result =
-            resolve_field(&database, &Value::String("Unknown".into()), &vf());
+        let result = resolve_field(&database, &Value::String("Unknown".into()), &vf());
         assert!(result.is_err());
     }
 
@@ -287,14 +282,8 @@ mod tests {
     fn match_db_criteria_and_across_columns() {
         let database = db();
         let criteria = vec![
-            vec![
-                Value::String("Dept".into()),
-                Value::String("Salary".into()),
-            ],
-            vec![
-                Value::String("Eng".into()),
-                Value::String(">=100".into()),
-            ],
+            vec![Value::String("Dept".into()), Value::String("Salary".into())],
+            vec![Value::String("Eng".into()), Value::String(">=100".into())],
         ];
         let matched = match_db_criteria(&database, &criteria, &vf()).unwrap();
         assert_eq!(matched, vec![0]);

@@ -123,19 +123,30 @@ mod tests {
     #[test]
     fn test_is_blank_with_option_string_some_empty() {
         // In Excel, ISBLANK("") returns FALSE
-        assert!(!codcel_is_blank(&Value::OptionString(Some("".to_string())), &default_format()).unwrap());
+        assert!(!codcel_is_blank(
+            &Value::OptionString(Some("".to_string())),
+            &default_format()
+        )
+        .unwrap());
     }
 
     // --- codcel_is_blank_or_empty_string tests (used by COUNTBLANK) ---
 
     #[test]
     fn test_is_blank_or_empty_string_with_empty_string() {
-        assert!(codcel_is_blank_or_empty_string(&Value::String("".to_string()), &default_format()).unwrap());
+        assert!(
+            codcel_is_blank_or_empty_string(&Value::String("".to_string()), &default_format())
+                .unwrap()
+        );
     }
 
     #[test]
     fn test_is_blank_or_empty_string_with_option_string_some_empty() {
-        assert!(codcel_is_blank_or_empty_string(&Value::OptionString(Some("".to_string())), &default_format()).unwrap());
+        assert!(codcel_is_blank_or_empty_string(
+            &Value::OptionString(Some("".to_string())),
+            &default_format()
+        )
+        .unwrap());
     }
 
     #[test]
@@ -145,7 +156,11 @@ mod tests {
 
     #[test]
     fn test_is_blank_or_empty_string_with_non_empty_string() {
-        assert!(!codcel_is_blank_or_empty_string(&Value::String("test".to_string()), &default_format()).unwrap());
+        assert!(!codcel_is_blank_or_empty_string(
+            &Value::String("test".to_string()),
+            &default_format()
+        )
+        .unwrap());
     }
 
     // --- FALSE cases ---
@@ -174,7 +189,11 @@ mod tests {
     fn test_is_blank_with_option_some_values() {
         assert!(!codcel_is_blank(&Value::OptionF64(Some(42.0)), &default_format()).unwrap());
         assert!(!codcel_is_blank(&Value::OptionI32(Some(42)), &default_format()).unwrap());
-        assert!(!codcel_is_blank(&Value::OptionString(Some("test".to_string())), &default_format()).unwrap());
+        assert!(!codcel_is_blank(
+            &Value::OptionString(Some("test".to_string())),
+            &default_format()
+        )
+        .unwrap());
         assert!(!codcel_is_blank(&Value::OptionBool(Some(true)), &default_format()).unwrap());
     }
 

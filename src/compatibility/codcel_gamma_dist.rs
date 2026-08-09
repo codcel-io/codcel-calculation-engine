@@ -40,7 +40,8 @@ pub fn codcel_gamma_dist(
             .cdf(x))
     } else {
         // Calculate the gamma probability density function
-        let gamma_pdf = crate::portable_math::powf(x, alpha - 1.0) * crate::portable_math::exp(-x / beta)
+        let gamma_pdf = crate::portable_math::powf(x, alpha - 1.0)
+            * crate::portable_math::exp(-x / beta)
             / (crate::portable_math::powf(beta, alpha) * statrs::function::gamma::gamma(alpha));
         Ok(gamma_pdf)
     }

@@ -36,7 +36,8 @@ pub fn codcel_percentile(array: Vec<f64>, k: f64) -> Result<f64, Box<dyn Error +
     let upper_index = lower_index.min(n - 2) + 1;
     let fraction = position - lower_index as f64;
 
-    Ok(sorted_array[lower_index] + fraction * (sorted_array[upper_index] - sorted_array[lower_index]))
+    Ok(sorted_array[lower_index]
+        + fraction * (sorted_array[upper_index] - sorted_array[lower_index]))
 }
 
 #[cfg(test)]

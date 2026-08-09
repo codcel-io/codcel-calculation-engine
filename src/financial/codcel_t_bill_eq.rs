@@ -50,11 +50,12 @@ pub fn codcel_t_bill_eq(
         let dsm_over_y = days / year_base;
         let term = discount * days / (discount * days - 360.0);
 
-        let discriminant = dsm_over_y * dsm_over_y
-            - (2.0 * dsm_over_y - 1.0) * term;
+        let discriminant = dsm_over_y * dsm_over_y - (2.0 * dsm_over_y - 1.0) * term;
 
         if discriminant < 0.0 {
-            return Err("TBILLEQ: Cannot compute bond equivalent yield (negative discriminant).".into());
+            return Err(
+                "TBILLEQ: Cannot compute bond equivalent yield (negative discriminant).".into(),
+            );
         }
 
         let tbilleq = (-dsm_over_y + crate::portable_math::sqrt(discriminant)) / (dsm_over_y - 0.5);

@@ -46,7 +46,8 @@ pub fn codcel_z_test(
     }
 
     // Calculate the z-score
-    let z_score = (sample_mean - hyp_mean) / (std_dev / crate::portable_math::sqrt(data.len() as f64));
+    let z_score =
+        (sample_mean - hyp_mean) / (std_dev / crate::portable_math::sqrt(data.len() as f64));
 
     // Convert the z-score to a one-tailed probability
     let normal = Normal::new(0.0, 1.0).unwrap(); // mean = 0.0, std_dev = 1.0

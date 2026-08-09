@@ -62,27 +62,45 @@ pub fn codcel_price(
     let (a, e) = match basis {
         0 => {
             // US (NASD) 30/360
-            (get_days_30_360_us(pcd, settlement), 360.0 / frequency as f64)
+            (
+                get_days_30_360_us(pcd, settlement),
+                360.0 / frequency as f64,
+            )
         }
         1 => {
             // Actual/Actual ICMA
-            ((settlement - pcd).num_days() as f64, (ncd - pcd).num_days() as f64)
+            (
+                (settlement - pcd).num_days() as f64,
+                (ncd - pcd).num_days() as f64,
+            )
         }
         2 => {
             // Actual/360
-            ((settlement - pcd).num_days() as f64, 360.0 / frequency as f64)
+            (
+                (settlement - pcd).num_days() as f64,
+                360.0 / frequency as f64,
+            )
         }
         3 => {
             // Actual/365
-            ((settlement - pcd).num_days() as f64, 365.0 / frequency as f64)
+            (
+                (settlement - pcd).num_days() as f64,
+                365.0 / frequency as f64,
+            )
         }
         4 => {
             // European 30/360
-            (get_days_30_360_eu(pcd, settlement), 360.0 / frequency as f64)
+            (
+                get_days_30_360_eu(pcd, settlement),
+                360.0 / frequency as f64,
+            )
         }
         _ => {
             // Fallback to basis 0
-            (get_days_30_360_us(pcd, settlement), 360.0 / frequency as f64)
+            (
+                get_days_30_360_us(pcd, settlement),
+                360.0 / frequency as f64,
+            )
         }
     };
     let dsc = e - a;
@@ -106,11 +124,13 @@ pub fn codcel_price(
 
         // Present value of coupon payments
         for k in 1..=n {
-            price += coupon / crate::portable_math::powf(1.0 + yld_per_period, (k - 1) as f64 + dsc_over_e);
+            price += coupon
+                / crate::portable_math::powf(1.0 + yld_per_period, (k - 1) as f64 + dsc_over_e);
         }
 
         // Present value of redemption
-        price += redemption / crate::portable_math::powf(1.0 + yld_per_period, (n - 1) as f64 + dsc_over_e);
+        price += redemption
+            / crate::portable_math::powf(1.0 + yld_per_period, (n - 1) as f64 + dsc_over_e);
 
         Ok(price - accrued_interest)
     }
@@ -654,5 +674,4 @@ mod tests {
         println!("{:?}", result);
         assert!((result - 91.8127618).abs() < 0.0001); // Approximate check
     }
-
 }

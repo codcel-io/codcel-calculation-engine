@@ -19,7 +19,7 @@ pub fn codcel_round_up(
     let rounded = if value >= 0.0 {
         (value * multiplier).ceil() / multiplier
     } else {
-        -((- value * multiplier).ceil() / multiplier)
+        -((-value * multiplier).ceil() / multiplier)
     };
     Ok(rounded)
 }

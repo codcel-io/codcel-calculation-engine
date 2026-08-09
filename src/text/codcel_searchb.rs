@@ -8,7 +8,9 @@ use regex::Regex;
 use std::error::Error;
 
 use super::codcel_search::build_wildcard_pattern;
-use super::dbcs_utils::{char_index_to_dbcs_byte_pos, dbcs_byte_len, dbcs_byte_pos_to_char_index_forward};
+use super::dbcs_utils::{
+    char_index_to_dbcs_byte_pos, dbcs_byte_len, dbcs_byte_pos_to_char_index_forward,
+};
 
 /// Excel-compatible `SEARCHB` that locates one text string within another using DBCS byte positions (case-insensitive).
 /// - `substring`: the text to find. Supports wildcards: `?` matches any single character,

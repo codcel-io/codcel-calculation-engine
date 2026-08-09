@@ -18,12 +18,10 @@
 //! detection, environment overrides and random seeding all degrade to fixed defaults
 //! inside a WASM sandbox — see the README's WebAssembly section for the details.
 
-
-
 pub(crate) mod area;
 pub mod arithmetic_base;
-pub mod codcel_cache;
 pub mod array_base;
+pub mod codcel_cache;
 pub mod codcel_information;
 pub mod comparison;
 pub mod compatibility;
@@ -45,6 +43,7 @@ pub mod input;
 pub mod logical;
 pub mod lookup_and_reference;
 pub mod lookup_reference_base;
+pub mod map_helpers;
 mod match_type_and_compare_macro;
 pub mod maths;
 pub mod portable_math;
@@ -60,7 +59,6 @@ pub mod to_i32;
 pub mod to_vec_f64;
 pub mod value;
 pub mod value_format;
-pub mod map_helpers;
 
 #[cfg(test)]
 mod value_tests;

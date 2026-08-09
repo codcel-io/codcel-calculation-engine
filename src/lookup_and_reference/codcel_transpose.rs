@@ -13,9 +13,7 @@ use std::error::Error;
 ///
 /// # Errors
 /// Returns an error when the array is empty.
-pub fn codcel_transpose(
-    array: Vec<Vec<Value>>,
-) -> Result<Value, Box<dyn Error + Send + Sync>> {
+pub fn codcel_transpose(array: Vec<Vec<Value>>) -> Result<Value, Box<dyn Error + Send + Sync>> {
     if array.is_empty() {
         return Err("TRANSPOSE: Array cannot be empty".into());
     }

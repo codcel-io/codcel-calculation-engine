@@ -4,9 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
-use crate::date_time_base::{
-    actual_actual_days, thirty_360_days, thirty_e_360_days,
-};
+use crate::date_time_base::{actual_actual_days, thirty_360_days, thirty_e_360_days};
 use chrono::{DateTime, Datelike, TimeZone, Utc};
 use std::error::Error;
 
@@ -251,9 +249,16 @@ mod tests {
         // Full period [Jan,Jul] = 1.0; partial [Jul,Oct] = 90/180.
         // result = 1000 * 0.04 * (1.0 + 90/180) = 1000 * 0.04 * 1.5 = 60.0
         let result = codcel_accr_int(
-            dt(2024, 1, 1), dt(2024, 7, 1), dt(2024, 10, 1),
-            0.08, 1000.0, 2, Some(0), None,
-        ).unwrap();
+            dt(2024, 1, 1),
+            dt(2024, 7, 1),
+            dt(2024, 10, 1),
+            0.08,
+            1000.0,
+            2,
+            Some(0),
+            None,
+        )
+        .unwrap();
         assert!((result - 60.0).abs() < 0.000001, "got {result}");
     }
 
@@ -265,9 +270,16 @@ mod tests {
         // a "partial" period that ends exactly at settlement: 90/90 = 1.0.
         // result = 1000 * 0.02 * (1 + 1 + 1) = 60.0
         let result = codcel_accr_int(
-            dt(2024, 1, 1), dt(2024, 7, 1), dt(2024, 10, 1),
-            0.08, 1000.0, 4, Some(0), None,
-        ).unwrap();
+            dt(2024, 1, 1),
+            dt(2024, 7, 1),
+            dt(2024, 10, 1),
+            0.08,
+            1000.0,
+            4,
+            Some(0),
+            None,
+        )
+        .unwrap();
         assert!((result - 60.0).abs() < 0.000001, "got {result}");
     }
 
@@ -277,9 +289,16 @@ mod tests {
         // Full period [Jan 2024, Jan 2025] = 1.0; partial [Jan 2025, Jul 2025] = 180/360.
         // result = 1000 * 0.06 * 1.5 = 90.0
         let result = codcel_accr_int(
-            dt(2024, 1, 1), dt(2025, 1, 1), dt(2025, 7, 1),
-            0.06, 1000.0, 1, Some(0), None,
-        ).unwrap();
+            dt(2024, 1, 1),
+            dt(2025, 1, 1),
+            dt(2025, 7, 1),
+            0.06,
+            1000.0,
+            1,
+            Some(0),
+            None,
+        )
+        .unwrap();
         assert!((result - 90.0).abs() < 0.000001, "got {result}");
     }
 
@@ -297,10 +316,20 @@ mod tests {
         // result = 1000 * 0.05 * (1.0 + 165/366)
         let expected = 1000.0 * 0.05 * (1.0 + 165.0 / 366.0);
         let result = codcel_accr_int(
-            dt(2024, 1, 1), dt(2025, 1, 1), dt(2025, 6, 15),
-            0.05, 1000.0, 1, Some(1), None,
-        ).unwrap();
-        assert!((result - expected).abs() < 0.000001, "got {result}, expected {expected}");
+            dt(2024, 1, 1),
+            dt(2025, 1, 1),
+            dt(2025, 6, 15),
+            0.05,
+            1000.0,
+            1,
+            Some(1),
+            None,
+        )
+        .unwrap();
+        assert!(
+            (result - expected).abs() < 0.000001,
+            "got {result}, expected {expected}"
+        );
     }
 
     #[test]
@@ -313,10 +342,20 @@ mod tests {
         //   NL=reference_nl=365.
         // result = 5000 * 0.12 * (184/365 + 274/365)
         let result = codcel_accr_int(
-            dt(2023, 3, 15), dt(2023, 9, 15), dt(2024, 6, 15),
-            0.12, 5000.0, 1, Some(1), None,
-        ).unwrap();
-        assert!((result - 752.8767123287671).abs() < 0.000001, "got {result}");
+            dt(2023, 3, 15),
+            dt(2023, 9, 15),
+            dt(2024, 6, 15),
+            0.12,
+            5000.0,
+            1,
+            Some(1),
+            None,
+        )
+        .unwrap();
+        assert!(
+            (result - 752.8767123287671).abs() < 0.000001,
+            "got {result}"
+        );
     }
 
     #[test]
@@ -331,10 +370,20 @@ mod tests {
         let nl: f64 = 184.0;
         let expected = 1000.0 * 0.025 * (1.0 + 1.0 + 92.0 / nl);
         let result = codcel_accr_int(
-            dt(2023, 3, 15), dt(2023, 9, 15), dt(2024, 6, 15),
-            0.05, 1000.0, 2, Some(1), Some(true),
-        ).unwrap();
-        assert!((result - expected).abs() < 0.000001, "got {result}, expected {expected}");
+            dt(2023, 3, 15),
+            dt(2023, 9, 15),
+            dt(2024, 6, 15),
+            0.05,
+            1000.0,
+            2,
+            Some(1),
+            Some(true),
+        )
+        .unwrap();
+        assert!(
+            (result - expected).abs() < 0.000001,
+            "got {result}, expected {expected}"
+        );
     }
 
     // -------------------------------------------------------------------------
@@ -348,9 +397,16 @@ mod tests {
         // since settlement falls exactly on the quasi-coupon boundary.
         // result = 1000 * 0.02 * (1 + 1 + 1) = 60.0
         let result = codcel_accr_int(
-            dt(2024, 1, 1), dt(2024, 7, 1), dt(2024, 10, 1),
-            0.08, 1000.0, 4, Some(2), None,
-        ).unwrap();
+            dt(2024, 1, 1),
+            dt(2024, 7, 1),
+            dt(2024, 10, 1),
+            0.08,
+            1000.0,
+            4,
+            Some(2),
+            None,
+        )
+        .unwrap();
         assert!((result - 60.0).abs() < 0.000001, "got {result}");
     }
 
@@ -360,9 +416,16 @@ mod tests {
         // Same structure as above, par=5000, rate=0.12.
         // result = 5000 * 0.03 * (1 + 1 + 1) = 450.0
         let result = codcel_accr_int(
-            dt(2024, 1, 1), dt(2024, 7, 1), dt(2024, 10, 1),
-            0.12, 5000.0, 4, Some(2), None,
-        ).unwrap();
+            dt(2024, 1, 1),
+            dt(2024, 7, 1),
+            dt(2024, 10, 1),
+            0.12,
+            5000.0,
+            4,
+            Some(2),
+            None,
+        )
+        .unwrap();
         assert!((result - 450.0).abs() < 0.000001, "got {result}");
     }
 
@@ -373,10 +436,20 @@ mod tests {
         // [Jul,Jan 2025] partial to [Jul,Oct]: actual=92 / NL=180.
         // result = 1000 * 0.04 * (1.0 + 92/180) = 60.44444...
         let result = codcel_accr_int(
-            dt(2024, 1, 1), dt(2024, 7, 1), dt(2024, 10, 1),
-            0.08, 1000.0, 2, Some(2), None,
-        ).unwrap();
-        assert!((result - 60.44444444444444).abs() < 0.000001, "got {result}");
+            dt(2024, 1, 1),
+            dt(2024, 7, 1),
+            dt(2024, 10, 1),
+            0.08,
+            1000.0,
+            2,
+            Some(2),
+            None,
+        )
+        .unwrap();
+        assert!(
+            (result - 60.44444444444444).abs() < 0.000001,
+            "got {result}"
+        );
     }
 
     // -------------------------------------------------------------------------
@@ -390,10 +463,20 @@ mod tests {
         // result = 1000 * 0.04 * (1.0 + 92/182.5)
         let expected = 1000.0 * 0.04 * (1.0 + 92.0 / (365.0 / 2.0));
         let result = codcel_accr_int(
-            dt(2024, 1, 1), dt(2024, 7, 1), dt(2024, 10, 1),
-            0.08, 1000.0, 2, Some(3), None,
-        ).unwrap();
-        assert!((result - expected).abs() < 0.000001, "got {result}, expected {expected}");
+            dt(2024, 1, 1),
+            dt(2024, 7, 1),
+            dt(2024, 10, 1),
+            0.08,
+            1000.0,
+            2,
+            Some(3),
+            None,
+        )
+        .unwrap();
+        assert!(
+            (result - expected).abs() < 0.000001,
+            "got {result}, expected {expected}"
+        );
     }
 
     #[test]
@@ -404,10 +487,20 @@ mod tests {
         // result = 1000 * 0.025 * (1 + 1 + 92/182.5)
         let expected = 1000.0 * 0.025 * (1.0 + 1.0 + 92.0 / (365.0 / 2.0));
         let result = codcel_accr_int(
-            dt(2023, 3, 15), dt(2023, 9, 15), dt(2024, 6, 15),
-            0.05, 1000.0, 2, Some(3), Some(true),
-        ).unwrap();
-        assert!((result - expected).abs() < 0.000001, "got {result}, expected {expected}");
+            dt(2023, 3, 15),
+            dt(2023, 9, 15),
+            dt(2024, 6, 15),
+            0.05,
+            1000.0,
+            2,
+            Some(3),
+            Some(true),
+        )
+        .unwrap();
+        assert!(
+            (result - expected).abs() < 0.000001,
+            "got {result}, expected {expected}"
+        );
     }
 
     // -------------------------------------------------------------------------
@@ -421,9 +514,16 @@ mod tests {
         // Partial [Jul,Oct]: 30E/360 days = 90 / NL=180.
         // result = 1000 * 0.04 * (1.0 + 90/180) = 60.0
         let result = codcel_accr_int(
-            dt(2024, 1, 1), dt(2024, 7, 1), dt(2024, 10, 1),
-            0.08, 1000.0, 2, Some(4), None,
-        ).unwrap();
+            dt(2024, 1, 1),
+            dt(2024, 7, 1),
+            dt(2024, 10, 1),
+            0.08,
+            1000.0,
+            2,
+            Some(4),
+            None,
+        )
+        .unwrap();
         assert!((result - 60.0).abs() < 0.000001, "got {result}");
     }
 
@@ -435,13 +535,27 @@ mod tests {
     fn test_default_basis_is_zero() {
         // Omitting basis should give the same result as basis=0.
         let with_basis = codcel_accr_int(
-            dt(2024, 1, 1), dt(2024, 7, 1), dt(2024, 10, 1),
-            0.08, 1000.0, 2, Some(0), None,
-        ).unwrap();
+            dt(2024, 1, 1),
+            dt(2024, 7, 1),
+            dt(2024, 10, 1),
+            0.08,
+            1000.0,
+            2,
+            Some(0),
+            None,
+        )
+        .unwrap();
         let default_basis = codcel_accr_int(
-            dt(2024, 1, 1), dt(2024, 7, 1), dt(2024, 10, 1),
-            0.08, 1000.0, 2, None, None,
-        ).unwrap();
+            dt(2024, 1, 1),
+            dt(2024, 7, 1),
+            dt(2024, 10, 1),
+            0.08,
+            1000.0,
+            2,
+            None,
+            None,
+        )
+        .unwrap();
         assert!((with_basis - default_basis).abs() < 0.000001);
     }
 
@@ -458,13 +572,27 @@ mod tests {
         // [Jan,Apr] full, [Apr,Jul] full, [Jul,Oct] partial-at-boundary.
         // result = 1000 * 0.02 * (1 + 1 + 92/90) — same as calc_method=TRUE in this layout.
         let result_true = codcel_accr_int(
-            dt(2024, 1, 1), dt(2024, 7, 1), dt(2024, 10, 1),
-            0.08, 1000.0, 4, Some(2), Some(true),
-        ).unwrap();
+            dt(2024, 1, 1),
+            dt(2024, 7, 1),
+            dt(2024, 10, 1),
+            0.08,
+            1000.0,
+            4,
+            Some(2),
+            Some(true),
+        )
+        .unwrap();
         let result_false = codcel_accr_int(
-            dt(2024, 1, 1), dt(2024, 7, 1), dt(2024, 10, 1),
-            0.08, 1000.0, 4, Some(2), Some(false),
-        ).unwrap();
+            dt(2024, 1, 1),
+            dt(2024, 7, 1),
+            dt(2024, 10, 1),
+            0.08,
+            1000.0,
+            4,
+            Some(2),
+            Some(false),
+        )
+        .unwrap();
         assert!((result_true - result_false).abs() < 0.000001);
     }
 
@@ -475,9 +603,16 @@ mod tests {
         // Settlement=Jul1: single full period [Apr1,Jul1] ends exactly at settlement → full.
         // result = 1000 * 0.02 * 1.0 = 20.0
         let result = codcel_accr_int(
-            dt(2024, 2, 1), dt(2024, 7, 1), dt(2024, 7, 1),
-            0.08, 1000.0, 4, Some(2), Some(false),
-        ).unwrap();
+            dt(2024, 2, 1),
+            dt(2024, 7, 1),
+            dt(2024, 7, 1),
+            0.08,
+            1000.0,
+            4,
+            Some(2),
+            Some(false),
+        )
+        .unwrap();
         assert!((result - 20.0).abs() < 0.000001, "got {result}");
     }
 
@@ -488,9 +623,16 @@ mod tests {
     #[test]
     fn test_settlement_equals_issue_returns_zero() {
         let result = codcel_accr_int(
-            dt(2024, 1, 1), dt(2024, 7, 1), dt(2024, 1, 1),
-            0.08, 1000.0, 2, Some(0), None,
-        ).unwrap();
+            dt(2024, 1, 1),
+            dt(2024, 7, 1),
+            dt(2024, 1, 1),
+            0.08,
+            1000.0,
+            2,
+            Some(0),
+            None,
+        )
+        .unwrap();
         assert_eq!(result, 0.0);
     }
 
@@ -507,10 +649,20 @@ mod tests {
         // result = 1000 * 0.0175 * (1.0 + 91/180)
         let expected = 1000.0 * 0.0175 * (1.0 + 91.0 / 180.0);
         let result = codcel_accr_int(
-            dt(2024, 2, 29), dt(2024, 8, 31), dt(2024, 11, 30),
-            0.035, 1000.0, 2, Some(2), None,
-        ).unwrap();
-        assert!((result - expected).abs() < 0.000001, "got {result}, expected {expected}");
+            dt(2024, 2, 29),
+            dt(2024, 8, 31),
+            dt(2024, 11, 30),
+            0.035,
+            1000.0,
+            2,
+            Some(2),
+            None,
+        )
+        .unwrap();
+        assert!(
+            (result - expected).abs() < 0.000001,
+            "got {result}, expected {expected}"
+        );
     }
 
     // -------------------------------------------------------------------------
@@ -521,8 +673,14 @@ mod tests {
     fn test_error_invalid_frequency() {
         // Frequency must be in 1..=4; 5 is out of range.
         let err = codcel_accr_int(
-            dt(2024, 1, 1), dt(2024, 7, 1), dt(2024, 10, 1),
-            0.08, 1000.0, 5, Some(0), None,
+            dt(2024, 1, 1),
+            dt(2024, 7, 1),
+            dt(2024, 10, 1),
+            0.08,
+            1000.0,
+            5,
+            Some(0),
+            None,
         );
         assert!(err.is_err());
     }
@@ -530,8 +688,14 @@ mod tests {
     #[test]
     fn test_error_settlement_before_issue() {
         let err = codcel_accr_int(
-            dt(2024, 6, 1), dt(2024, 12, 1), dt(2024, 1, 1),
-            0.08, 1000.0, 2, Some(0), None,
+            dt(2024, 6, 1),
+            dt(2024, 12, 1),
+            dt(2024, 1, 1),
+            0.08,
+            1000.0,
+            2,
+            Some(0),
+            None,
         );
         assert!(err.is_err());
     }
@@ -539,8 +703,14 @@ mod tests {
     #[test]
     fn test_error_first_interest_before_issue() {
         let err = codcel_accr_int(
-            dt(2024, 6, 1), dt(2024, 1, 1), dt(2024, 12, 1),
-            0.08, 1000.0, 2, Some(0), None,
+            dt(2024, 6, 1),
+            dt(2024, 1, 1),
+            dt(2024, 12, 1),
+            0.08,
+            1000.0,
+            2,
+            Some(0),
+            None,
         );
         assert!(err.is_err());
     }

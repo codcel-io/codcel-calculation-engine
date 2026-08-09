@@ -9,18 +9,30 @@ use crate::area::{
 };
 use crate::arithmetic_base::float;
 use crate::date_and_time::{
-    codcel_date::codcel_date, codcel_date_dif::codcel_date_dif,
-    codcel_date_value::codcel_date_value, codcel_day::codcel_day, codcel_days::codcel_days,
-    codcel_days_360::codcel_days_360, codcel_e_date::codcel_e_date,
-    codcel_eo_month::codcel_eo_month, codcel_hour::codcel_hour,
-    codcel_iso_week_num::codcel_iso_week_num, codcel_minute::codcel_minute,
-    codcel_month::codcel_month, codcel_networkdays::codcel_networkdays,
+    codcel_date::codcel_date,
+    codcel_date_dif::codcel_date_dif,
+    codcel_date_value::codcel_date_value,
+    codcel_day::codcel_day,
+    codcel_days::codcel_days,
+    codcel_days_360::codcel_days_360,
+    codcel_e_date::codcel_e_date,
+    codcel_eo_month::codcel_eo_month,
+    codcel_hour::codcel_hour,
+    codcel_iso_week_num::codcel_iso_week_num,
+    codcel_minute::codcel_minute,
+    codcel_month::codcel_month,
+    codcel_networkdays::codcel_networkdays,
     codcel_networkdays_intl::{codcel_networkdays_intl, parse_weekend_mask, parse_weekend_string},
+    codcel_now::codcel_now,
+    codcel_second::codcel_second,
+    codcel_time::codcel_time,
+    codcel_time_value::codcel_time_value,
+    codcel_today::codcel_today,
+    codcel_week_day::codcel_week_day,
+    codcel_week_num::codcel_week_num,
     codcel_workday::codcel_workday,
     codcel_workday_intl::codcel_workday_intl,
-    codcel_now::codcel_now, codcel_second::codcel_second,
-    codcel_time::codcel_time, codcel_time_value::codcel_time_value, codcel_today::codcel_today,
-    codcel_week_day::codcel_week_day, codcel_week_num::codcel_week_num, codcel_year::codcel_year,
+    codcel_year::codcel_year,
     codcel_year_frac::codcel_year_frac,
 };
 use crate::value::Value;
@@ -31,10 +43,17 @@ use chrono::{
 };
 use std::error::Error;
 
-pub fn excel_to_date_time(excel_date: f64, apply_lotus_bug: bool) -> Result<DateTime<Utc>, Box<dyn Error + Send + Sync>> {
+pub fn excel_to_date_time(
+    excel_date: f64,
+    apply_lotus_bug: bool,
+) -> Result<DateTime<Utc>, Box<dyn Error + Send + Sync>> {
     // Adjust for Excel's leap year bug and offset
     let adjusted_excel_date = if apply_lotus_bug {
-        if excel_date > 59.0 { excel_date - 2.0 } else { excel_date - 1.0 }
+        if excel_date > 59.0 {
+            excel_date - 2.0
+        } else {
+            excel_date - 1.0
+        }
     } else {
         excel_date - 1.0
     };
@@ -99,7 +118,10 @@ pub fn time_to_date_time(time: NaiveTime) -> Result<DateTime<Utc>, Box<dyn Error
     Ok(Utc.from_utc_datetime(&naive_datetime)) // Convert to DateTime<Utc>
 }
 
-pub fn date_time_to_excel(date_time: &DateTime<Utc>, apply_lotus_bug: bool) -> Result<f64, Box<dyn Error + Send + Sync>> {
+pub fn date_time_to_excel(
+    date_time: &DateTime<Utc>,
+    apply_lotus_bug: bool,
+) -> Result<f64, Box<dyn Error + Send + Sync>> {
     // Define the base date: 1900-01-01
     let base_date = NaiveDate::from_ymd_opt(1900, 1, 1).ok_or("Invalid base date")?;
 
@@ -119,7 +141,11 @@ pub fn date_time_to_excel(date_time: &DateTime<Utc>, apply_lotus_bug: bool) -> R
 
     // Adjust for Excel's leap year bug (Excel incorrectly treats 1900 as a leap year)
     let excel_date = if apply_lotus_bug {
-        if excel_date >= 60.0 { excel_date + 2.0 } else { excel_date + 1.0 }
+        if excel_date >= 60.0 {
+            excel_date + 2.0
+        } else {
+            excel_date + 1.0
+        }
     } else {
         excel_date + 1.0
     };
@@ -138,12 +164,23 @@ pub fn date_time_to_iso_display(date: &DateTime<Utc>) -> String {
 pub fn time_to_iso(time: &NaiveTime) -> String {
     let nanos = time.nanosecond() % 1_000_000_000;
     if nanos == 0 {
-        format!("{:02}:{:02}:{:02}", time.hour(), time.minute(), time.second())
+        format!(
+            "{:02}:{:02}:{:02}",
+            time.hour(),
+            time.minute(),
+            time.second()
+        )
     } else {
         let micros = nanos / 1000; // 6-digit value (0..=999_999)
         let frac_str = format!("{micros:06}");
         let trimmed = frac_str.trim_end_matches('0');
-        format!("{:02}:{:02}:{:02}.{}", time.hour(), time.minute(), time.second(), trimmed)
+        format!(
+            "{:02}:{:02}:{:02}.{}",
+            time.hour(),
+            time.minute(),
+            time.second(),
+            trimmed
+        )
     }
 }
 
@@ -232,10 +269,7 @@ pub fn iso_to_time(iso: &str) -> Result<NaiveTime, Box<dyn Error + Send + Sync>>
     Err(format!("Unsupported time format: {iso}").into())
 }
 
-fn map_value_elementwise<F>(
-    value: Value,
-    op: F,
-) -> Result<Value, Box<dyn Error + Send + Sync>>
+fn map_value_elementwise<F>(value: Value, op: F) -> Result<Value, Box<dyn Error + Send + Sync>>
 where
     F: Fn(Value) -> Result<Value, Box<dyn Error + Send + Sync>>,
 {
@@ -266,42 +300,54 @@ pub fn year(
     date_time: Value,
     value_format: &ValueFormat,
 ) -> Result<Value, Box<dyn Error + Send + Sync>> {
-    map_value_elementwise(date_time, |v| Ok(Value::I32(codcel_year(v.date_time(value_format)?)?)))
+    map_value_elementwise(date_time, |v| {
+        Ok(Value::I32(codcel_year(v.date_time(value_format)?)?))
+    })
 }
 
 pub fn month(
     date_time: Value,
     value_format: &ValueFormat,
 ) -> Result<Value, Box<dyn Error + Send + Sync>> {
-    map_value_elementwise(date_time, |v| Ok(Value::I32(codcel_month(v.date_time(value_format)?)?)))
+    map_value_elementwise(date_time, |v| {
+        Ok(Value::I32(codcel_month(v.date_time(value_format)?)?))
+    })
 }
 
 pub fn day(
     date_time: Value,
     value_format: &ValueFormat,
 ) -> Result<Value, Box<dyn Error + Send + Sync>> {
-    map_value_elementwise(date_time, |v| Ok(Value::I32(codcel_day(v.date_time(value_format)?)?)))
+    map_value_elementwise(date_time, |v| {
+        Ok(Value::I32(codcel_day(v.date_time(value_format)?)?))
+    })
 }
 
 pub fn hour(
     time: Value,
     value_format: &ValueFormat,
 ) -> Result<Value, Box<dyn Error + Send + Sync>> {
-    map_value_elementwise(time, |v| Ok(Value::I32(codcel_hour(v.time(value_format)?)?)))
+    map_value_elementwise(time, |v| {
+        Ok(Value::I32(codcel_hour(v.time(value_format)?)?))
+    })
 }
 
 pub fn minute(
     time: Value,
     value_format: &ValueFormat,
 ) -> Result<Value, Box<dyn Error + Send + Sync>> {
-    map_value_elementwise(time, |v| Ok(Value::I32(codcel_minute(v.time(value_format)?)?)))
+    map_value_elementwise(time, |v| {
+        Ok(Value::I32(codcel_minute(v.time(value_format)?)?))
+    })
 }
 
 pub fn second(
     time: Value,
     value_format: &ValueFormat,
 ) -> Result<Value, Box<dyn Error + Send + Sync>> {
-    map_value_elementwise(time, |v| Ok(Value::I32(codcel_second(v.time(value_format)?)?)))
+    map_value_elementwise(time, |v| {
+        Ok(Value::I32(codcel_second(v.time(value_format)?)?))
+    })
 }
 
 pub fn date(

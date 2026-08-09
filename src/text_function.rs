@@ -16,22 +16,22 @@ use std::fmt::Write;
 
 #[derive(Debug, Clone, PartialEq)]
 enum FormatToken {
-    Zero,            // '0' — digit or zero
-    Hash,            // '#' — digit or nothing
-    Question,        // '?' — digit or space
-    DecimalPoint,    // '.'
-    ThousandsSep,    // ',' between digit placeholders
-    ScaleComma,      // trailing ',' — divide by 1000 each
-    Percent,         // '%'
+    Zero,                  // '0' — digit or zero
+    Hash,                  // '#' — digit or nothing
+    Question,              // '?' — digit or space
+    DecimalPoint,          // '.'
+    ThousandsSep,          // ',' between digit placeholders
+    ScaleComma,            // trailing ',' — divide by 1000 each
+    Percent,               // '%'
     Exponent(bool, usize), // E+/E- with zero count
-    FractionSlash,   // '/' in fraction context
-    Year(usize),     // 2 or 4
-    Month(usize),    // 1-5
-    Day(usize),      // 1-4
-    Hour(usize, bool), // count, is_12hour
-    Minute(usize),   // 1 or 2
-    Second(usize),   // 1 or 2
-    AmPm(String),    // "AM/PM", "am/pm", "A/P"
+    FractionSlash,         // '/' in fraction context
+    Year(usize),           // 2 or 4
+    Month(usize),          // 1-5
+    Day(usize),            // 1-4
+    Hour(usize, bool),     // count, is_12hour
+    Minute(usize),         // 1 or 2
+    Second(usize),         // 1 or 2
+    AmPm(String),          // "AM/PM", "am/pm", "A/P"
     ElapsedHours,
     ElapsedMinutes,
     ElapsedSeconds,
@@ -54,7 +54,6 @@ struct FormatSection {
 struct ParsedFormat {
     sections: Vec<FormatSection>,
 }
-
 
 // ---------------------------------------------------------------------------
 // Unified entry point
@@ -86,13 +85,26 @@ pub(crate) fn format_value(
     let (section, fmt_value) = select_section(&parsed, value);
 
     // Check if section is text-only (@)
-    let is_text_section = section.tokens.iter().any(|t| matches!(t, FormatToken::AtSign))
-        && !section.tokens.iter().any(|t| matches!(t,
-            FormatToken::Zero | FormatToken::Hash | FormatToken::Question |
-            FormatToken::DecimalPoint | FormatToken::Percent |
-            FormatToken::Year(_) | FormatToken::Month(_) | FormatToken::Day(_) |
-            FormatToken::Hour(_, _) | FormatToken::Minute(_) | FormatToken::Second(_)
-        ));
+    let is_text_section = section
+        .tokens
+        .iter()
+        .any(|t| matches!(t, FormatToken::AtSign))
+        && !section.tokens.iter().any(|t| {
+            matches!(
+                t,
+                FormatToken::Zero
+                    | FormatToken::Hash
+                    | FormatToken::Question
+                    | FormatToken::DecimalPoint
+                    | FormatToken::Percent
+                    | FormatToken::Year(_)
+                    | FormatToken::Month(_)
+                    | FormatToken::Day(_)
+                    | FormatToken::Hour(_, _)
+                    | FormatToken::Minute(_)
+                    | FormatToken::Second(_)
+            )
+        });
 
     if is_text_section {
         // Replace @ with the value representation
@@ -155,29 +167,47 @@ fn select_section(parsed: &ParsedFormat, value: f64) -> (&FormatSection, f64) {
 
 fn parse_format(format: &str) -> ParsedFormat {
     let section_strs = split_sections(format);
-    let sections: Vec<FormatSection> = section_strs.iter().map(|s| {
-        let mut tokens = tokenize(s);
-        resolve_minutes(&mut tokens);
-        resolve_12hour(&mut tokens);
-        let is_date_time = tokens.iter().any(|t| matches!(t,
-            FormatToken::Year(_) | FormatToken::Month(_) | FormatToken::Day(_) |
-            FormatToken::Hour(_, _) | FormatToken::Minute(_) | FormatToken::Second(_) |
-            FormatToken::AmPm(_) | FormatToken::ElapsedHours |
-            FormatToken::ElapsedMinutes | FormatToken::ElapsedSeconds
-        ));
-        let has_fraction = tokens.iter().any(|t| matches!(t, FormatToken::FractionSlash));
+    let sections: Vec<FormatSection> = section_strs
+        .iter()
+        .map(|s| {
+            let mut tokens = tokenize(s);
+            resolve_minutes(&mut tokens);
+            resolve_12hour(&mut tokens);
+            let is_date_time = tokens.iter().any(|t| {
+                matches!(
+                    t,
+                    FormatToken::Year(_)
+                        | FormatToken::Month(_)
+                        | FormatToken::Day(_)
+                        | FormatToken::Hour(_, _)
+                        | FormatToken::Minute(_)
+                        | FormatToken::Second(_)
+                        | FormatToken::AmPm(_)
+                        | FormatToken::ElapsedHours
+                        | FormatToken::ElapsedMinutes
+                        | FormatToken::ElapsedSeconds
+                )
+            });
+            let has_fraction = tokens
+                .iter()
+                .any(|t| matches!(t, FormatToken::FractionSlash));
 
-        // In date/time formats, commas between non-digit tokens are literals, not separators
-        if is_date_time {
-            for token in tokens.iter_mut() {
-                if matches!(token, FormatToken::ThousandsSep) {
-                    *token = FormatToken::LiteralChar(',');
+            // In date/time formats, commas between non-digit tokens are literals, not separators
+            if is_date_time {
+                for token in tokens.iter_mut() {
+                    if matches!(token, FormatToken::ThousandsSep) {
+                        *token = FormatToken::LiteralChar(',');
+                    }
                 }
             }
-        }
 
-        FormatSection { tokens, is_date_time, has_fraction }
-    }).collect();
+            FormatSection {
+                tokens,
+                is_date_time,
+                has_fraction,
+            }
+        })
+        .collect();
     ParsedFormat { sections }
 }
 
@@ -227,7 +257,9 @@ fn tokenize(section: &str) -> Vec<FormatToken> {
                     text.push(chars[i]);
                     i += 1;
                 }
-                if i < len { i += 1; }
+                if i < len {
+                    i += 1;
+                }
                 tokens.push(FormatToken::LiteralText(text));
             }
             '\\' => {
@@ -244,7 +276,9 @@ fn tokenize(section: &str) -> Vec<FormatToken> {
                     content.push(chars[i]);
                     i += 1;
                 }
-                if i < len { i += 1; }
+                if i < len {
+                    i += 1;
+                }
                 let lower = content.to_lowercase();
                 if lower == "h" || lower == "hh" {
                     tokens.push(FormatToken::ElapsedHours);
@@ -299,11 +333,11 @@ fn tokenize(section: &str) -> Vec<FormatToken> {
             'A' | 'a' => {
                 let remaining: String = chars[i..].iter().collect();
                 if remaining.starts_with("AM/PM") || remaining.starts_with("am/pm") {
-                    let matched: String = chars[i..i+5].iter().collect();
+                    let matched: String = chars[i..i + 5].iter().collect();
                     tokens.push(FormatToken::AmPm(matched));
                     i += 5;
                 } else if remaining.starts_with("A/P") || remaining.starts_with("a/p") {
-                    let matched: String = chars[i..i+3].iter().collect();
+                    let matched: String = chars[i..i + 3].iter().collect();
                     tokens.push(FormatToken::AmPm(matched));
                     i += 3;
                 } else {
@@ -355,10 +389,17 @@ fn tokenize(section: &str) -> Vec<FormatToken> {
                 }
             }
             '/' => {
-                let has_num_before = tokens.iter().rev().any(|t| matches!(t,
-                    FormatToken::Zero | FormatToken::Hash | FormatToken::Question
-                ));
-                let has_num_after = i + 1 < len && (chars[i + 1] == '?' || chars[i + 1] == '#' || chars[i + 1] == '0' || chars[i + 1].is_ascii_digit());
+                let has_num_before = tokens.iter().rev().any(|t| {
+                    matches!(
+                        t,
+                        FormatToken::Zero | FormatToken::Hash | FormatToken::Question
+                    )
+                });
+                let has_num_after = i + 1 < len
+                    && (chars[i + 1] == '?'
+                        || chars[i + 1] == '#'
+                        || chars[i + 1] == '0'
+                        || chars[i + 1].is_ascii_digit());
                 if has_num_before && has_num_after {
                     tokens.push(FormatToken::FractionSlash);
                 } else {
@@ -401,11 +442,16 @@ fn tokenize(section: &str) -> Vec<FormatToken> {
 }
 
 fn resolve_commas(tokens: &mut [FormatToken]) {
-    let first_digit_idx = tokens.iter().position(|t| matches!(t,
-        FormatToken::Zero | FormatToken::Hash | FormatToken::Question
-    ));
+    let first_digit_idx = tokens.iter().position(|t| {
+        matches!(
+            t,
+            FormatToken::Zero | FormatToken::Hash | FormatToken::Question
+        )
+    });
 
-    let decimal_pos = tokens.iter().position(|t| matches!(t, FormatToken::DecimalPoint));
+    let decimal_pos = tokens
+        .iter()
+        .position(|t| matches!(t, FormatToken::DecimalPoint));
 
     if first_digit_idx.is_none() {
         // No digit placeholders — all commas become literals
@@ -427,9 +473,12 @@ fn resolve_commas(tokens: &mut [FormatToken]) {
                 tokens[i] = FormatToken::LiteralChar(',');
             } else {
                 // Check if there's a digit placeholder after this comma (in the integer part)
-                let has_digit_after = tokens[i+1..int_end].iter().any(|t| matches!(t,
-                    FormatToken::Zero | FormatToken::Hash | FormatToken::Question
-                ));
+                let has_digit_after = tokens[i + 1..int_end].iter().any(|t| {
+                    matches!(
+                        t,
+                        FormatToken::Zero | FormatToken::Hash | FormatToken::Question
+                    )
+                });
                 if has_digit_after {
                     // Thousands separator — keep as is
                 } else {
@@ -452,7 +501,8 @@ fn resolve_minutes(tokens: &mut [FormatToken]) {
                     let mut j = i - 1;
                     loop {
                         match &tokens[j] {
-                            FormatToken::LiteralChar(':') | FormatToken::LiteralChar(' ')
+                            FormatToken::LiteralChar(':')
+                            | FormatToken::LiteralChar(' ')
                             | FormatToken::LiteralText(_) => {}
                             FormatToken::Hour(_, _) | FormatToken::ElapsedHours => {
                                 found = true;
@@ -460,7 +510,9 @@ fn resolve_minutes(tokens: &mut [FormatToken]) {
                             }
                             _ => break,
                         }
-                        if j == 0 { break; }
+                        if j == 0 {
+                            break;
+                        }
                         j -= 1;
                     }
                 }
@@ -469,7 +521,8 @@ fn resolve_minutes(tokens: &mut [FormatToken]) {
                     let mut j = i + 1;
                     while j < len {
                         match &tokens[j] {
-                            FormatToken::LiteralChar(':') | FormatToken::LiteralChar(' ')
+                            FormatToken::LiteralChar(':')
+                            | FormatToken::LiteralChar(' ')
                             | FormatToken::LiteralText(_) => {
                                 j += 1;
                             }
@@ -510,7 +563,11 @@ fn format_number_section(
     value_format: &ValueFormat,
 ) -> Result<String, Box<dyn Error + Send + Sync>> {
     // Check for @ (text placeholder) mixed with number formats
-    if section.tokens.iter().any(|t| matches!(t, FormatToken::AtSign)) {
+    if section
+        .tokens
+        .iter()
+        .any(|t| matches!(t, FormatToken::AtSign))
+    {
         let value_str = format_general(value);
         let mut result = String::new();
         for token in &section.tokens {
@@ -530,19 +587,30 @@ fn format_number_section(
     }
 
     // Check for scientific notation
-    if section.tokens.iter().any(|t| matches!(t, FormatToken::Exponent(_, _))) {
+    if section
+        .tokens
+        .iter()
+        .any(|t| matches!(t, FormatToken::Exponent(_, _)))
+    {
         return format_scientific(value, section, value_format);
     }
 
     // Count scale commas
-    let scale_count = section.tokens.iter().filter(|t| matches!(t, FormatToken::ScaleComma)).count();
+    let scale_count = section
+        .tokens
+        .iter()
+        .filter(|t| matches!(t, FormatToken::ScaleComma))
+        .count();
     let mut val = value;
     for _ in 0..scale_count {
         val /= 1000.0;
     }
 
     // Handle percentage
-    let has_percent = section.tokens.iter().any(|t| matches!(t, FormatToken::Percent));
+    let has_percent = section
+        .tokens
+        .iter()
+        .any(|t| matches!(t, FormatToken::Percent));
     if has_percent {
         val *= 100.0;
     }
@@ -554,13 +622,25 @@ fn format_number_section(
     }
 
     // Determine decimal places from format
-    let decimal_pos = section.tokens.iter().position(|t| matches!(t, FormatToken::DecimalPoint));
+    let decimal_pos = section
+        .tokens
+        .iter()
+        .position(|t| matches!(t, FormatToken::DecimalPoint));
     let (max_decimals, min_decimals) = if let Some(dp) = decimal_pos {
-        let after: Vec<&FormatToken> = section.tokens[dp + 1..].iter()
-            .take_while(|t| matches!(t, FormatToken::Zero | FormatToken::Hash | FormatToken::Question))
+        let after: Vec<&FormatToken> = section.tokens[dp + 1..]
+            .iter()
+            .take_while(|t| {
+                matches!(
+                    t,
+                    FormatToken::Zero | FormatToken::Hash | FormatToken::Question
+                )
+            })
             .collect();
         let max = after.len();
-        let min = after.iter().filter(|t| matches!(t, FormatToken::Zero)).count();
+        let min = after
+            .iter()
+            .filter(|t| matches!(t, FormatToken::Zero))
+            .count();
         (max, min)
     } else {
         (0, 0)
@@ -568,14 +648,17 @@ fn format_number_section(
 
     // Count integer format digits
     let int_end = decimal_pos.unwrap_or(section.tokens.len());
-    let int_zeros: usize = section.tokens[..int_end].iter()
+    let int_zeros: usize = section.tokens[..int_end]
+        .iter()
         .filter(|t| matches!(t, FormatToken::Zero))
         .count();
-    let has_thousands = section.tokens[..int_end].iter()
+    let has_thousands = section.tokens[..int_end]
+        .iter()
         .any(|t| matches!(t, FormatToken::ThousandsSep));
 
     // Count ? placeholders in integer part for space-padding
-    let int_questions: usize = section.tokens[..int_end].iter()
+    let int_questions: usize = section.tokens[..int_end]
+        .iter()
         .filter(|t| matches!(t, FormatToken::Question))
         .count();
     let int_min_width = int_zeros + int_questions;
@@ -600,8 +683,11 @@ fn format_number_section(
     let mut int_digits = int_part.to_string();
 
     // For hash-only integer (no zeros, no ?), suppress "0"
-    let int_is_hash_only = int_zeros == 0 && int_questions == 0
-        && section.tokens[..int_end].iter().any(|t| matches!(t, FormatToken::Hash));
+    let int_is_hash_only = int_zeros == 0
+        && int_questions == 0
+        && section.tokens[..int_end]
+            .iter()
+            .any(|t| matches!(t, FormatToken::Hash));
     if int_is_hash_only && int_digits == "0" {
         int_digits.clear();
     }
@@ -679,10 +765,22 @@ fn format_number_section(
 fn is_pattern_format(section: &FormatSection) -> bool {
     // A pattern format has digit placeholders interleaved with literal dashes or parens
     // but no ThousandsSep, no DecimalPoint, no Percent
-    let has_digit = section.tokens.iter().any(|t| matches!(t, FormatToken::Zero | FormatToken::Hash));
-    let has_thousands = section.tokens.iter().any(|t| matches!(t, FormatToken::ThousandsSep));
-    let has_decimal = section.tokens.iter().any(|t| matches!(t, FormatToken::DecimalPoint));
-    let has_percent = section.tokens.iter().any(|t| matches!(t, FormatToken::Percent));
+    let has_digit = section
+        .tokens
+        .iter()
+        .any(|t| matches!(t, FormatToken::Zero | FormatToken::Hash));
+    let has_thousands = section
+        .tokens
+        .iter()
+        .any(|t| matches!(t, FormatToken::ThousandsSep));
+    let has_decimal = section
+        .tokens
+        .iter()
+        .any(|t| matches!(t, FormatToken::DecimalPoint));
+    let has_percent = section
+        .tokens
+        .iter()
+        .any(|t| matches!(t, FormatToken::Percent));
 
     if !has_digit || has_thousands || has_decimal || has_percent {
         return false;
@@ -700,8 +798,10 @@ fn is_pattern_format(section: &FormatSection) -> bool {
                 }
                 saw_digit = true;
             }
-            FormatToken::LiteralChar('-') | FormatToken::LiteralChar(' ')
-            | FormatToken::LiteralChar('(') | FormatToken::LiteralChar(')')
+            FormatToken::LiteralChar('-')
+            | FormatToken::LiteralChar(' ')
+            | FormatToken::LiteralChar('(')
+            | FormatToken::LiteralChar(')')
                 if saw_digit =>
             {
                 saw_literal_after_digit = true;
@@ -712,12 +812,22 @@ fn is_pattern_format(section: &FormatSection) -> bool {
     saw_digit_after_literal
 }
 
-fn format_pattern(value: f64, section: &FormatSection) -> Result<String, Box<dyn Error + Send + Sync>> {
+fn format_pattern(
+    value: f64,
+    section: &FormatSection,
+) -> Result<String, Box<dyn Error + Send + Sync>> {
     let int_value = value.abs().round() as u64;
     let digits: Vec<char> = format!("{}", int_value).chars().collect();
 
-    let placeholder_count = section.tokens.iter()
-        .filter(|t| matches!(t, FormatToken::Zero | FormatToken::Hash | FormatToken::Question))
+    let placeholder_count = section
+        .tokens
+        .iter()
+        .filter(|t| {
+            matches!(
+                t,
+                FormatToken::Zero | FormatToken::Hash | FormatToken::Question
+            )
+        })
         .count();
 
     // Pad digits to match placeholder count
@@ -750,14 +860,29 @@ fn format_scientific(
     section: &FormatSection,
     value_format: &ValueFormat,
 ) -> Result<String, Box<dyn Error + Send + Sync>> {
-    let (is_plus, exp_zeros) = section.tokens.iter().find_map(|t| {
-        if let FormatToken::Exponent(p, z) = t { Some((*p, *z)) } else { None }
-    }).unwrap_or((true, 2));
+    let (is_plus, exp_zeros) = section
+        .tokens
+        .iter()
+        .find_map(|t| {
+            if let FormatToken::Exponent(p, z) = t {
+                Some((*p, *z))
+            } else {
+                None
+            }
+        })
+        .unwrap_or((true, 2));
 
-    let decimal_pos = section.tokens.iter().position(|t| matches!(t, FormatToken::DecimalPoint));
-    let exp_pos = section.tokens.iter().position(|t| matches!(t, FormatToken::Exponent(_, _)));
+    let decimal_pos = section
+        .tokens
+        .iter()
+        .position(|t| matches!(t, FormatToken::DecimalPoint));
+    let exp_pos = section
+        .tokens
+        .iter()
+        .position(|t| matches!(t, FormatToken::Exponent(_, _)));
     let dec_places = if let (Some(dp), Some(ep)) = (decimal_pos, exp_pos) {
-        section.tokens[dp + 1..ep].iter()
+        section.tokens[dp + 1..ep]
+            .iter()
             .filter(|t| matches!(t, FormatToken::Zero | FormatToken::Hash))
             .count()
     } else {
@@ -775,14 +900,20 @@ fn format_scientific(
 
     let mantissa_str = format!("{:.prec$}", mantissa, prec = dec_places);
     let exp_sign = if exponent >= 0 {
-        if is_plus { "+" } else { "" }
+        if is_plus {
+            "+"
+        } else {
+            ""
+        }
     } else {
         "-"
     };
     let exp_str = format!("{:0>width$}", exponent.abs(), width = exp_zeros);
 
     let mut result = String::new();
-    if value < 0.0 { result.push('-'); }
+    if value < 0.0 {
+        result.push('-');
+    }
     write!(result, "{}E{}{}", mantissa_str, exp_sign, exp_str)?;
     if value_format.decimal_separator != "." {
         result = result.replace('.', &value_format.decimal_separator);
@@ -798,11 +929,22 @@ fn format_fraction(
     let is_negative = value < 0.0;
     let abs_value = value.abs();
 
-    let slash_pos = section.tokens.iter().position(|t| matches!(t, FormatToken::FractionSlash)).unwrap();
+    let slash_pos = section
+        .tokens
+        .iter()
+        .position(|t| matches!(t, FormatToken::FractionSlash))
+        .unwrap();
 
     // Count numerator placeholders (? or # or 0 immediately before the slash)
-    let num_placeholders: Vec<&FormatToken> = section.tokens[..slash_pos].iter().rev()
-        .take_while(|t| matches!(t, FormatToken::Zero | FormatToken::Hash | FormatToken::Question))
+    let num_placeholders: Vec<&FormatToken> = section.tokens[..slash_pos]
+        .iter()
+        .rev()
+        .take_while(|t| {
+            matches!(
+                t,
+                FormatToken::Zero | FormatToken::Hash | FormatToken::Question
+            )
+        })
         .collect();
     let num_width = num_placeholders.len();
 
@@ -810,12 +952,24 @@ fn format_fraction(
     let num_start_pos = slash_pos - num_width;
 
     // Check if there are whole number placeholders before the numerator
-    let has_whole = num_start_pos > 0 && section.tokens[..num_start_pos].iter().any(|t| {
-        matches!(t, FormatToken::Hash | FormatToken::Zero | FormatToken::Question)
-    });
+    let has_whole = num_start_pos > 0
+        && section.tokens[..num_start_pos].iter().any(|t| {
+            matches!(
+                t,
+                FormatToken::Hash | FormatToken::Zero | FormatToken::Question
+            )
+        });
 
-    let whole = if has_whole { abs_value.floor() as i64 } else { 0 };
-    let frac = if has_whole { abs_value - whole as f64 } else { abs_value };
+    let whole = if has_whole {
+        abs_value.floor() as i64
+    } else {
+        0
+    };
+    let frac = if has_whole {
+        abs_value - whole as f64
+    } else {
+        abs_value
+    };
 
     // Determine the denominator format (after the slash)
     let after_slash = &section.tokens[slash_pos + 1..];
@@ -825,9 +979,9 @@ fn format_fraction(
     // because '0' is always tokenized as FormatToken::Zero.
     // First, check if we have any literal digit chars — if so, treat all
     // subsequent Zero tokens as part of the fixed denominator number.
-    let has_literal_digit_after_slash = after_slash.iter().any(|t| {
-        matches!(t, FormatToken::LiteralChar(c) if c.is_ascii_digit())
-    });
+    let has_literal_digit_after_slash = after_slash
+        .iter()
+        .any(|t| matches!(t, FormatToken::LiteralChar(c) if c.is_ascii_digit()));
 
     let mut fixed_denom_str = String::new();
     let mut denom_placeholder_count = 0;
@@ -840,7 +994,9 @@ fn format_fraction(
                 // In fixed denominator context, '0' is part of the number
                 fixed_denom_str.push('0');
             }
-            FormatToken::Zero | FormatToken::Hash | FormatToken::Question if !has_literal_digit_after_slash => {
+            FormatToken::Zero | FormatToken::Hash | FormatToken::Question
+                if !has_literal_digit_after_slash =>
+            {
                 denom_placeholder_count += 1;
             }
             _ => break,
@@ -863,12 +1019,24 @@ fn format_fraction(
     };
 
     let mut result = String::new();
-    if is_negative { result.push('-'); }
+    if is_negative {
+        result.push('-');
+    }
 
     // Emit any leading literal tokens before the first placeholder
-    let first_placeholder_pos = section.tokens.iter().position(|t| matches!(t,
-        FormatToken::Zero | FormatToken::Hash | FormatToken::Question | FormatToken::FractionSlash
-    )).unwrap_or(0);
+    let first_placeholder_pos = section
+        .tokens
+        .iter()
+        .position(|t| {
+            matches!(
+                t,
+                FormatToken::Zero
+                    | FormatToken::Hash
+                    | FormatToken::Question
+                    | FormatToken::FractionSlash
+            )
+        })
+        .unwrap_or(0);
 
     for token in &section.tokens[..first_placeholder_pos] {
         match token {
@@ -897,9 +1065,16 @@ fn format_fraction(
         } else {
             // Emit the separator between whole and numerator
             // Walk tokens between whole placeholders and numerator to find literal separators
-            let whole_end = section.tokens[..num_start_pos].iter().rposition(|t| {
-                matches!(t, FormatToken::Hash | FormatToken::Zero | FormatToken::Question)
-            }).map(|p| p + 1).unwrap_or(0);
+            let whole_end = section.tokens[..num_start_pos]
+                .iter()
+                .rposition(|t| {
+                    matches!(
+                        t,
+                        FormatToken::Hash | FormatToken::Zero | FormatToken::Question
+                    )
+                })
+                .map(|p| p + 1)
+                .unwrap_or(0);
 
             for token in &section.tokens[whole_end..num_start_pos] {
                 match token {
@@ -945,7 +1120,9 @@ fn best_fraction(frac: f64, max_denom: i64) -> (i64, i64) {
             best_err = err;
             best_num = n;
             best_den = d;
-            if err < 1e-12 { break; }
+            if err < 1e-12 {
+                break;
+            }
         }
     }
     (best_num, best_den)
@@ -996,9 +1173,18 @@ fn format_date_time_section(
     let second = total_seconds_of_day % 60;
 
     // Check for AM/PM
-    let has_ampm = section.tokens.iter().any(|t| matches!(t, FormatToken::AmPm(_)));
+    let has_ampm = section
+        .tokens
+        .iter()
+        .any(|t| matches!(t, FormatToken::AmPm(_)));
     let (hour_display, am_pm) = if has_ampm {
-        let h = if hour24 == 0 { 12 } else if hour24 > 12 { hour24 - 12 } else { hour24 };
+        let h = if hour24 == 0 {
+            12
+        } else if hour24 > 12 {
+            hour24 - 12
+        } else {
+            hour24
+        };
         let period = if hour24 < 12 { "AM" } else { "PM" };
         (h, period)
     } else {
@@ -1017,7 +1203,9 @@ fn format_date_time_section(
             FormatToken::Month(4) => result.push_str(month_name(month)),
             FormatToken::Month(5) => {
                 let name = month_name(month);
-                if let Some(c) = name.chars().next() { result.push(c); }
+                if let Some(c) = name.chars().next() {
+                    result.push(c);
+                }
             }
             FormatToken::Month(_) => write!(result, "{:02}", month)?,
             FormatToken::Day(1) => write!(result, "{}", day)?,
@@ -1062,34 +1250,60 @@ fn format_date_time_section(
 
 fn month_abbrev(m: u32) -> &'static str {
     match m {
-        1 => "Jan", 2 => "Feb", 3 => "Mar", 4 => "Apr",
-        5 => "May", 6 => "Jun", 7 => "Jul", 8 => "Aug",
-        9 => "Sep", 10 => "Oct", 11 => "Nov", 12 => "Dec",
+        1 => "Jan",
+        2 => "Feb",
+        3 => "Mar",
+        4 => "Apr",
+        5 => "May",
+        6 => "Jun",
+        7 => "Jul",
+        8 => "Aug",
+        9 => "Sep",
+        10 => "Oct",
+        11 => "Nov",
+        12 => "Dec",
         _ => "???",
     }
 }
 
 fn month_name(m: u32) -> &'static str {
     match m {
-        1 => "January", 2 => "February", 3 => "March", 4 => "April",
-        5 => "May", 6 => "June", 7 => "July", 8 => "August",
-        9 => "September", 10 => "October", 11 => "November", 12 => "December",
+        1 => "January",
+        2 => "February",
+        3 => "March",
+        4 => "April",
+        5 => "May",
+        6 => "June",
+        7 => "July",
+        8 => "August",
+        9 => "September",
+        10 => "October",
+        11 => "November",
+        12 => "December",
         _ => "???",
     }
 }
 
 fn weekday_abbrev(wd: Weekday) -> &'static str {
     match wd {
-        Weekday::Mon => "Mon", Weekday::Tue => "Tue", Weekday::Wed => "Wed",
-        Weekday::Thu => "Thu", Weekday::Fri => "Fri", Weekday::Sat => "Sat",
+        Weekday::Mon => "Mon",
+        Weekday::Tue => "Tue",
+        Weekday::Wed => "Wed",
+        Weekday::Thu => "Thu",
+        Weekday::Fri => "Fri",
+        Weekday::Sat => "Sat",
         Weekday::Sun => "Sun",
     }
 }
 
 fn weekday_name(wd: Weekday) -> &'static str {
     match wd {
-        Weekday::Mon => "Monday", Weekday::Tue => "Tuesday", Weekday::Wed => "Wednesday",
-        Weekday::Thu => "Thursday", Weekday::Fri => "Friday", Weekday::Sat => "Saturday",
+        Weekday::Mon => "Monday",
+        Weekday::Tue => "Tuesday",
+        Weekday::Wed => "Wednesday",
+        Weekday::Thu => "Thursday",
+        Weekday::Fri => "Friday",
+        Weekday::Sat => "Saturday",
         Weekday::Sun => "Sunday",
     }
 }
@@ -1125,18 +1339,27 @@ mod tests {
         assert_eq!(format_value(999.999, "0.00", &vf()).unwrap(), "1000.00");
         assert_eq!(format_value(1.999, "0.00", &vf()).unwrap(), "2.00");
         assert_eq!(format_value(1.995, "0.00", &vf()).unwrap(), "2.00");
-        assert_eq!(format_value(6789.83945, "#,##0.00", &vf()).unwrap(), "6,789.84");
+        assert_eq!(
+            format_value(6789.83945, "#,##0.00", &vf()).unwrap(),
+            "6,789.84"
+        );
     }
 
     #[test]
     fn test_thousands() {
         assert_eq!(format_value(1234.0, "#,##0", &vf()).unwrap(), "1,234");
-        assert_eq!(format_value(1234567.89, "#,##0.00", &vf()).unwrap(), "1,234,567.89");
+        assert_eq!(
+            format_value(1234567.89, "#,##0.00", &vf()).unwrap(),
+            "1,234,567.89"
+        );
     }
 
     #[test]
     fn test_currency() {
-        assert_eq!(format_value(1234.5678, "$#,##0.00", &vf()).unwrap(), "$1,234.57");
+        assert_eq!(
+            format_value(1234.5678, "$#,##0.00", &vf()).unwrap(),
+            "$1,234.57"
+        );
     }
 
     #[test]
@@ -1147,9 +1370,15 @@ mod tests {
 
     #[test]
     fn test_multi_section() {
-        assert_eq!(format_value(-100.0, "#,##0;(#,##0)", &vf()).unwrap(), "(100)");
+        assert_eq!(
+            format_value(-100.0, "#,##0;(#,##0)", &vf()).unwrap(),
+            "(100)"
+        );
         assert_eq!(format_value(100.0, "#,##0;(#,##0)", &vf()).unwrap(), "100");
-        assert_eq!(format_value(0.0, "#,##0;(#,##0);\"Zero\"", &vf()).unwrap(), "Zero");
+        assert_eq!(
+            format_value(0.0, "#,##0;(#,##0);\"Zero\"", &vf()).unwrap(),
+            "Zero"
+        );
     }
 
     #[test]
@@ -1162,7 +1391,10 @@ mod tests {
     #[test]
     fn test_date_short() {
         assert_eq!(format_value(45658.0, "m/d/yy", &vf()).unwrap(), "1/1/25");
-        assert_eq!(format_value(45658.0, "mmmm d, yyyy", &vf()).unwrap(), "January 1, 2025");
+        assert_eq!(
+            format_value(45658.0, "mmmm d, yyyy", &vf()).unwrap(),
+            "January 1, 2025"
+        );
     }
 
     #[test]
@@ -1179,7 +1411,10 @@ mod tests {
 
     #[test]
     fn test_literal_text_in_format() {
-        assert_eq!(format_value(0.75, "hh\"h \"mm\"m \"ss\"s\"", &vf()).unwrap(), "18h 00m 00s");
+        assert_eq!(
+            format_value(0.75, "hh\"h \"mm\"m \"ss\"s\"", &vf()).unwrap(),
+            "18h 00m 00s"
+        );
     }
 
     #[test]
@@ -1190,7 +1425,10 @@ mod tests {
 
     #[test]
     fn test_color_code_stripped() {
-        assert_eq!(format_value(-5678.9, "[Red]#,##0;[Blue](#,##0)", &vf()).unwrap(), "(5,679)");
+        assert_eq!(
+            format_value(-5678.9, "[Red]#,##0;[Blue](#,##0)", &vf()).unwrap(),
+            "(5,679)"
+        );
     }
 
     #[test]
@@ -1200,12 +1438,18 @@ mod tests {
 
     #[test]
     fn test_pattern_ssn() {
-        assert_eq!(format_value(123456789.0, "###-##-####", &vf()).unwrap(), "123-45-6789");
+        assert_eq!(
+            format_value(123456789.0, "###-##-####", &vf()).unwrap(),
+            "123-45-6789"
+        );
     }
 
     #[test]
     fn test_pattern_phone() {
-        assert_eq!(format_value(5551234567.0, "(###) ###-####", &vf()).unwrap(), "(555) 123-4567");
+        assert_eq!(
+            format_value(5551234567.0, "(###) ###-####", &vf()).unwrap(),
+            "(555) 123-4567"
+        );
     }
 
     #[test]
@@ -1220,7 +1464,10 @@ mod tests {
 
     #[test]
     fn test_at_sign_with_text() {
-        assert_eq!(format_value(1234.0, "0\" units\"", &vf()).unwrap(), "1234 units");
+        assert_eq!(
+            format_value(1234.0, "0\" units\"", &vf()).unwrap(),
+            "1234 units"
+        );
     }
 
     #[test]
@@ -1261,7 +1508,10 @@ mod tests {
     #[test]
     fn test_fraction_three_digit() {
         // # ???/??? with 3.14159 → "3  16/113"
-        assert_eq!(format_value(3.14159265358979, "# ???/???", &vf()).unwrap(), "3  16/113");
+        assert_eq!(
+            format_value(3.14159265358979, "# ???/???", &vf()).unwrap(),
+            "3  16/113"
+        );
     }
 
     #[test]
@@ -1297,7 +1547,10 @@ mod tests {
     #[test]
     fn test_date_with_comma() {
         // Comma in date format should be literal, not thousands separator
-        assert_eq!(format_value(45658.0, "dddd, mmmm d, yyyy", &vf()).unwrap(), "Wednesday, January 1, 2025");
+        assert_eq!(
+            format_value(45658.0, "dddd, mmmm d, yyyy", &vf()).unwrap(),
+            "Wednesday, January 1, 2025"
+        );
     }
 
     #[test]

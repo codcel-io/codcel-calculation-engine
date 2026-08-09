@@ -72,18 +72,12 @@ mod tests {
     fn test_bin_2_hex_min_val() {
         // 1000000000 in 10-bit two's complement = -512
         // -512 in 40-bit two's complement hex = FFFFFFFE00
-        assert_eq!(
-            codcel_bin_2_hex("1000000000", None).unwrap(),
-            "FFFFFFFE00"
-        );
+        assert_eq!(codcel_bin_2_hex("1000000000", None).unwrap(), "FFFFFFFE00");
     }
 
     #[test]
     fn test_bin_2_hex_neg_one() {
-        assert_eq!(
-            codcel_bin_2_hex("1111111111", None).unwrap(),
-            "FFFFFFFFFF"
-        );
+        assert_eq!(codcel_bin_2_hex("1111111111", None).unwrap(), "FFFFFFFFFF");
     }
 
     #[test]

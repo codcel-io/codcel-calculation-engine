@@ -110,8 +110,7 @@ mod tests {
 
     #[test]
     fn test_regexreplace_case_sensitive_default() {
-        let result =
-            codcel_regexreplace("Hello hello HELLO", "hello", "HI", None, None).unwrap();
+        let result = codcel_regexreplace("Hello hello HELLO", "hello", "HI", None, None).unwrap();
         assert_eq!(result, "Hello HI HELLO");
     }
 
@@ -131,22 +130,21 @@ mod tests {
 
     #[test]
     fn test_regexreplace_backreference() {
-        let result =
-            codcel_regexreplace("2024-01-15", r"(\d{4})-(\d{2})-(\d{2})", "$2/$3/$1", None, None)
-                .unwrap();
+        let result = codcel_regexreplace(
+            "2024-01-15",
+            r"(\d{4})-(\d{2})-(\d{2})",
+            "$2/$3/$1",
+            None,
+            None,
+        )
+        .unwrap();
         assert_eq!(result, "01/15/2024");
     }
 
     #[test]
     fn test_regexreplace_backreference_nth_instance() {
-        let result = codcel_regexreplace(
-            "foo:bar baz:qux",
-            r"(\w+):(\w+)",
-            "$2:$1",
-            Some(2),
-            None,
-        )
-        .unwrap();
+        let result =
+            codcel_regexreplace("foo:bar baz:qux", r"(\w+):(\w+)", "$2:$1", Some(2), None).unwrap();
         assert_eq!(result, "foo:bar qux:baz");
     }
 

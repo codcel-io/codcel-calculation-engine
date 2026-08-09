@@ -11,9 +11,7 @@ use std::error::Error;
 ///
 /// # Errors
 /// None — returns 0 for an empty array.
-pub fn codcel_columns(
-    array: Vec<Vec<Value>>,
-) -> Result<Value, Box<dyn Error + Send + Sync>> {
+pub fn codcel_columns(array: Vec<Vec<Value>>) -> Result<Value, Box<dyn Error + Send + Sync>> {
     if array.is_empty() {
         return Ok(Value::I32(0));
     }

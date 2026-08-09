@@ -61,8 +61,15 @@ pub fn codcel_yield(
     const DY: f64 = 1e-7; // Small delta for numerical derivative
 
     for _ in 0..MAX_ITERATIONS {
-        let price_at_yield =
-            codcel_price(settlement, maturity, rate, yield_guess, redemption, frequency, basis)?;
+        let price_at_yield = codcel_price(
+            settlement,
+            maturity,
+            rate,
+            yield_guess,
+            redemption,
+            frequency,
+            basis,
+        )?;
         let delta = price_at_yield - price;
 
         if delta.abs() < TOLERANCE {
@@ -70,8 +77,15 @@ pub fn codcel_yield(
         }
 
         // Numerical derivative: dPrice/dYield
-        let price_at_yield_plus =
-            codcel_price(settlement, maturity, rate, yield_guess + DY, redemption, frequency, basis)?;
+        let price_at_yield_plus = codcel_price(
+            settlement,
+            maturity,
+            rate,
+            yield_guess + DY,
+            redemption,
+            frequency,
+            basis,
+        )?;
         let derivative = (price_at_yield_plus - price_at_yield) / DY;
 
         if derivative.abs() < 1e-15 {

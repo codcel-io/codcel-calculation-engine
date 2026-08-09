@@ -6,7 +6,9 @@
 
 use std::error::Error;
 
-use super::dbcs_utils::{char_index_to_dbcs_byte_pos, dbcs_byte_len, dbcs_byte_pos_to_char_index_forward};
+use super::dbcs_utils::{
+    char_index_to_dbcs_byte_pos, dbcs_byte_len, dbcs_byte_pos_to_char_index_forward,
+};
 
 /// Excel-compatible `FINDB` that locates one text string within another using DBCS byte positions (case-sensitive).
 /// - `substring`: the text to find.

@@ -78,7 +78,6 @@ pub fn codcel_price_mat(
     Ok(price_mat * 100.0)
 }
 
-
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -24,14 +24,21 @@ pub fn codcel_dcount(
 
     let field_omitted = field.is_none()
         || (field.is_string()
-            && field.string(value_format).map(|s| s.is_empty()).unwrap_or(false));
+            && field
+                .string(value_format)
+                .map(|s| s.is_empty())
+                .unwrap_or(false));
 
     if field_omitted {
         return Ok(Value::I32(matched.len() as i32));
     }
 
     let field_idx = resolve_field(&database, &field, value_format)?;
-    let data_rows = if database.len() >= 2 { &database[1..] } else { &[][..] };
+    let data_rows = if database.len() >= 2 {
+        &database[1..]
+    } else {
+        &[][..]
+    };
     let count = matched
         .iter()
         .filter_map(|&i| data_rows.get(i).and_then(|row| row.get(field_idx)))
@@ -51,10 +58,26 @@ mod tests {
 
     fn db() -> Value {
         Value::AreaValue(vec![
-            vec![Value::String("Name".into()), Value::String("Dept".into()), Value::String("Salary".into())],
-            vec![Value::String("Alice".into()), Value::String("Eng".into()), Value::F64(100.0)],
-            vec![Value::String("Bob".into()), Value::String("Eng".into()), Value::String("N/A".into())],
-            vec![Value::String("Carol".into()), Value::String("Eng".into()), Value::F64(120.0)],
+            vec![
+                Value::String("Name".into()),
+                Value::String("Dept".into()),
+                Value::String("Salary".into()),
+            ],
+            vec![
+                Value::String("Alice".into()),
+                Value::String("Eng".into()),
+                Value::F64(100.0),
+            ],
+            vec![
+                Value::String("Bob".into()),
+                Value::String("Eng".into()),
+                Value::String("N/A".into()),
+            ],
+            vec![
+                Value::String("Carol".into()),
+                Value::String("Eng".into()),
+                Value::F64(120.0),
+            ],
         ])
     }
 

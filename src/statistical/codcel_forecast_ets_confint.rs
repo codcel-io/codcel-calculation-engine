@@ -113,7 +113,7 @@ pub fn codcel_forecast_ets_confint(
 
 /// Compute the half-width of the prediction interval for a target date.
 /// - EDS (non-seasonal): Hyndman ETS(A,A,N) analytical variance formula
-/// - ETS (seasonal): Monte Carlo simulation with 1000 scenarios 
+/// - ETS (seasonal): Monte Carlo simulation with 1000 scenarios
 fn get_confidence_interval(
     model: &EtsModel,
     target_date: f64,
@@ -245,7 +245,9 @@ fn get_ets_confidence_interval_monte_carlo(
     // seed from data to get consistent results for the same input
     let mut rng_state: u64 = 12345;
     for &v in &model.values {
-        rng_state = rng_state.wrapping_mul(6364136223846793005).wrapping_add(v.to_bits());
+        rng_state = rng_state
+            .wrapping_mul(6364136223846793005)
+            .wrapping_add(v.to_bits());
     }
 
     let mut scenario_forecasts: Vec<f64> = Vec::with_capacity(N_SCENARIOS);
@@ -268,7 +270,9 @@ fn get_ets_confidence_interval_monte_carlo(
 
             // Generate random deviation: RMSE * gaussinv(uniform(0.5, 1.0))
             // LCG step
-            rng_state = rng_state.wrapping_mul(6364136223846793005).wrapping_add(1442695040888963407);
+            rng_state = rng_state
+                .wrapping_mul(6364136223846793005)
+                .wrapping_add(1442695040888963407);
             let u = 0.5 + 0.5 * ((rng_state >> 33) as f64 / (1u64 << 31) as f64);
             let u = u.clamp(0.501, 0.999); // avoid edge values
             let rand_dev = if let Ok(g) = codcel_norm_dot_s_dot_inv(u) {
@@ -328,11 +332,12 @@ mod tests {
 
     #[test]
     fn test_confint_debug_quarterly_noseas() {
-        let values = vec![110.0, 130.0, 150.0, 145.0, 130.0, 150.0, 170.0, 165.0, 150.0, 170.0, 190.0, 185.0];
+        let values = vec![
+            110.0, 130.0, 150.0, 145.0, 130.0, 150.0, 170.0, 165.0, 150.0, 170.0, 190.0, 185.0,
+        ];
         let timeline = vec![
-            43831.0, 43922.0, 44013.0, 44105.0,
-            44197.0, 44287.0, 44378.0, 44470.0,
-            44562.0, 44652.0, 44743.0, 44835.0,
+            43831.0, 43922.0, 44013.0, 44105.0, 44197.0, 44287.0, 44378.0, 44470.0, 44562.0,
+            44652.0, 44743.0, 44835.0,
         ];
         let (proc_values, proc_timeline, _month_day) =
             preprocess_data(&values, &timeline, 1, 1).unwrap();
@@ -358,7 +363,10 @@ mod tests {
                 best_alpha = a;
             }
             if (model.mse - target_mse).abs() < 0.01 {
-                println!("CLOSE! alpha={a}, MSE={:.6}, target={target_mse:.6}", model.mse);
+                println!(
+                    "CLOSE! alpha={a}, MSE={:.6}, target={target_mse:.6}",
+                    model.mse
+                );
             }
         }
         println!("Best: alpha={best_alpha}, MSE={best_mse}");
@@ -384,10 +392,9 @@ mod tests {
         }
         println!("2D best: alpha={best_a2}, gamma={best_g2}, MSE={best_mse2}");
 
-        let result = codcel_forecast_ets_confint(
-            44927.0, values, timeline, Some(0.95), Some(0), None, None,
-        )
-        .unwrap();
+        let result =
+            codcel_forecast_ets_confint(44927.0, values, timeline, Some(0.95), Some(0), None, None)
+                .unwrap();
         println!("Result: {result}");
         println!("Expected: 25.070267517764044");
     }
@@ -395,14 +402,12 @@ mod tests {
     #[test]
     fn test_confint_debug_monthly() {
         let values = vec![
-            205.0, 211.0, 218.0, 227.0, 237.0, 245.0, 253.0, 253.0,
-            249.0, 245.0, 240.0, 239.0, 241.0, 247.0, 254.0, 263.0,
-            273.0, 281.0, 289.0, 289.0, 285.0, 281.0, 276.0, 275.0,
+            205.0, 211.0, 218.0, 227.0, 237.0, 245.0, 253.0, 253.0, 249.0, 245.0, 240.0, 239.0,
+            241.0, 247.0, 254.0, 263.0, 273.0, 281.0, 289.0, 289.0, 285.0, 281.0, 276.0, 275.0,
         ];
         let timeline = vec![
-            44197.0, 44228.0, 44256.0, 44287.0, 44317.0, 44348.0,
-            44378.0, 44409.0, 44440.0, 44470.0, 44501.0, 44531.0,
-            44562.0, 44593.0, 44621.0, 44652.0, 44682.0, 44713.0,
+            44197.0, 44228.0, 44256.0, 44287.0, 44317.0, 44348.0, 44378.0, 44409.0, 44440.0,
+            44470.0, 44501.0, 44531.0, 44562.0, 44593.0, 44621.0, 44652.0, 44682.0, 44713.0,
             44743.0, 44774.0, 44805.0, 44835.0, 44866.0, 44896.0,
         ];
         let (proc_values, proc_timeline, month_day) =
@@ -416,7 +421,11 @@ mod tests {
 
         // Check target date in month space
         let target = 44927.0;
-        let effective_target = if month_day > 0 { convert_x_to_months(target, month_day) } else { target };
+        let effective_target = if month_day > 0 {
+            convert_x_to_months(target, month_day)
+        } else {
+            target
+        };
         let last_x = proc_timeline[proc_timeline.len() - 1];
         println!("Target: {target} -> effective: {effective_target}");
         println!("Last x: {last_x}");
@@ -431,23 +440,47 @@ mod tests {
         model_eds.init_data();
 
         // Print MSE at key alpha/gamma values
-        for (a, g) in [(0.0, 0.0), (0.5, 0.0), (0.5, 0.5), (1.0, 0.0), (1.0, 1.0), (0.0, 1.0)] {
+        for (a, g) in [
+            (0.0, 0.0),
+            (0.5, 0.0),
+            (0.5, 0.5),
+            (1.0, 0.0),
+            (1.0, 1.0),
+            (0.0, 1.0),
+        ] {
             model_eds.alpha = a;
             model_eds.gamma = g;
             model_eds.refill();
-            println!("alpha={a}, gamma={g}: MSE={:.4}, RMSE={:.4}", model_eds.mse, model_eds.mse.sqrt());
+            println!(
+                "alpha={a}, gamma={g}: MSE={:.4}, RMSE={:.4}",
+                model_eds.mse,
+                model_eds.mse.sqrt()
+            );
         }
 
         model_eds.calc_alpha_beta_gamma_golden();
-        println!("EDS golden: alpha={}, gamma={}, MSE={}, RMSE={}", model_eds.alpha, model_eds.gamma, model_eds.mse, model_eds.mse.sqrt());
+        println!(
+            "EDS golden: alpha={}, gamma={}, MSE={}, RMSE={}",
+            model_eds.alpha,
+            model_eds.gamma,
+            model_eds.mse,
+            model_eds.mse.sqrt()
+        );
 
         // NM (concentrated MLE)
         let mut model_nm = EtsModel::new(&proc_values, &proc_timeline, step, 0, true);
         model_nm.init_data();
         model_nm.calc_alpha_beta_gamma(); // NM for EDS
-        println!("NM: alpha={}, gamma={}, base[0]={}, trend[0]={}", model_nm.alpha, model_nm.gamma, model_nm.base[0], model_nm.trend[0]);
+        println!(
+            "NM: alpha={}, gamma={}, base[0]={}, trend[0]={}",
+            model_nm.alpha, model_nm.gamma, model_nm.base[0], model_nm.trend[0]
+        );
         model_nm.refill();
-        println!("NM+refill: MSE={}, RMSE={}", model_nm.mse, model_nm.mse.sqrt());
+        println!(
+            "NM+refill: MSE={}, RMSE={}",
+            model_nm.mse,
+            model_nm.mse.sqrt()
+        );
         println!("NM PI: {}", z * model_nm.mse.sqrt());
 
         let z = codcel_norm_dot_s_dot_inv(0.975).unwrap();
@@ -461,10 +494,9 @@ mod tests {
         // Data with noise so MSE > 0, EDS mode (seasonality=0)
         let values = vec![10.0, 12.0, 11.0, 14.0, 13.0, 16.0, 15.0, 18.0];
         let timeline = vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0];
-        let result = codcel_forecast_ets_confint(
-            9.0, values, timeline, Some(0.95), Some(0), None, None,
-        )
-        .unwrap();
+        let result =
+            codcel_forecast_ets_confint(9.0, values, timeline, Some(0.95), Some(0), None, None)
+                .unwrap();
         assert!(result > 0.0, "CI should be positive, got {result}");
         assert!(result.is_finite(), "CI should be finite, got {result}");
     }
@@ -476,13 +508,18 @@ mod tests {
         let timeline = vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0];
 
         let ci_1 = codcel_forecast_ets_confint(
-            9.0, values.clone(), timeline.clone(), Some(0.95), Some(0), None, None,
+            9.0,
+            values.clone(),
+            timeline.clone(),
+            Some(0.95),
+            Some(0),
+            None,
+            None,
         )
         .unwrap();
-        let ci_5 = codcel_forecast_ets_confint(
-            13.0, values, timeline, Some(0.95), Some(0), None, None,
-        )
-        .unwrap();
+        let ci_5 =
+            codcel_forecast_ets_confint(13.0, values, timeline, Some(0.95), Some(0), None, None)
+                .unwrap();
 
         assert!(
             ci_5 > ci_1,
@@ -497,17 +534,28 @@ mod tests {
         let timeline = vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0];
 
         let ci_90 = codcel_forecast_ets_confint(
-            9.0, values.clone(), timeline.clone(), Some(0.90), Some(0), None, None,
+            9.0,
+            values.clone(),
+            timeline.clone(),
+            Some(0.90),
+            Some(0),
+            None,
+            None,
         )
         .unwrap();
         let ci_95 = codcel_forecast_ets_confint(
-            9.0, values.clone(), timeline.clone(), Some(0.95), Some(0), None, None,
+            9.0,
+            values.clone(),
+            timeline.clone(),
+            Some(0.95),
+            Some(0),
+            None,
+            None,
         )
         .unwrap();
-        let ci_99 = codcel_forecast_ets_confint(
-            9.0, values, timeline, Some(0.99), Some(0), None, None,
-        )
-        .unwrap();
+        let ci_99 =
+            codcel_forecast_ets_confint(9.0, values, timeline, Some(0.99), Some(0), None, None)
+                .unwrap();
 
         assert!(
             ci_99 > ci_95 && ci_95 > ci_90,
@@ -522,13 +570,18 @@ mod tests {
         let timeline = vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0];
 
         let ci_default = codcel_forecast_ets_confint(
-            9.0, values.clone(), timeline.clone(), None, Some(0), None, None,
+            9.0,
+            values.clone(),
+            timeline.clone(),
+            None,
+            Some(0),
+            None,
+            None,
         )
         .unwrap();
-        let ci_explicit = codcel_forecast_ets_confint(
-            9.0, values, timeline, Some(0.95), Some(0), None, None,
-        )
-        .unwrap();
+        let ci_explicit =
+            codcel_forecast_ets_confint(9.0, values, timeline, Some(0.95), Some(0), None, None)
+                .unwrap();
 
         assert!(
             (ci_default - ci_explicit).abs() < 1e-10,
@@ -541,9 +594,8 @@ mod tests {
         // Target within data range should return error
         let values = vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0];
         let timeline = vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0];
-        let result = codcel_forecast_ets_confint(
-            5.0, values, timeline, Some(0.95), Some(0), None, None,
-        );
+        let result =
+            codcel_forecast_ets_confint(5.0, values, timeline, Some(0.95), Some(0), None, None);
         assert!(result.is_err(), "Within-range target should return error");
     }
 
@@ -553,15 +605,39 @@ mod tests {
         let timeline = vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0];
 
         // confidence_level = 0 should error
-        let r = codcel_forecast_ets_confint(9.0, values.clone(), timeline.clone(), Some(0.0), Some(0), None, None);
+        let r = codcel_forecast_ets_confint(
+            9.0,
+            values.clone(),
+            timeline.clone(),
+            Some(0.0),
+            Some(0),
+            None,
+            None,
+        );
         assert!(r.is_err());
 
         // confidence_level = 1 should error
-        let r = codcel_forecast_ets_confint(9.0, values.clone(), timeline.clone(), Some(1.0), Some(0), None, None);
+        let r = codcel_forecast_ets_confint(
+            9.0,
+            values.clone(),
+            timeline.clone(),
+            Some(1.0),
+            Some(0),
+            None,
+            None,
+        );
         assert!(r.is_err());
 
         // confidence_level < 0 should error
-        let r = codcel_forecast_ets_confint(9.0, values.clone(), timeline.clone(), Some(-0.5), Some(0), None, None);
+        let r = codcel_forecast_ets_confint(
+            9.0,
+            values.clone(),
+            timeline.clone(),
+            Some(-0.5),
+            Some(0),
+            None,
+            None,
+        );
         assert!(r.is_err());
 
         // confidence_level > 1 should error
@@ -573,37 +649,43 @@ mod tests {
     fn test_confint_seasonal() {
         // Seasonal data with period 4, with noise so MSE > 0
         let values = vec![
-            100.0, 122.0, 138.0, 112.0,
-            108.0, 133.0, 148.0, 118.0,
-            121.0, 138.0, 162.0, 128.0,
+            100.0, 122.0, 138.0, 112.0, 108.0, 133.0, 148.0, 118.0, 121.0, 138.0, 162.0, 128.0,
         ];
         let timeline: Vec<f64> = (1..=12).map(|i| i as f64).collect();
 
-        let result = codcel_forecast_ets_confint(
-            13.0, values, timeline, Some(0.95), Some(4), None, None,
-        )
-        .unwrap();
-        assert!(result >= 0.0, "Seasonal CI should be non-negative, got {result}");
-        assert!(result.is_finite(), "Seasonal CI should be finite, got {result}");
+        let result =
+            codcel_forecast_ets_confint(13.0, values, timeline, Some(0.95), Some(4), None, None)
+                .unwrap();
+        assert!(
+            result >= 0.0,
+            "Seasonal CI should be non-negative, got {result}"
+        );
+        assert!(
+            result.is_finite(),
+            "Seasonal CI should be finite, got {result}"
+        );
     }
 
     #[test]
     fn test_confint_seasonal_increasing_with_horizon() {
         let values = vec![
-            100.0, 122.0, 138.0, 112.0,
-            108.0, 133.0, 148.0, 118.0,
-            121.0, 138.0, 162.0, 128.0,
+            100.0, 122.0, 138.0, 112.0, 108.0, 133.0, 148.0, 118.0, 121.0, 138.0, 162.0, 128.0,
         ];
         let timeline: Vec<f64> = (1..=12).map(|i| i as f64).collect();
 
         let ci_1 = codcel_forecast_ets_confint(
-            13.0, values.clone(), timeline.clone(), Some(0.95), Some(4), None, None,
+            13.0,
+            values.clone(),
+            timeline.clone(),
+            Some(0.95),
+            Some(4),
+            None,
+            None,
         )
         .unwrap();
-        let ci_4 = codcel_forecast_ets_confint(
-            16.0, values, timeline, Some(0.95), Some(4), None, None,
-        )
-        .unwrap();
+        let ci_4 =
+            codcel_forecast_ets_confint(16.0, values, timeline, Some(0.95), Some(4), None, None)
+                .unwrap();
 
         assert!(
             ci_4 > ci_1,
@@ -614,16 +696,20 @@ mod tests {
     #[test]
     fn test_confint_mismatched_arrays() {
         let result = codcel_forecast_ets_confint(
-            5.0, vec![1.0, 2.0, 3.0], vec![1.0, 2.0], None, None, None, None,
+            5.0,
+            vec![1.0, 2.0, 3.0],
+            vec![1.0, 2.0],
+            None,
+            None,
+            None,
+            None,
         );
         assert!(result.is_err());
     }
 
     #[test]
     fn test_confint_insufficient_data() {
-        let result = codcel_forecast_ets_confint(
-            5.0, vec![1.0], vec![1.0], None, None, None, None,
-        );
+        let result = codcel_forecast_ets_confint(5.0, vec![1.0], vec![1.0], None, None, None, None);
         assert!(result.is_err());
     }
 }

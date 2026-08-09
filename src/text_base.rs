@@ -16,26 +16,22 @@ use crate::area::{
 };
 use crate::text::{
     codcel_array_to_text::codcel_array_to_text, codcel_asc::codcel_asc,
-    codcel_bahttext::codcel_bahttext, codcel_char::codcel_char, codcel_dbcs::codcel_dbcs,
-    codcel_jis::codcel_jis,
-    codcel_clean::codcel_clean, codcel_code::codcel_code, codcel_dollar::codcel_dollar,
+    codcel_bahttext::codcel_bahttext, codcel_char::codcel_char, codcel_clean::codcel_clean,
+    codcel_code::codcel_code, codcel_dbcs::codcel_dbcs, codcel_dollar::codcel_dollar,
     codcel_exact::codcel_exact_vec, codcel_find::codcel_find, codcel_findb::codcel_findb,
-    codcel_fixed::codcel_fixed,
-    codcel_left::codcel_left, codcel_leftb::codcel_leftb, codcel_lower::codcel_lower,
-    codcel_mid::codcel_mid, codcel_midb::codcel_midb,
-    codcel_number_value::codcel_number_value_vec, codcel_phonetic::codcel_phonetic,
-    codcel_proper::codcel_proper,
-    codcel_regexextract::codcel_regexextract,
-    codcel_regexreplace::codcel_regexreplace,
-    codcel_regextest::codcel_regextest,
-    codcel_replace::codcel_replace, codcel_replaceb::codcel_replaceb,
-    codcel_rept::codcel_rept, codcel_right::codcel_right, codcel_rightb::codcel_rightb,
-    codcel_search::codcel_search, codcel_searchb::codcel_searchb,
-    codcel_substitute::codcel_substitute, codcel_t::codcel_t,
-    codcel_text::codcel_text, codcel_text_after::codcel_text_after,
-    codcel_text_before::codcel_text_before, codcel_text_split::codcel_text_split,
-    codcel_trim::codcel_trim, codcel_uni_char::codcel_uni_char, codcel_unicode::codcel_unicode,
-    codcel_upper::codcel_upper, codcel_value_to_text::codcel_value_to_text,
+    codcel_fixed::codcel_fixed, codcel_jis::codcel_jis, codcel_left::codcel_left,
+    codcel_leftb::codcel_leftb, codcel_lower::codcel_lower, codcel_mid::codcel_mid,
+    codcel_midb::codcel_midb, codcel_number_value::codcel_number_value_vec,
+    codcel_phonetic::codcel_phonetic, codcel_proper::codcel_proper,
+    codcel_regexextract::codcel_regexextract, codcel_regexreplace::codcel_regexreplace,
+    codcel_regextest::codcel_regextest, codcel_replace::codcel_replace,
+    codcel_replaceb::codcel_replaceb, codcel_rept::codcel_rept, codcel_right::codcel_right,
+    codcel_rightb::codcel_rightb, codcel_search::codcel_search, codcel_searchb::codcel_searchb,
+    codcel_substitute::codcel_substitute, codcel_t::codcel_t, codcel_text::codcel_text,
+    codcel_text_after::codcel_text_after, codcel_text_before::codcel_text_before,
+    codcel_text_split::codcel_text_split, codcel_trim::codcel_trim,
+    codcel_uni_char::codcel_uni_char, codcel_unicode::codcel_unicode, codcel_upper::codcel_upper,
+    codcel_value_to_text::codcel_value_to_text,
 };
 use crate::value::{area_string, Value};
 use crate::value_format::ValueFormat;
@@ -287,7 +283,13 @@ pub fn regexreplace(
     let instance_num = instance_num.option_i32(value_format)?;
     let case_sensitivity = case_sensitivity.option_i32(value_format)?;
 
-    let result = codcel_regexreplace(&text, &pattern, &replacement, instance_num, case_sensitivity)?;
+    let result = codcel_regexreplace(
+        &text,
+        &pattern,
+        &replacement,
+        instance_num,
+        case_sensitivity,
+    )?;
 
     Ok(Value::String(result))
 }
@@ -350,7 +352,13 @@ pub fn asc(
     value_format: &ValueFormat,
 ) -> Result<Value, Box<dyn Error + Send + Sync>> {
     if is_dbcs_locale(&value_format.language) {
-        process_area_string_to_string(area, strict_type_conversion, value_format, codcel_asc, "ASC")
+        process_area_string_to_string(
+            area,
+            strict_type_conversion,
+            value_format,
+            codcel_asc,
+            "ASC",
+        )
     } else {
         process_area_string_to_string(area, strict_type_conversion, value_format, Ok, "ASC")
     }
@@ -366,7 +374,13 @@ pub fn dbcs(
     value_format: &ValueFormat,
 ) -> Result<Value, Box<dyn Error + Send + Sync>> {
     if is_dbcs_locale(&value_format.language) {
-        process_area_string_to_string(area, strict_type_conversion, value_format, codcel_dbcs, "DBCS")
+        process_area_string_to_string(
+            area,
+            strict_type_conversion,
+            value_format,
+            codcel_dbcs,
+            "DBCS",
+        )
     } else {
         process_area_string_to_string(area, strict_type_conversion, value_format, Ok, "DBCS")
     }
@@ -383,7 +397,13 @@ pub fn jis(
     value_format: &ValueFormat,
 ) -> Result<Value, Box<dyn Error + Send + Sync>> {
     if is_dbcs_locale(&value_format.language) {
-        process_area_string_to_string(area, strict_type_conversion, value_format, codcel_jis, "JIS")
+        process_area_string_to_string(
+            area,
+            strict_type_conversion,
+            value_format,
+            codcel_jis,
+            "JIS",
+        )
     } else {
         process_area_string_to_string(area, strict_type_conversion, value_format, Ok, "JIS")
     }

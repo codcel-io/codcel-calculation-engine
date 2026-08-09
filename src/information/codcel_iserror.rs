@@ -99,7 +99,11 @@ mod tests {
     fn test_iserror_with_option_some_values() {
         assert!(!codcel_iserror(&Value::OptionF64(Some(42.0)), &default_format()).unwrap());
         assert!(!codcel_iserror(&Value::OptionI32(Some(42)), &default_format()).unwrap());
-        assert!(!codcel_iserror(&Value::OptionString(Some("test".to_string())), &default_format()).unwrap());
+        assert!(!codcel_iserror(
+            &Value::OptionString(Some("test".to_string())),
+            &default_format()
+        )
+        .unwrap());
         assert!(!codcel_iserror(&Value::OptionBool(Some(true)), &default_format()).unwrap());
     }
 
@@ -118,6 +122,10 @@ mod tests {
     #[test]
     fn test_iserror_with_vec_value() {
         assert!(!codcel_iserror(&Value::VecValue(vec![]), &default_format()).unwrap());
-        assert!(!codcel_iserror(&Value::VecValue(vec![Value::F64(f64::NAN)]), &default_format()).unwrap());
+        assert!(!codcel_iserror(
+            &Value::VecValue(vec![Value::F64(f64::NAN)]),
+            &default_format()
+        )
+        .unwrap());
     }
 }

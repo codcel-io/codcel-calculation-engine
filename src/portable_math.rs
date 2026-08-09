@@ -28,97 +28,173 @@ static USE_PORTABLE_MATH: LazyLock<bool> = LazyLock::new(|| {
 
 #[inline]
 pub fn sin(x: f64) -> f64 {
-    if *USE_PORTABLE_MATH { libm::sin(x) } else { x.sin() }
+    if *USE_PORTABLE_MATH {
+        libm::sin(x)
+    } else {
+        x.sin()
+    }
 }
 
 #[inline]
 pub fn cos(x: f64) -> f64 {
-    if *USE_PORTABLE_MATH { libm::cos(x) } else { x.cos() }
+    if *USE_PORTABLE_MATH {
+        libm::cos(x)
+    } else {
+        x.cos()
+    }
 }
 
 #[inline]
 pub fn tan(x: f64) -> f64 {
-    if *USE_PORTABLE_MATH { libm::tan(x) } else { x.tan() }
+    if *USE_PORTABLE_MATH {
+        libm::tan(x)
+    } else {
+        x.tan()
+    }
 }
 
 #[inline]
 pub fn asin(x: f64) -> f64 {
-    if *USE_PORTABLE_MATH { libm::asin(x) } else { x.asin() }
+    if *USE_PORTABLE_MATH {
+        libm::asin(x)
+    } else {
+        x.asin()
+    }
 }
 
 #[inline]
 pub fn acos(x: f64) -> f64 {
-    if *USE_PORTABLE_MATH { libm::acos(x) } else { x.acos() }
+    if *USE_PORTABLE_MATH {
+        libm::acos(x)
+    } else {
+        x.acos()
+    }
 }
 
 #[inline]
 pub fn atan(x: f64) -> f64 {
-    if *USE_PORTABLE_MATH { libm::atan(x) } else { x.atan() }
+    if *USE_PORTABLE_MATH {
+        libm::atan(x)
+    } else {
+        x.atan()
+    }
 }
 
 #[inline]
 pub fn atan2(y: f64, x: f64) -> f64 {
-    if *USE_PORTABLE_MATH { libm::atan2(y, x) } else { y.atan2(x) }
+    if *USE_PORTABLE_MATH {
+        libm::atan2(y, x)
+    } else {
+        y.atan2(x)
+    }
 }
 
 #[inline]
 pub fn sinh(x: f64) -> f64 {
-    if *USE_PORTABLE_MATH { libm::sinh(x) } else { x.sinh() }
+    if *USE_PORTABLE_MATH {
+        libm::sinh(x)
+    } else {
+        x.sinh()
+    }
 }
 
 #[inline]
 pub fn cosh(x: f64) -> f64 {
-    if *USE_PORTABLE_MATH { libm::cosh(x) } else { x.cosh() }
+    if *USE_PORTABLE_MATH {
+        libm::cosh(x)
+    } else {
+        x.cosh()
+    }
 }
 
 #[inline]
 pub fn tanh(x: f64) -> f64 {
-    if *USE_PORTABLE_MATH { libm::tanh(x) } else { x.tanh() }
+    if *USE_PORTABLE_MATH {
+        libm::tanh(x)
+    } else {
+        x.tanh()
+    }
 }
 
 #[inline]
 pub fn asinh(x: f64) -> f64 {
-    if *USE_PORTABLE_MATH { libm::asinh(x) } else { x.asinh() }
+    if *USE_PORTABLE_MATH {
+        libm::asinh(x)
+    } else {
+        x.asinh()
+    }
 }
 
 #[inline]
 pub fn acosh(x: f64) -> f64 {
-    if *USE_PORTABLE_MATH { libm::acosh(x) } else { x.acosh() }
+    if *USE_PORTABLE_MATH {
+        libm::acosh(x)
+    } else {
+        x.acosh()
+    }
 }
 
 #[inline]
 pub fn atanh(x: f64) -> f64 {
-    if *USE_PORTABLE_MATH { libm::atanh(x) } else { x.atanh() }
+    if *USE_PORTABLE_MATH {
+        libm::atanh(x)
+    } else {
+        x.atanh()
+    }
 }
 
 #[inline]
 pub fn exp(x: f64) -> f64 {
-    if *USE_PORTABLE_MATH { libm::exp(x) } else { x.exp() }
+    if *USE_PORTABLE_MATH {
+        libm::exp(x)
+    } else {
+        x.exp()
+    }
 }
 
 #[inline]
 pub fn ln(x: f64) -> f64 {
-    if *USE_PORTABLE_MATH { libm::log(x) } else { x.ln() }
+    if *USE_PORTABLE_MATH {
+        libm::log(x)
+    } else {
+        x.ln()
+    }
 }
 
 #[inline]
 pub fn log10(x: f64) -> f64 {
-    if *USE_PORTABLE_MATH { libm::log10(x) } else { x.log10() }
+    if *USE_PORTABLE_MATH {
+        libm::log10(x)
+    } else {
+        x.log10()
+    }
 }
 
 #[inline]
 pub fn log2(x: f64) -> f64 {
-    if *USE_PORTABLE_MATH { libm::log2(x) } else { x.log2() }
+    if *USE_PORTABLE_MATH {
+        libm::log2(x)
+    } else {
+        x.log2()
+    }
 }
 
 #[inline]
 pub fn sqrt(x: f64) -> f64 {
-    if *USE_PORTABLE_MATH { libm::sqrt(x) } else { x.sqrt() }
+    if *USE_PORTABLE_MATH {
+        libm::sqrt(x)
+    } else {
+        x.sqrt()
+    }
 }
 
 #[inline]
 pub fn powf(base: f64, exponent: f64) -> f64 {
-    if *USE_PORTABLE_MATH { libm::pow(base, exponent) } else { base.powf(exponent) }
+    if *USE_PORTABLE_MATH {
+        libm::pow(base, exponent)
+    } else {
+        base.powf(exponent)
+    }
 }
 
 #[cfg(test)]
@@ -142,7 +218,9 @@ mod tests {
         if a.is_nan() && b.is_nan() {
             return;
         }
-        let diff = (a.to_bits() as i64).wrapping_sub(b.to_bits() as i64).unsigned_abs();
+        let diff = (a.to_bits() as i64)
+            .wrapping_sub(b.to_bits() as i64)
+            .unsigned_abs();
         assert!(
             diff <= 1,
             "values differ by {diff} ULPs: a={a:.18e}, b={b:.18e}"
@@ -169,8 +247,12 @@ mod tests {
             assert_within_1_ulp(x.atan(), libm::atan(x));
         }
         for &(y, x) in &[
-            (1.0_f64, 1.0_f64), (-1.0, 1.0), (1.0, -1.0), (-1.0, -1.0),
-            (0.0, 1.0), (1.0, 0.0),
+            (1.0_f64, 1.0_f64),
+            (-1.0, 1.0),
+            (1.0, -1.0),
+            (-1.0, -1.0),
+            (0.0, 1.0),
+            (1.0, 0.0),
         ] {
             assert_within_1_ulp(y.atan2(x), libm::atan2(y, x));
         }
@@ -214,8 +296,13 @@ mod tests {
             assert_within_1_ulp(x.sqrt(), libm::sqrt(x));
         }
         for &(b, e) in &[
-            (2.0, 3.0), (E, 1.0), (10.0, 0.5), (2.0, -1.0),
-            (0.5, 2.5), (3.0, 7.0), (1.001, 1000.0),
+            (2.0, 3.0),
+            (E, 1.0),
+            (10.0, 0.5),
+            (2.0, -1.0),
+            (0.5, 2.5),
+            (3.0, 7.0),
+            (1.001, 1000.0),
         ] {
             assert_within_1_ulp(b.powf(e), libm::pow(b, e));
         }
@@ -427,12 +514,22 @@ mod tests {
     #[test]
     fn test_portable_chained_computation() {
         let x = 1.234567890123456_f64;
-        let result = libm::sin(libm::cos(libm::exp(libm::log(libm::sqrt(libm::pow(x + 1.0, 2.5))))));
+        let result = libm::sin(libm::cos(libm::exp(libm::log(libm::sqrt(libm::pow(
+            x + 1.0,
+            2.5,
+        ))))));
         // This hardcoded value is the libm result — must be identical on every platform.
         // If this test ever fails, libm itself has changed behavior.
         let expected_bits = result.to_bits();
-        let recomputed = libm::sin(libm::cos(libm::exp(libm::log(libm::sqrt(libm::pow(x + 1.0, 2.5))))));
-        assert_eq!(recomputed.to_bits(), expected_bits, "libm must be deterministic within a process");
+        let recomputed = libm::sin(libm::cos(libm::exp(libm::log(libm::sqrt(libm::pow(
+            x + 1.0,
+            2.5,
+        ))))));
+        assert_eq!(
+            recomputed.to_bits(),
+            expected_bits,
+            "libm must be deterministic within a process"
+        );
     }
 
     #[test]
@@ -441,7 +538,11 @@ mod tests {
         let x = 1.234567890123456_f64;
         let result = (x + 1.0).powf(2.5).sqrt().ln().exp().cos().sin();
         let recomputed = (x + 1.0).powf(2.5).sqrt().ln().exp().cos().sin();
-        assert_eq!(result.to_bits(), recomputed.to_bits(), "platform math must be deterministic within a process");
+        assert_eq!(
+            result.to_bits(),
+            recomputed.to_bits(),
+            "platform math must be deterministic within a process"
+        );
     }
 
     #[test]

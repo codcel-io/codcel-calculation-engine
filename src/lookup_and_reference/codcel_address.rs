@@ -188,7 +188,8 @@ mod tests {
 
     #[test]
     fn address_with_sheet_spaces() {
-        let result = codcel_address(1, 1, Some(1), Some(true), Some("My Sheet".to_string())).unwrap();
+        let result =
+            codcel_address(1, 1, Some(1), Some(true), Some("My Sheet".to_string())).unwrap();
         assert_eq!(s(&result), "'My Sheet'!$A$1");
     }
 

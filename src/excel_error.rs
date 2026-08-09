@@ -11,13 +11,13 @@ use std::error::Error;
 /// Typed Excel error value. Excel's `ERROR.TYPE` returns a number per variant.
 #[derive(Serialize, Deserialize, Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub enum ExcelError {
-    Null, // #NULL!  -> 1
-    Div0, // #DIV/0! -> 2
+    Null,  // #NULL!  -> 1
+    Div0,  // #DIV/0! -> 2
     Value, // #VALUE! -> 3
-    Ref,  // #REF!   -> 4
-    Name, // #NAME?  -> 5
-    Num,  // #NUM!   -> 6
-    Na,   // #N/A    -> 7
+    Ref,   // #REF!   -> 4
+    Name,  // #NAME?  -> 5
+    Num,   // #NUM!   -> 6
+    Na,    // #N/A    -> 7
 }
 
 impl ExcelError {

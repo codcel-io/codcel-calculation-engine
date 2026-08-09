@@ -61,7 +61,9 @@ pub fn codcel_t_test(
                 .sum::<f64>()
                 / (differences.len() - 1) as f64;
 
-            let t_stat = mean_diff / (crate::portable_math::sqrt(variance_diff) / crate::portable_math::sqrt(differences.len() as f64));
+            let t_stat = mean_diff
+                / (crate::portable_math::sqrt(variance_diff)
+                    / crate::portable_math::sqrt(differences.len() as f64));
             let degrees_freedom = (differences.len() - 1) as f64;
             (t_stat, degrees_freedom)
         }
@@ -71,15 +73,18 @@ pub fn codcel_t_test(
                 + ((array2.len() - 1) as f64 * variance2))
                 / ((array1.len() + array2.len() - 2) as f64);
             let t_stat = (mean1 - mean2)
-                / crate::portable_math::sqrt(pooled_variance
-                    * (1.0 / array1.len() as f64 + 1.0 / array2.len() as f64));
+                / crate::portable_math::sqrt(
+                    pooled_variance * (1.0 / array1.len() as f64 + 1.0 / array2.len() as f64),
+                );
             let degrees_freedom = (array1.len() + array2.len() - 2) as f64;
             (t_stat, degrees_freedom)
         }
         3 => {
             // Two-sample t-test with unequal variance
             let t_stat = (mean1 - mean2)
-                / crate::portable_math::sqrt((variance1 / array1.len() as f64) + (variance2 / array2.len() as f64));
+                / crate::portable_math::sqrt(
+                    (variance1 / array1.len() as f64) + (variance2 / array2.len() as f64),
+                );
             let numerator =
                 ((variance1 / array1.len() as f64) + (variance2 / array2.len() as f64)).powi(2);
             let denominator = ((variance1 / array1.len() as f64).powi(2)

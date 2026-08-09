@@ -53,7 +53,10 @@ pub fn codcel_logest(
     }
 
     // Take logarithm of y values for linear regression
-    let ln_ys: Vec<f64> = known_ys.iter().map(|&y| crate::portable_math::ln(y)).collect();
+    let ln_ys: Vec<f64> = known_ys
+        .iter()
+        .map(|&y| crate::portable_math::ln(y))
+        .collect();
 
     // Calculate means
     let mean_x = known_xs.iter().sum::<f64>() / known_xs.len() as f64;
@@ -103,7 +106,11 @@ pub fn codcel_logest(
 
     // Convert back to exponential form
     let m = crate::portable_math::exp(slope); // m in y = b * m^x
-    let b = if constant { crate::portable_math::exp(intercept) } else { 1.0 }; // b in y = b * m^x
+    let b = if constant {
+        crate::portable_math::exp(intercept)
+    } else {
+        1.0
+    }; // b in y = b * m^x
 
     if !stats {
         // Return just the coefficients
@@ -192,7 +199,10 @@ pub fn codcel_logest(
         // First row: coefficients
         result.push(vec![m, b]);
         // Second row: standard errors
-        result.push(vec![crate::portable_math::exp(se_slope), crate::portable_math::exp(se_intercept)]);
+        result.push(vec![
+            crate::portable_math::exp(se_slope),
+            crate::portable_math::exp(se_intercept),
+        ]);
         // Third row: R-squared and standard error of the regression
         result.push(vec![r_squared, se_regression]);
         // Fourth row: F-statistic and degrees of freedom

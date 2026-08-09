@@ -43,7 +43,8 @@ pub fn codcel_im_sech(
     let sin_y = crate::portable_math::sin(imag);
 
     // Calculate the denominator
-    let denominator = crate::portable_math::cosh(2.0 * real) + crate::portable_math::cos(2.0 * imag);
+    let denominator =
+        crate::portable_math::cosh(2.0 * real) + crate::portable_math::cos(2.0 * imag);
 
     // Check for division by zero
     if denominator.abs() < 1e-14 {

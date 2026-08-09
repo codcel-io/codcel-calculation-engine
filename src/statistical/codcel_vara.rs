@@ -17,9 +17,7 @@ use std::error::Error;
 /// or an error when the array has fewer than 2 values.
 pub fn codcel_vara(values: Vec<f64>) -> Result<f64, Box<dyn Error + Send + Sync>> {
     if values.len() < 2 {
-        return Err(
-            "VARA: At least two values are required to calculate variance.".into(),
-        );
+        return Err("VARA: At least two values are required to calculate variance.".into());
     }
 
     let n = values.len() as f64;

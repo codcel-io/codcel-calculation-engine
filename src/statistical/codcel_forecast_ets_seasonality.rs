@@ -92,9 +92,7 @@ mod tests {
 
     #[test]
     fn test_seasonality_period_3() {
-        let values = vec![
-            10.0, 20.0, 30.0, 10.0, 20.0, 30.0, 10.0, 20.0, 30.0,
-        ];
+        let values = vec![10.0, 20.0, 30.0, 10.0, 20.0, 30.0, 10.0, 20.0, 30.0];
         let timeline: Vec<f64> = (1..=9).map(|i| i as f64).collect();
         let result = codcel_forecast_ets_seasonality(values, timeline, None, None).unwrap();
         assert_eq!(result, 3, "Expected seasonality period 3, got {result}");
@@ -102,12 +100,8 @@ mod tests {
 
     #[test]
     fn test_seasonality_error_mismatched_arrays() {
-        let result = codcel_forecast_ets_seasonality(
-            vec![1.0, 2.0, 3.0],
-            vec![1.0, 2.0],
-            None,
-            None,
-        );
+        let result =
+            codcel_forecast_ets_seasonality(vec![1.0, 2.0, 3.0], vec![1.0, 2.0], None, None);
         assert!(result.is_err());
     }
 
@@ -148,8 +142,7 @@ mod tests {
         let timeline = vec![
             1.0, 2.0, 3.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 11.0, 12.0,
         ];
-        let result =
-            codcel_forecast_ets_seasonality(values, timeline, None, Some(1)).unwrap();
+        let result = codcel_forecast_ets_seasonality(values, timeline, None, Some(1)).unwrap();
         assert!(
             result >= 1,
             "Result should be a positive integer, got {result}"
@@ -158,10 +151,11 @@ mod tests {
 
     #[test]
     fn test_seasonality_with_missing_data() {
-        let values = vec![110.0, 130.0, 145.0, 130.0, 170.0, 165.0, 150.0, 190.0, 185.0];
+        let values = vec![
+            110.0, 130.0, 145.0, 130.0, 170.0, 165.0, 150.0, 190.0, 185.0,
+        ];
         let timeline = vec![1.0, 2.0, 4.0, 5.0, 7.0, 8.0, 9.0, 11.0, 12.0];
-        let result =
-            codcel_forecast_ets_seasonality(values, timeline, Some(1), None).unwrap();
+        let result = codcel_forecast_ets_seasonality(values, timeline, Some(1), None).unwrap();
         assert!(
             result >= 1,
             "Result should be a positive integer, got {result}"

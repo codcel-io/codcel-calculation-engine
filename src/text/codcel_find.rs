@@ -35,7 +35,10 @@ pub fn codcel_find(
     }
 
     // Adjust the text to start from the specified character position
-    let byte_offset = text.char_indices().nth(start_position - 1).map_or(text.len(), |(i, _)| i);
+    let byte_offset = text
+        .char_indices()
+        .nth(start_position - 1)
+        .map_or(text.len(), |(i, _)| i);
     let adjusted_text = &text[byte_offset..];
 
     // Find the first occurrence of the substring in the adjusted text

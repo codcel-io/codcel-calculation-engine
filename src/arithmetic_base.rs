@@ -9,6 +9,8 @@ use crate::area::{
     process_area_float_to_float, process_area_float_to_integer, process_area_int_multi_to_int,
     process_area_int_op_int_to_string, process_area_string_to_float,
 };
+use crate::information::codcel_is_blank::{codcel_is_blank, codcel_is_blank_or_empty_string};
+use crate::information::codcel_na::codcel_na;
 use crate::logical::codcel_not::codcel_not;
 use crate::maths::codcel_abs::codcel_abs;
 use crate::maths::codcel_acos::codcel_acos;
@@ -59,8 +61,6 @@ use crate::maths::codcel_multiply::codcel_multiply;
 use crate::maths::codcel_negative::codcel_negative;
 use crate::maths::codcel_odd::codcel_odd;
 use crate::maths::codcel_pi::codcel_pi;
-use crate::information::codcel_is_blank::{codcel_is_blank, codcel_is_blank_or_empty_string};
-use crate::information::codcel_na::codcel_na;
 use crate::maths::codcel_power::codcel_power_vec;
 use crate::maths::codcel_quotient::codcel_quotient;
 use crate::maths::codcel_radians::codcel_radians;
@@ -1196,11 +1196,7 @@ pub fn floor_math(
     };
 
     if let (Some(num), Some(sig)) = (number_value, significance_value) {
-        return Ok(Value::F64(codcel_floor_math(
-            num,
-            Some(sig),
-            mode,
-        )?));
+        return Ok(Value::F64(codcel_floor_math(num, Some(sig), mode)?));
     }
 
     let iteration_values = if number_value.is_some() {
@@ -4962,7 +4958,10 @@ mod tests {
 
         // Non-empty strings should be counted
         let result = counta(
-            vec![value_string("hello".to_string()), value_string("world".to_string())],
+            vec![
+                value_string("hello".to_string()),
+                value_string("world".to_string()),
+            ],
             &value_format,
         )
         .unwrap();

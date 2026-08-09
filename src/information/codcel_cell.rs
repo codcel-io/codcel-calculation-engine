@@ -122,7 +122,12 @@ mod tests {
 
     #[test]
     fn type_label_text() {
-        let result = codcel_cell("type", &Value::String("hello".to_string()), &default_format()).unwrap();
+        let result = codcel_cell(
+            "type",
+            &Value::String("hello".to_string()),
+            &default_format(),
+        )
+        .unwrap();
         assert_eq!(string_val(&result), "l");
     }
 
@@ -169,7 +174,12 @@ mod tests {
 
     #[test]
     fn contents_string() {
-        let result = codcel_cell("contents", &Value::String("hello".to_string()), &default_format()).unwrap();
+        let result = codcel_cell(
+            "contents",
+            &Value::String("hello".to_string()),
+            &default_format(),
+        )
+        .unwrap();
         assert_eq!(string_val(&result), "hello");
     }
 

@@ -64,7 +64,10 @@ mod tests {
         ];
         for (variant, expected) in cases {
             let result = codcel_error_type(&Value::Error(variant), &default_format()).unwrap();
-            assert_eq!(result, expected, "ERROR.TYPE({variant:?}) should be {expected}");
+            assert_eq!(
+                result, expected,
+                "ERROR.TYPE({variant:?}) should be {expected}"
+            );
         }
     }
 
@@ -72,25 +75,33 @@ mod tests {
     fn test_error_type_legacy_nan_returns_na() {
         let result = codcel_error_type(&Value::F64(f64::NAN), &default_format()).unwrap();
         assert_eq!(result, 7.0);
-        let result = codcel_error_type(&Value::OptionF64(Some(f64::NAN)), &default_format()).unwrap();
+        let result =
+            codcel_error_type(&Value::OptionF64(Some(f64::NAN)), &default_format()).unwrap();
         assert_eq!(result, 7.0);
     }
 
     #[test]
     fn test_error_type_legacy_string_errors() {
-        let result = codcel_error_type(&Value::String("#NUM!".to_string()), &default_format()).unwrap();
+        let result =
+            codcel_error_type(&Value::String("#NUM!".to_string()), &default_format()).unwrap();
         assert_eq!(result, 6.0);
-        let result = codcel_error_type(&Value::String("#DIV/0!".to_string()), &default_format()).unwrap();
+        let result =
+            codcel_error_type(&Value::String("#DIV/0!".to_string()), &default_format()).unwrap();
         assert_eq!(result, 2.0);
-        let result = codcel_error_type(&Value::String("#VALUE!".to_string()), &default_format()).unwrap();
+        let result =
+            codcel_error_type(&Value::String("#VALUE!".to_string()), &default_format()).unwrap();
         assert_eq!(result, 3.0);
     }
 
     #[test]
     fn test_error_type_non_error_returns_nan() {
         let result = codcel_error_type(&Value::F64(42.0), &default_format()).unwrap();
-        assert!(result.is_nan(), "ERROR.TYPE of a number must be #N/A (NaN), got {result}");
-        let result = codcel_error_type(&Value::String("hello".to_string()), &default_format()).unwrap();
+        assert!(
+            result.is_nan(),
+            "ERROR.TYPE of a number must be #N/A (NaN), got {result}"
+        );
+        let result =
+            codcel_error_type(&Value::String("hello".to_string()), &default_format()).unwrap();
         assert!(result.is_nan());
         let result = codcel_error_type(&Value::Bool(true), &default_format()).unwrap();
         assert!(result.is_nan());

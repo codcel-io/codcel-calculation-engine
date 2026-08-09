@@ -50,8 +50,8 @@ pub fn codcel_workday_intl(
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use super::super::codcel_networkdays_intl::{parse_weekend_mask, parse_weekend_string};
+    use super::*;
     use chrono::TimeZone;
 
     fn create_date(year: i32, month: u32, day: u32) -> DateTime<Utc> {

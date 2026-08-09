@@ -31,26 +31,32 @@ pub(super) struct InitialStates {
 }
 
 pub(super) struct EtsModel {
-    pub(super) values: Vec<f64>,       // Y values (maRange[].Y)
-    pub(super) timeline: Vec<f64>,     // X values (maRange[].X) - not used in model, just for forecast
-    pub(super) base: Vec<f64>,         // mpBase - level states
-    pub(super) trend: Vec<f64>,        // mpTrend
-    pub(super) per_idx: Vec<f64>,      // mpPerIdx - seasonal indices
-    pub(super) forecast: Vec<f64>,     // mpForecast - one-step-ahead forecasts
-    pub(super) n: usize,               // mnCount
-    pub(super) m: usize,               // mnSmplInPrd - samples in period
-    pub(super) step_size: f64,         // mfStepSize
-    pub(super) alpha: f64,             // mfAlpha - level smoothing
-    pub(super) beta: f64,              // mfBeta - seasonal smoothing (LO convention)
-    pub(super) gamma: f64,             // mfGamma - trend smoothing (LO convention)
-    pub(super) mse: f64,               // mfMSE
-    pub(super) b_eds: bool,            // bEDS - exponential double smoothing (no seasonality)
+    pub(super) values: Vec<f64>,   // Y values (maRange[].Y)
+    pub(super) timeline: Vec<f64>, // X values (maRange[].X) - not used in model, just for forecast
+    pub(super) base: Vec<f64>,     // mpBase - level states
+    pub(super) trend: Vec<f64>,    // mpTrend
+    pub(super) per_idx: Vec<f64>,  // mpPerIdx - seasonal indices
+    pub(super) forecast: Vec<f64>, // mpForecast - one-step-ahead forecasts
+    pub(super) n: usize,           // mnCount
+    pub(super) m: usize,           // mnSmplInPrd - samples in period
+    pub(super) step_size: f64,     // mfStepSize
+    pub(super) alpha: f64,         // mfAlpha - level smoothing
+    pub(super) beta: f64,          // mfBeta - seasonal smoothing (LO convention)
+    pub(super) gamma: f64,         // mfGamma - trend smoothing (LO convention)
+    pub(super) mse: f64,           // mfMSE
+    pub(super) b_eds: bool,        // bEDS - exponential double smoothing (no seasonality)
 }
 
 pub(super) const CF_MIN_ABC_RESOLUTION: f64 = 0.001;
 
 impl EtsModel {
-    pub(super) fn new(values: &[f64], timeline: &[f64], step_size: f64, season_length: usize, b_eds: bool) -> Self {
+    pub(super) fn new(
+        values: &[f64],
+        timeline: &[f64],
+        step_size: f64,
+        season_length: usize,
+        b_eds: bool,
+    ) -> Self {
         let n = values.len();
         EtsModel {
             values: values.to_vec(),
@@ -85,8 +91,7 @@ impl EtsModel {
     /// ETS: T[0] = sum(Y[i+m] - Y[i], i=0..m-1) / (m*m)
     fn prefill_trend_data(&mut self) {
         if self.b_eds {
-            self.trend[0] =
-                (self.values[self.n - 1] - self.values[0]) / (self.n - 1) as f64;
+            self.trend[0] = (self.values[self.n - 1] - self.values[0]) / (self.n - 1) as f64;
         } else {
             let m = self.m;
             let mut sum = 0.0;
@@ -123,8 +128,7 @@ impl EtsModel {
                 let idx = k * m + j;
                 if idx < self.n {
                     fi += self.values[idx]
-                        - (pavg
-                            + (j as f64 - 0.5 * (m as f64 - 1.0)) * self.trend[0]);
+                        - (pavg + (j as f64 - 0.5 * (m as f64 - 1.0)) * self.trend[0]);
                 }
             }
             self.per_idx[j] = fi / n_periods as f64;
@@ -173,8 +177,7 @@ impl EtsModel {
                 self.trend[i] = self.gamma * (self.base[i] - self.base[i - 1])
                     + (1.0 - self.gamma) * self.trend[i - 1];
 
-                self.forecast[i] =
-                    self.base[i - 1] + self.trend[i - 1] + self.per_idx[n_idx];
+                self.forecast[i] = self.base[i - 1] + self.trend[i - 1] + self.per_idx[n_idx];
             }
         }
         self.calc_accuracy_indicators();
@@ -209,7 +212,6 @@ impl EtsModel {
         self.calc_alpha_beta_gamma();
     }
 
-
     /// Optimize ETS using concentrated MLE innovations form.
     /// For fixed (α, β, γ), initial states are computed analytically (concentrated MLE).
     /// Then (α, β, γ) are optimized with Nelder-Mead.
@@ -233,8 +235,7 @@ impl EtsModel {
         let mut global_best_init: Vec<f64> = vec![0.0; m + 2];
 
         for start in &starting_points {
-            let (params, sse, init_states) =
-                Self::run_ets_concentrated_nm(&self.values, m, start);
+            let (params, sse, init_states) = Self::run_ets_concentrated_nm(&self.values, m, start);
             if sse < global_best_sse {
                 global_best_sse = sse;
                 global_best = params;
@@ -329,8 +330,8 @@ impl EtsModel {
         let mut ata00 = 0.0; // sum(cl^2)
         let mut ata01 = 0.0; // sum(cl*cb)
         let mut ata11 = 0.0; // sum(cb^2)
-        let mut atb0 = 0.0;  // sum(cl*(Y-cc))
-        let mut atb1 = 0.0;  // sum(cb*(Y-cc))
+        let mut atb0 = 0.0; // sum(cl*(Y-cc))
+        let mut atb1 = 0.0; // sum(cb*(Y-cc))
 
         for &val in values.iter().take(n) {
             // Forecast coefficients at time t
@@ -527,8 +528,16 @@ impl EtsModel {
                 f_values[worst] = f_reflected;
             } else {
                 let use_outside = f_reflected < f_values[worst];
-                let ref_point = if use_outside { reflected } else { simplex[worst] };
-                let f_ref = if use_outside { f_reflected } else { f_values[worst] };
+                let ref_point = if use_outside {
+                    reflected
+                } else {
+                    simplex[worst]
+                };
+                let f_ref = if use_outside {
+                    f_reflected
+                } else {
+                    f_values[worst]
+                };
 
                 let mut contracted = [0.0; 2];
                 for j in 0..n_params {
@@ -542,7 +551,11 @@ impl EtsModel {
                 } else {
                     for &idx in &order[1..] {
                         let best_vertex = simplex[best];
-                        for (s, &b) in simplex[idx].iter_mut().zip(best_vertex.iter()).take(n_params) {
+                        for (s, &b) in simplex[idx]
+                            .iter_mut()
+                            .zip(best_vertex.iter())
+                            .take(n_params)
+                        {
                             *s = b + 0.5 * (*s - b);
                         }
                         f_values[idx] = eval(&simplex[idx]);
@@ -669,8 +682,8 @@ impl EtsModel {
             for k in 0..dim {
                 new_lev[k] = (1.0 - alpha) * (lev[k] + trd[k]) - alpha * sea[s_idx][k];
             }
-            new_lev[dim] = (1.0 - alpha) * (lev[dim] + trd[dim]) - alpha * sea[s_idx][dim]
-                + alpha * val;
+            new_lev[dim] =
+                (1.0 - alpha) * (lev[dim] + trd[dim]) - alpha * sea[s_idx][dim] + alpha * val;
 
             // b[t+1] = b[t] + γ*e[t]
             //        = b[t] + γ*(Y[t] - l[t] - b[t] - s[t%m])
@@ -679,8 +692,7 @@ impl EtsModel {
             for k in 0..dim {
                 new_trd[k] = -gamma * lev[k] + (1.0 - gamma) * trd[k] - gamma * sea[s_idx][k];
             }
-            new_trd[dim] = -gamma * lev[dim] + (1.0 - gamma) * trd[dim]
-                - gamma * sea[s_idx][dim]
+            new_trd[dim] = -gamma * lev[dim] + (1.0 - gamma) * trd[dim] - gamma * sea[s_idx][dim]
                 + gamma * val;
 
             // s[t%m] += β*e[t]
@@ -688,12 +700,10 @@ impl EtsModel {
             //         = -β*l[t] - β*b[t] + (1-β)*s[t%m] + β*Y[t]
             let mut new_sea = vec![0.0; dim + 1];
             for k in 0..dim {
-                new_sea[k] =
-                    -beta * lev[k] - beta * trd[k] + (1.0 - beta) * sea[s_idx][k];
+                new_sea[k] = -beta * lev[k] - beta * trd[k] + (1.0 - beta) * sea[s_idx][k];
             }
-            new_sea[dim] = -beta * lev[dim] - beta * trd[dim]
-                + (1.0 - beta) * sea[s_idx][dim]
-                + beta * val;
+            new_sea[dim] =
+                -beta * lev[dim] - beta * trd[dim] + (1.0 - beta) * sea[s_idx][dim] + beta * val;
 
             lev = new_lev;
             trd = new_trd;
@@ -808,8 +818,7 @@ impl EtsModel {
             let b = p[1].clamp(0.0, 0.99);
             let g = p[2].clamp(0.0, 0.99);
             let (sse, init_states) = Self::ets_aaa_concentrated(values, m, a, b, g);
-            let penalty = 1e8
-                * ((p[0] - a).powi(2) + (p[1] - b).powi(2) + (p[2] - g).powi(2));
+            let penalty = 1e8 * ((p[0] - a).powi(2) + (p[1] - b).powi(2) + (p[2] - g).powi(2));
             (sse + penalty, init_states)
         };
 
@@ -874,7 +883,11 @@ impl EtsModel {
                 results[worst] = (f_reflected, init_reflected);
             } else {
                 let use_outside = f_reflected < f_values[worst];
-                let ref_point = if use_outside { reflected } else { simplex[worst] };
+                let ref_point = if use_outside {
+                    reflected
+                } else {
+                    simplex[worst]
+                };
                 let f_ref = if use_outside {
                     f_reflected
                 } else {
@@ -982,8 +995,7 @@ impl EtsModel {
             if f_interpolate >= CF_MIN_ABC_RESOLUTION {
                 let f_interpolate_factor = f_interpolate / self.step_size;
                 let fc_1 = if self.b_eds {
-                    self.base[self.n - 1]
-                        + (n_steps + 1) as f64 * self.trend[self.n - 1]
+                    self.base[self.n - 1] + (n_steps + 1) as f64 * self.trend[self.n - 1]
                 } else {
                     let s_idx_1 = self.n - 1 - self.m + ((n_steps + 1) % self.m);
                     self.base[self.n - 1]

@@ -54,7 +54,10 @@ pub fn codcel_regexextract(
         }
         1 => {
             // Return all matches
-            let matches: Vec<String> = regex.find_iter(text).map(|m| m.as_str().to_string()).collect();
+            let matches: Vec<String> = regex
+                .find_iter(text)
+                .map(|m| m.as_str().to_string())
+                .collect();
             if matches.is_empty() {
                 Err("#N/A REGEXEXTRACT: No match found.".into())
             } else {
@@ -148,7 +151,8 @@ mod tests {
 
     #[test]
     fn test_regexextract_word_pattern() {
-        let result = codcel_regexextract("The quick brown fox", r"\b\w{5}\b", Some(1), None).unwrap();
+        let result =
+            codcel_regexextract("The quick brown fox", r"\b\w{5}\b", Some(1), None).unwrap();
         assert_eq!(result, vec!["quick", "brown"]);
     }
 
@@ -197,8 +201,7 @@ mod tests {
     #[test]
     fn test_regexextract_optional_capture_group() {
         // One capture group matches, the other is optional and doesn't
-        let result =
-            codcel_regexextract("abc", r"(a)(z)?", Some(2), None).unwrap();
+        let result = codcel_regexextract("abc", r"(a)(z)?", Some(2), None).unwrap();
         assert_eq!(result, vec!["a".to_string(), String::new()]);
     }
 }

@@ -4,22 +4,21 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
-pub mod dbcs_utils;
 pub mod codcel_array_to_text;
 pub mod codcel_asc;
 pub mod codcel_bahttext;
-pub mod codcel_dbcs;
-pub mod codcel_jis;
 pub mod codcel_char;
 pub mod codcel_clean;
 pub mod codcel_code;
 pub mod codcel_concat;
 pub mod codcel_concatenate;
+pub mod codcel_dbcs;
 pub mod codcel_dollar;
 pub mod codcel_exact;
 pub mod codcel_find;
 pub mod codcel_findb;
 pub mod codcel_fixed;
+pub mod codcel_jis;
 pub mod codcel_left;
 pub mod codcel_leftb;
 pub mod codcel_lower;
@@ -50,3 +49,4 @@ pub mod codcel_uni_char;
 pub mod codcel_unicode;
 pub mod codcel_upper;
 pub mod codcel_value_to_text;
+pub mod dbcs_utils;

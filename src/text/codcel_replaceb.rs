@@ -57,7 +57,10 @@ pub fn codcel_replaceb<S: AsRef<str>>(
     }
 
     let before: String = old_text.chars().take(start_char_idx).collect();
-    let after: String = old_text.chars().skip(start_char_idx + chars_to_replace).collect();
+    let after: String = old_text
+        .chars()
+        .skip(start_char_idx + chars_to_replace)
+        .collect();
 
     Ok(format!("{before}{new_text}{after}"))
 }

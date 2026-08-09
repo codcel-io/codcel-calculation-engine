@@ -24,7 +24,11 @@ pub fn is_dbcs_wide(c: char) -> bool {
 
 /// Returns the DBCS byte width of a single character (1 or 2).
 pub fn dbcs_char_width(c: char) -> usize {
-    if is_dbcs_wide(c) { 2 } else { 1 }
+    if is_dbcs_wide(c) {
+        2
+    } else {
+        1
+    }
 }
 
 /// Returns the total DBCS byte length of a string.
@@ -122,7 +126,7 @@ mod tests {
         assert_eq!(dbcs_chars_fitting_in_bytes("中国香港", 6), 3);
         // Mixed
         assert_eq!(dbcs_chars_fitting_in_bytes("Hello中国", 7), 6); // 5 ASCII + 1 CJK = 7
-        // Emoji: 1 byte each in DBCS
+                                                                    // Emoji: 1 byte each in DBCS
         assert_eq!(dbcs_chars_fitting_in_bytes("😀😃😄", 2), 2);
         // Accented: 1 byte each in DBCS
         assert_eq!(dbcs_chars_fitting_in_bytes("Héllo", 3), 3);

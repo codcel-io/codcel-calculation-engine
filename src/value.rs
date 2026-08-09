@@ -203,10 +203,22 @@ impl Value {
             Value::OptionString(Some(s)) => s.clone(),
             Value::F64(f) => f.to_string(),
             Value::I32(i) => i.to_string(),
-            Value::Bool(b) => if *b { "TRUE".to_string() } else { "FALSE".to_string() },
+            Value::Bool(b) => {
+                if *b {
+                    "TRUE".to_string()
+                } else {
+                    "FALSE".to_string()
+                }
+            }
             Value::OptionF64(Some(f)) => f.to_string(),
             Value::OptionI32(Some(i)) => i.to_string(),
-            Value::OptionBool(Some(b)) => if *b { "TRUE".to_string() } else { "FALSE".to_string() },
+            Value::OptionBool(Some(b)) => {
+                if *b {
+                    "TRUE".to_string()
+                } else {
+                    "FALSE".to_string()
+                }
+            }
             Value::ChronoDateTime(dt) => dt.to_string(),
             Value::OptionChronoDateTime(Some(dt)) => dt.to_string(),
             Value::Time(t) => time_to_iso(t),
@@ -425,10 +437,14 @@ impl Value {
                 Err("Cannot convert empty value area to number value".into())
             }
             Value::None => Err("Cannot convert none to number value".into()),
-            Value::ChronoDateTime(value) => date_time_to_excel(value, value_format.allow_lotus_1_2_3_1900_date_bug),
+            Value::ChronoDateTime(value) => {
+                date_time_to_excel(value, value_format.allow_lotus_1_2_3_1900_date_bug)
+            }
             Value::OptionChronoDateTime(value) => match value {
                 None => Err("Cannot convert date time none to number value".into()),
-                Some(value) => date_time_to_excel(value, value_format.allow_lotus_1_2_3_1900_date_bug),
+                Some(value) => {
+                    date_time_to_excel(value, value_format.allow_lotus_1_2_3_1900_date_bug)
+                }
             },
             Value::OptionTime(value) => match value {
                 None => Err("Cannot convert time none to number value".into()),
@@ -444,25 +460,39 @@ impl Value {
         value_format: &ValueFormat,
     ) -> Result<DateTime<Utc>, Box<dyn Error + Send + Sync>> {
         match self {
-            Value::F64(value) => excel_to_date_time(*value, value_format.allow_lotus_1_2_3_1900_date_bug),
-            Value::I32(value) => {
-                excel_to_date_time(float(*value, &value_format.decimal_separator)?, value_format.allow_lotus_1_2_3_1900_date_bug)
+            Value::F64(value) => {
+                excel_to_date_time(*value, value_format.allow_lotus_1_2_3_1900_date_bug)
             }
-            Value::String(value) => {
-                force_string_to_date_time(value, &value_format.decimal_separator, value_format.allow_lotus_1_2_3_1900_date_bug)
-            }
+            Value::I32(value) => excel_to_date_time(
+                float(*value, &value_format.decimal_separator)?,
+                value_format.allow_lotus_1_2_3_1900_date_bug,
+            ),
+            Value::String(value) => force_string_to_date_time(
+                value,
+                &value_format.decimal_separator,
+                value_format.allow_lotus_1_2_3_1900_date_bug,
+            ),
             Value::Bool(_value) => Err("Cannot convert boolean to date time value".into()),
             Value::OptionF64(value) => match value {
                 None => Err("Cannot convert float none to date time value".into()),
-                Some(value) => excel_to_date_time(*value, value_format.allow_lotus_1_2_3_1900_date_bug),
+                Some(value) => {
+                    excel_to_date_time(*value, value_format.allow_lotus_1_2_3_1900_date_bug)
+                }
             },
             Value::OptionI32(value) => match value {
                 None => Err("Cannot convert integer none to date time value".into()),
-                Some(value) => excel_to_date_time(float(*value, &value_format.decimal_separator)?, value_format.allow_lotus_1_2_3_1900_date_bug),
+                Some(value) => excel_to_date_time(
+                    float(*value, &value_format.decimal_separator)?,
+                    value_format.allow_lotus_1_2_3_1900_date_bug,
+                ),
             },
             Value::OptionString(value) => match value {
                 None => Err("Cannot convert string none to date time value".into()),
-                Some(value) => force_string_to_date_time(value, &value_format.decimal_separator, value_format.allow_lotus_1_2_3_1900_date_bug),
+                Some(value) => force_string_to_date_time(
+                    value,
+                    &value_format.decimal_separator,
+                    value_format.allow_lotus_1_2_3_1900_date_bug,
+                ),
             },
             Value::OptionBool(value) => match value {
                 None => Err("Cannot convert boolean none to date time value".into()),
@@ -527,11 +557,14 @@ impl Value {
         value_format: &ValueFormat,
     ) -> Result<Option<DateTime<Utc>>, Box<dyn Error + Send + Sync>> {
         match self {
-            Value::F64(value) => Ok(Some(excel_to_date_time(*value, value_format.allow_lotus_1_2_3_1900_date_bug)?)),
-            Value::I32(value) => Ok(Some(excel_to_date_time(float(
+            Value::F64(value) => Ok(Some(excel_to_date_time(
                 *value,
-                &value_format.decimal_separator,
-            )?, value_format.allow_lotus_1_2_3_1900_date_bug)?)),
+                value_format.allow_lotus_1_2_3_1900_date_bug,
+            )?)),
+            Value::I32(value) => Ok(Some(excel_to_date_time(
+                float(*value, &value_format.decimal_separator)?,
+                value_format.allow_lotus_1_2_3_1900_date_bug,
+            )?)),
             Value::String(value) => Ok(Some(force_string_to_date_time(
                 value,
                 &value_format.decimal_separator,
@@ -540,14 +573,17 @@ impl Value {
             Value::Bool(_value) => Ok(None),
             Value::OptionF64(value) => match value {
                 None => Ok(None),
-                Some(value) => Ok(Some(excel_to_date_time(*value, value_format.allow_lotus_1_2_3_1900_date_bug)?)),
+                Some(value) => Ok(Some(excel_to_date_time(
+                    *value,
+                    value_format.allow_lotus_1_2_3_1900_date_bug,
+                )?)),
             },
             Value::OptionI32(value) => match value {
                 None => Ok(None),
-                Some(value) => Ok(Some(excel_to_date_time(float(
-                    *value,
-                    &value_format.decimal_separator,
-                )?, value_format.allow_lotus_1_2_3_1900_date_bug)?)),
+                Some(value) => Ok(Some(excel_to_date_time(
+                    float(*value, &value_format.decimal_separator)?,
+                    value_format.allow_lotus_1_2_3_1900_date_bug,
+                )?)),
             },
             Value::OptionString(value) => match value {
                 None => Ok(None),
@@ -845,10 +881,16 @@ impl Value {
                 Ok(None)
             }
             Value::None => Ok(None),
-            Value::ChronoDateTime(value) => Ok(Some(date_time_to_excel(value, value_format.allow_lotus_1_2_3_1900_date_bug)?)),
+            Value::ChronoDateTime(value) => Ok(Some(date_time_to_excel(
+                value,
+                value_format.allow_lotus_1_2_3_1900_date_bug,
+            )?)),
             Value::OptionChronoDateTime(value) => match value {
                 None => Ok(None),
-                Some(value) => Ok(Some(date_time_to_excel(value, value_format.allow_lotus_1_2_3_1900_date_bug)?)),
+                Some(value) => Ok(Some(date_time_to_excel(
+                    value,
+                    value_format.allow_lotus_1_2_3_1900_date_bug,
+                )?)),
             },
             Value::OptionTime(value) => match value {
                 None => Ok(None),
@@ -956,10 +998,16 @@ impl Value {
                 Err("Cannot convert empty value area to number value list".into())
             }
             Value::None => Err("Cannot convert none to number value list".into()),
-            Value::ChronoDateTime(value) => Ok(vec![date_time_to_excel(value, value_format.allow_lotus_1_2_3_1900_date_bug)?]),
+            Value::ChronoDateTime(value) => Ok(vec![date_time_to_excel(
+                value,
+                value_format.allow_lotus_1_2_3_1900_date_bug,
+            )?]),
             Value::OptionChronoDateTime(value) => {
                 if let Some(value) = value {
-                    Ok(vec![date_time_to_excel(value, value_format.allow_lotus_1_2_3_1900_date_bug)?])
+                    Ok(vec![date_time_to_excel(
+                        value,
+                        value_format.allow_lotus_1_2_3_1900_date_bug,
+                    )?])
                 } else {
                     Err("Cannot convert empty date time to number value list".into())
                 }
@@ -1092,12 +1140,16 @@ impl Value {
                 Err("Cannot convert empty value area to whole number value".into())
             }
             Value::None => Err("Cannot convert none to whole number value".into()),
-            Value::ChronoDateTime(value) => {
-                integer(date_time_to_excel(value, value_format.allow_lotus_1_2_3_1900_date_bug)?, &value_format.decimal_separator)
-            }
+            Value::ChronoDateTime(value) => integer(
+                date_time_to_excel(value, value_format.allow_lotus_1_2_3_1900_date_bug)?,
+                &value_format.decimal_separator,
+            ),
             Value::OptionChronoDateTime(value) => {
                 if let Some(value) = value {
-                    integer(date_time_to_excel(value, value_format.allow_lotus_1_2_3_1900_date_bug)?, &value_format.decimal_separator)
+                    integer(
+                        date_time_to_excel(value, value_format.allow_lotus_1_2_3_1900_date_bug)?,
+                        &value_format.decimal_separator,
+                    )
                 } else {
                     Err("Cannot convert empty date time to whole number value".into())
                 }
@@ -1348,11 +1400,14 @@ impl Value {
         value_format: &ValueFormat,
     ) -> Result<Vec<Vec<DateTime<Utc>>>, Box<dyn Error + Send + Sync>> {
         match self {
-            Value::F64(value) => Ok(vec![vec![excel_to_date_time(*value, value_format.allow_lotus_1_2_3_1900_date_bug)?]]),
-            Value::I32(value) => Ok(vec![vec![excel_to_date_time(float(
+            Value::F64(value) => Ok(vec![vec![excel_to_date_time(
                 *value,
-                &value_format.decimal_separator,
-            )?, value_format.allow_lotus_1_2_3_1900_date_bug)?]]),
+                value_format.allow_lotus_1_2_3_1900_date_bug,
+            )?]]),
+            Value::I32(value) => Ok(vec![vec![excel_to_date_time(
+                float(*value, &value_format.decimal_separator)?,
+                value_format.allow_lotus_1_2_3_1900_date_bug,
+            )?]]),
             Value::String(value) => Ok(vec![vec![force_string_to_date_time(
                 value,
                 &value_format.decimal_separator,
@@ -1361,14 +1416,17 @@ impl Value {
             Value::Bool(_value) => Err("Cannot convert boolean to date time value".into()),
             Value::OptionF64(value) => match value {
                 None => Err("Value cannot be None".into()),
-                Some(value) => Ok(vec![vec![excel_to_date_time(*value, value_format.allow_lotus_1_2_3_1900_date_bug)?]]),
+                Some(value) => Ok(vec![vec![excel_to_date_time(
+                    *value,
+                    value_format.allow_lotus_1_2_3_1900_date_bug,
+                )?]]),
             },
             Value::OptionI32(value) => match value {
                 None => Err("Value cannot be None".into()),
-                Some(value) => Ok(vec![vec![excel_to_date_time(float(
-                    *value,
-                    &value_format.decimal_separator,
-                )?, value_format.allow_lotus_1_2_3_1900_date_bug)?]]),
+                Some(value) => Ok(vec![vec![excel_to_date_time(
+                    float(*value, &value_format.decimal_separator)?,
+                    value_format.allow_lotus_1_2_3_1900_date_bug,
+                )?]]),
             },
             Value::OptionString(value) => match value {
                 None => Err("Value cannot be None".into()),
@@ -2273,13 +2331,23 @@ impl Value {
             match self {
                 Value::OptionChronoDateTime(value) => {
                     return if let Some(value) = value {
-                        Ok(date_time_to_excel(value, value_format.allow_lotus_1_2_3_1900_date_bug)?.to_string())
+                        Ok(
+                            date_time_to_excel(
+                                value,
+                                value_format.allow_lotus_1_2_3_1900_date_bug,
+                            )?
+                            .to_string(),
+                        )
                     } else {
                         Err("Cannot convert an empty datetime to a string value".into())
                     };
                 }
                 Value::ChronoDateTime(value) => {
-                    return Ok(date_time_to_excel(value, value_format.allow_lotus_1_2_3_1900_date_bug)?.to_string());
+                    return Ok(date_time_to_excel(
+                        value,
+                        value_format.allow_lotus_1_2_3_1900_date_bug,
+                    )?
+                    .to_string());
                 }
                 _ => {}
             }
@@ -2923,7 +2991,9 @@ impl Value {
             )?]]),
             Value::I32(value) => Ok(vec![vec![value.to_string()]]),
             Value::String(value) => Ok(vec![vec![value.to_string()]]),
-            Value::Bool(value) => Ok(vec![vec![if *value { "TRUE" } else { "FALSE" }.to_string()]]),
+            Value::Bool(value) => Ok(vec![
+                vec![if *value { "TRUE" } else { "FALSE" }.to_string()],
+            ]),
             Value::OptionF64(value) => match value {
                 None => Err("Cannot convert number none to string value area".into()),
                 Some(value) => Ok(vec![vec![float_to_string(
@@ -2982,7 +3052,8 @@ impl Value {
                             .iter()
                             .map(|val| match val {
                                 Value::None => String::new(),
-                                other => other.string(value_format)
+                                other => other
+                                    .string(value_format)
                                     .expect("Cannot convert value area to string value area"),
                             })
                             .collect()
@@ -3003,9 +3074,9 @@ impl Value {
                                 .iter()
                                 .map(|val| match val {
                                     Value::None => String::new(),
-                                    other => other.string(value_format).expect(
-                                        "Cannot convert value area to string value area",
-                                    ),
+                                    other => other
+                                        .string(value_format)
+                                        .expect("Cannot convert value area to string value area"),
                                 })
                                 .collect()
                         })
@@ -3103,7 +3174,8 @@ impl Value {
                             .iter()
                             .map(|val| match val {
                                 Value::None => 0.0,
-                                other => other.f64(value_format)
+                                other => other
+                                    .f64(value_format)
                                     .expect("Cannot convert value area to number value area"),
                             })
                             .collect()
@@ -3124,9 +3196,9 @@ impl Value {
                                 .iter()
                                 .map(|val| match val {
                                     Value::None => 0.0,
-                                    other => other.f64(value_format).expect(
-                                        "Cannot convert value area to number value area",
-                                    ),
+                                    other => other
+                                        .f64(value_format)
+                                        .expect("Cannot convert value area to number value area"),
                                 })
                                 .collect()
                         })
@@ -3139,10 +3211,16 @@ impl Value {
                 Err("Cannot convert empty value area to number value area".into())
             }
             Value::None => Err("Cannot convert none to number value list".into()),
-            Value::ChronoDateTime(value) => Ok(vec![vec![date_time_to_excel(value, value_format.allow_lotus_1_2_3_1900_date_bug)?]]),
+            Value::ChronoDateTime(value) => Ok(vec![vec![date_time_to_excel(
+                value,
+                value_format.allow_lotus_1_2_3_1900_date_bug,
+            )?]]),
             Value::OptionChronoDateTime(value) => {
                 if let Some(value) = value {
-                    Ok(vec![vec![date_time_to_excel(value, value_format.allow_lotus_1_2_3_1900_date_bug)?]])
+                    Ok(vec![vec![date_time_to_excel(
+                        value,
+                        value_format.allow_lotus_1_2_3_1900_date_bug,
+                    )?]])
                 } else {
                     Err("Cannot convert empty date time to number value area".into())
                 }
@@ -3243,7 +3321,8 @@ impl Value {
                             .iter()
                             .map(|val| match val {
                                 Value::None => 0,
-                                other => other.i32(value_format)
+                                other => other
+                                    .i32(value_format)
                                     .expect("Cannot convert value area to number value area"),
                             })
                             .collect()
@@ -3264,9 +3343,9 @@ impl Value {
                                 .iter()
                                 .map(|val| match val {
                                     Value::None => 0,
-                                    other => other.i32(value_format).expect(
-                                        "Cannot convert value area to number value area",
-                                    ),
+                                    other => other
+                                        .i32(value_format)
+                                        .expect("Cannot convert value area to number value area"),
                                 })
                                 .collect()
                         })

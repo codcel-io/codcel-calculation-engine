@@ -28,9 +28,7 @@ pub(crate) fn resolve_index(
     } else {
         let abs_idx = idx.unsigned_abs() as usize;
         if abs_idx > total {
-            return Err(
-                format!("{func_name}: {dimension} index {idx} is out of range").into(),
-            );
+            return Err(format!("{func_name}: {dimension} index {idx} is out of range").into());
         }
         total - abs_idx
     };

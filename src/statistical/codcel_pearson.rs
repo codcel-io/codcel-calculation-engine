@@ -48,7 +48,8 @@ pub fn codcel_pearson(
     }
 
     // Pearson correlation coefficient
-    let result = covariance / (crate::portable_math::sqrt(variance1) * crate::portable_math::sqrt(variance2));
+    let result = covariance
+        / (crate::portable_math::sqrt(variance1) * crate::portable_math::sqrt(variance2));
 
     Ok(result)
 }

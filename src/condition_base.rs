@@ -159,9 +159,14 @@ pub fn count_if(
         .flat_map(|row| row.iter())
         .filter(|cell| {
             let cell_value = case_insensitive_cell(cell, value_format);
-            compare(&cell_value, &comparison_value, &condition_operator, value_format)
-                .map(|result| result.bool(value_format).unwrap_or(false))
-                .unwrap_or(false)
+            compare(
+                &cell_value,
+                &comparison_value,
+                &condition_operator,
+                value_format,
+            )
+            .map(|result| result.bool(value_format).unwrap_or(false))
+            .unwrap_or(false)
         })
         .count() as i32;
 

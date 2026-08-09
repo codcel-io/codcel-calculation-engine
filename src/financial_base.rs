@@ -16,8 +16,7 @@ use crate::area::{
     process_area_float_float_float_opt_float_opt_int_opt_float_to_float,
     process_area_float_float_float_opt_float_opt_int_to_float,
     process_area_float_int_float_float_opt_float_opt_int_to_float,
-    process_area_float_int_int_float_opt_float_opt_int_to_float,
-    process_area_float_multi_to_float,
+    process_area_float_int_int_float_opt_float_opt_int_to_float, process_area_float_multi_to_float,
 };
 use crate::financial::codcel_accr_int::codcel_accr_int;
 use crate::financial::codcel_accr_intm::codcel_accr_intm;

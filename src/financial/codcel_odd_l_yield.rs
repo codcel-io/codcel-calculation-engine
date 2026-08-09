@@ -218,10 +218,7 @@ mod tests {
         )
         .unwrap();
         println!("both_zero: {result}");
-        assert!(
-            result.abs() < 0.000001,
-            "Expected 0.0, got {result}"
-        );
+        assert!(result.abs() < 0.000001, "Expected 0.0, got {result}");
     }
 
     #[test]

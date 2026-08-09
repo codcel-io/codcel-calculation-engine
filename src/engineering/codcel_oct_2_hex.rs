@@ -80,10 +80,7 @@ mod tests {
 
     #[test]
     fn test_oct_2_hex_with_places() {
-        assert_eq!(
-            codcel_oct_2_hex("10".to_string(), Some(4)).unwrap(),
-            "0008"
-        );
+        assert_eq!(codcel_oct_2_hex("10".to_string(), Some(4)).unwrap(), "0008");
     }
 
     #[test]

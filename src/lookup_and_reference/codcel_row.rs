@@ -11,9 +11,7 @@ use std::error::Error;
 ///
 /// Most ROW calls are resolved at transpile time to literal integers.
 /// This runtime fallback handles edge cases with non-reference arguments.
-pub fn codcel_row(
-    _array: Vec<Vec<Value>>,
-) -> Result<Value, Box<dyn Error + Send + Sync>> {
+pub fn codcel_row(_array: Vec<Vec<Value>>) -> Result<Value, Box<dyn Error + Send + Sync>> {
     Ok(Value::I32(0))
 }
 

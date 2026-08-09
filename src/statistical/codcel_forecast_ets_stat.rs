@@ -69,9 +69,7 @@ pub fn codcel_forecast_ets_stat(
         s => {
             let s = s as usize;
             if n < 2 * s {
-                return Err(
-                    "FORECAST.ETS.STAT: need at least 2 complete seasonal periods.".into(),
-                );
+                return Err("FORECAST.ETS.STAT: need at least 2 complete seasonal periods.".into());
             }
             s
         }
@@ -418,9 +416,8 @@ mod tests {
         // Monthly dates on the 1st: Jan 2021 through Dec 2022 (24 points)
         // Excel serial dates for 1st of each month
         let timeline = vec![
-            44197.0, 44228.0, 44256.0, 44287.0, 44317.0, 44348.0,
-            44378.0, 44409.0, 44440.0, 44470.0, 44501.0, 44531.0,
-            44562.0, 44593.0, 44621.0, 44652.0, 44682.0, 44713.0,
+            44197.0, 44228.0, 44256.0, 44287.0, 44317.0, 44348.0, 44378.0, 44409.0, 44440.0,
+            44470.0, 44501.0, 44531.0, 44562.0, 44593.0, 44621.0, 44652.0, 44682.0, 44713.0,
             44743.0, 44774.0, 44805.0, 44835.0, 44866.0, 44896.0,
         ];
         let values: Vec<f64> = (1..=24).map(|i| 200.0 + i as f64 * 5.0).collect();
@@ -474,14 +471,8 @@ mod tests {
 
     #[test]
     fn test_stat_mismatched_arrays() {
-        let result = codcel_forecast_ets_stat(
-            vec![1.0, 2.0, 3.0],
-            vec![1.0, 2.0],
-            1,
-            None,
-            None,
-            None,
-        );
+        let result =
+            codcel_forecast_ets_stat(vec![1.0, 2.0, 3.0], vec![1.0, 2.0], 1, None, None, None);
         assert!(result.is_err());
     }
 
@@ -497,15 +488,28 @@ mod tests {
         let values = vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0];
         let timeline = vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0];
 
-        let alpha = codcel_forecast_ets_stat(values.clone(), timeline.clone(), 1, Some(0), None, None).unwrap();
-        let beta = codcel_forecast_ets_stat(values.clone(), timeline.clone(), 2, Some(0), None, None).unwrap();
-        let gamma = codcel_forecast_ets_stat(values.clone(), timeline.clone(), 3, Some(0), None, None).unwrap();
-        let mae = codcel_forecast_ets_stat(values.clone(), timeline.clone(), 6, Some(0), None, None).unwrap();
-        let rmse = codcel_forecast_ets_stat(values.clone(), timeline.clone(), 7, Some(0), None, None).unwrap();
+        let alpha =
+            codcel_forecast_ets_stat(values.clone(), timeline.clone(), 1, Some(0), None, None)
+                .unwrap();
+        let beta =
+            codcel_forecast_ets_stat(values.clone(), timeline.clone(), 2, Some(0), None, None)
+                .unwrap();
+        let gamma =
+            codcel_forecast_ets_stat(values.clone(), timeline.clone(), 3, Some(0), None, None)
+                .unwrap();
+        let mae =
+            codcel_forecast_ets_stat(values.clone(), timeline.clone(), 6, Some(0), None, None)
+                .unwrap();
+        let rmse =
+            codcel_forecast_ets_stat(values.clone(), timeline.clone(), 7, Some(0), None, None)
+                .unwrap();
 
         assert!(alpha >= 0.0 && alpha <= 1.0, "Alpha={alpha}");
         assert!(beta >= 0.0 && beta <= 1.0, "Beta={beta}");
-        assert!((gamma - 0.0).abs() < 1e-10, "Gamma should be 0 for EDS, got {gamma}");
+        assert!(
+            (gamma - 0.0).abs() < 1e-10,
+            "Gamma should be 0 for EDS, got {gamma}"
+        );
         assert!(mae.is_finite(), "MAE should be finite, got {mae}");
         assert!(rmse.is_finite(), "RMSE should be finite, got {rmse}");
     }
@@ -573,9 +577,15 @@ mod tests {
         let values = vec![5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0, 5.0];
         let timeline = vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0];
 
-        let mae = codcel_forecast_ets_stat(values.clone(), timeline.clone(), 6, Some(0), None, None).unwrap();
-        let rmse = codcel_forecast_ets_stat(values.clone(), timeline.clone(), 7, Some(0), None, None).unwrap();
-        let smape = codcel_forecast_ets_stat(values.clone(), timeline.clone(), 5, Some(0), None, None).unwrap();
+        let mae =
+            codcel_forecast_ets_stat(values.clone(), timeline.clone(), 6, Some(0), None, None)
+                .unwrap();
+        let rmse =
+            codcel_forecast_ets_stat(values.clone(), timeline.clone(), 7, Some(0), None, None)
+                .unwrap();
+        let smape =
+            codcel_forecast_ets_stat(values.clone(), timeline.clone(), 5, Some(0), None, None)
+                .unwrap();
 
         assert!(mae.is_finite(), "MAE should be finite, got {mae}");
         assert!(rmse.is_finite(), "RMSE should be finite, got {rmse}");

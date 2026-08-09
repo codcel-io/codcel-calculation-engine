@@ -146,10 +146,7 @@ mod tests {
 
     #[test]
     fn trimrange_empty_cols_left_right() {
-        let array = vec![
-            vec![e(), Value::I32(1), e()],
-            vec![e(), Value::I32(2), e()],
-        ];
+        let array = vec![vec![e(), Value::I32(1), e()], vec![e(), Value::I32(2), e()]];
         let result = area(codcel_trimrange(array, None, None).unwrap());
         assert_eq!(result.len(), 2);
         assert_eq!(result[0].len(), 1);
@@ -300,10 +297,7 @@ mod tests {
     // trim_rows=3, trim_columns=1 (leading cols only)
     #[test]
     fn trimrange_trim_leading_cols_only() {
-        let array = vec![
-            vec![e(), Value::I32(1), e()],
-            vec![e(), Value::I32(2), e()],
-        ];
+        let array = vec![vec![e(), Value::I32(1), e()], vec![e(), Value::I32(2), e()]];
         let result = area(codcel_trimrange(array, Some(3), Some(1)).unwrap());
         assert_eq!(result.len(), 2);
         assert_eq!(result[0].len(), 2); // cols 1 and 2 (trailing empty not trimmed)
@@ -314,10 +308,7 @@ mod tests {
     // trim_rows=3, trim_columns=2 (trailing cols only)
     #[test]
     fn trimrange_trim_trailing_cols_only() {
-        let array = vec![
-            vec![e(), Value::I32(1), e()],
-            vec![e(), Value::I32(2), e()],
-        ];
+        let array = vec![vec![e(), Value::I32(1), e()], vec![e(), Value::I32(2), e()]];
         let result = area(codcel_trimrange(array, Some(3), Some(2)).unwrap());
         assert_eq!(result.len(), 2);
         assert_eq!(result[0].len(), 2); // cols 0 and 1 (leading empty not trimmed)

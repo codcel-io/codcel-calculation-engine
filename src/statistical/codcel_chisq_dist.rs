@@ -82,7 +82,8 @@ pub fn codcel_chisq_dist(
     if cumulative {
         Ok(regularized_gamma_lower(a, x_scaled))
     } else {
-        let numerator = crate::portable_math::powf(x, a - 1.0) * crate::portable_math::exp(-x_scaled);
+        let numerator =
+            crate::portable_math::powf(x, a - 1.0) * crate::portable_math::exp(-x_scaled);
         let denominator = crate::portable_math::powf(2f64, a) * tgamma(a);
         Ok(numerator / denominator)
     }

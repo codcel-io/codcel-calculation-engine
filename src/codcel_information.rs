@@ -7,14 +7,14 @@
 use crate::area::{process_area_value_to_bool, process_area_value_to_float};
 use crate::information::codcel_error_type::codcel_error_type;
 use crate::information::codcel_is_blank::codcel_is_blank;
-use crate::information::codcel_iserr::codcel_iserr;
-use crate::information::codcel_iserror::codcel_iserror;
 use crate::information::codcel_is_even::codcel_is_even;
 use crate::information::codcel_is_non_text::codcel_is_non_text;
 use crate::information::codcel_is_number::codcel_is_number;
 use crate::information::codcel_is_odd::codcel_is_odd;
 use crate::information::codcel_is_omitted::codcel_is_omitted;
 use crate::information::codcel_is_text::codcel_is_text;
+use crate::information::codcel_iserr::codcel_iserr;
+use crate::information::codcel_iserror::codcel_iserror;
 use crate::information::codcel_isna::codcel_isna;
 use crate::information::codcel_n::codcel_n;
 use crate::information::codcel_type::codcel_type;
@@ -85,12 +85,7 @@ pub fn is_blank(
     strict_type_conversion: bool,
     value_format: &ValueFormat,
 ) -> Result<Value, Box<dyn Error + Send + Sync>> {
-    process_area_value_to_bool(
-        value,
-        strict_type_conversion,
-        value_format,
-        codcel_is_blank,
-    )
+    process_area_value_to_bool(value, strict_type_conversion, value_format, codcel_is_blank)
 }
 
 pub fn iserr(
@@ -98,12 +93,7 @@ pub fn iserr(
     strict_type_conversion: bool,
     value_format: &ValueFormat,
 ) -> Result<Value, Box<dyn Error + Send + Sync>> {
-    process_area_value_to_bool(
-        value,
-        strict_type_conversion,
-        value_format,
-        codcel_iserr,
-    )
+    process_area_value_to_bool(value, strict_type_conversion, value_format, codcel_iserr)
 }
 
 pub fn iserror(
@@ -111,12 +101,7 @@ pub fn iserror(
     strict_type_conversion: bool,
     value_format: &ValueFormat,
 ) -> Result<Value, Box<dyn Error + Send + Sync>> {
-    process_area_value_to_bool(
-        value,
-        strict_type_conversion,
-        value_format,
-        codcel_iserror,
-    )
+    process_area_value_to_bool(value, strict_type_conversion, value_format, codcel_iserror)
 }
 
 pub fn is_omitted(
@@ -153,5 +138,10 @@ pub fn error_type(
     strict_type_conversion: bool,
     value_format: &ValueFormat,
 ) -> Result<Value, Box<dyn Error + Send + Sync>> {
-    process_area_value_to_float(value, strict_type_conversion, value_format, codcel_error_type)
+    process_area_value_to_float(
+        value,
+        strict_type_conversion,
+        value_format,
+        codcel_error_type,
+    )
 }

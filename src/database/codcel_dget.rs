@@ -48,10 +48,26 @@ mod tests {
 
     fn db() -> Value {
         Value::AreaValue(vec![
-            vec![Value::String("Name".into()), Value::String("Dept".into()), Value::String("Salary".into())],
-            vec![Value::String("Alice".into()), Value::String("Eng".into()), Value::F64(100.0)],
-            vec![Value::String("Bob".into()), Value::String("Eng".into()), Value::F64(80.0)],
-            vec![Value::String("Carol".into()), Value::String("Sales".into()), Value::F64(120.0)],
+            vec![
+                Value::String("Name".into()),
+                Value::String("Dept".into()),
+                Value::String("Salary".into()),
+            ],
+            vec![
+                Value::String("Alice".into()),
+                Value::String("Eng".into()),
+                Value::F64(100.0),
+            ],
+            vec![
+                Value::String("Bob".into()),
+                Value::String("Eng".into()),
+                Value::F64(80.0),
+            ],
+            vec![
+                Value::String("Carol".into()),
+                Value::String("Sales".into()),
+                Value::F64(120.0),
+            ],
         ])
     }
 

@@ -222,7 +222,12 @@ pub fn chi_test(
         (rows, cols)
     };
 
-    Ok(Value::F64(codcel_chi_test(actual_range, expected_range, rows, cols)?))
+    Ok(Value::F64(codcel_chi_test(
+        actual_range,
+        expected_range,
+        rows,
+        cols,
+    )?))
 }
 
 /// Excel-compatible `COVAR` function.

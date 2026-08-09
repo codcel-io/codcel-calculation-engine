@@ -49,7 +49,9 @@ pub fn codcel_linest(
 
             let n_rows = xs_2d.len();
             if n_rows != n {
-                return Err("LINEST: known_ys and known_xs must have the same number of rows.".into());
+                return Err(
+                    "LINEST: known_ys and known_xs must have the same number of rows.".into(),
+                );
             }
             let k = xs_2d[0].len();
             if k == 0 {
@@ -59,7 +61,9 @@ pub fn codcel_linest(
             let mut cols = vec![vec![0.0; n]; k];
             for i in 0..n {
                 if xs_2d[i].len() != k {
-                    return Err("LINEST: All rows in known_xs must have the same number of columns.".into());
+                    return Err(
+                        "LINEST: All rows in known_xs must have the same number of columns.".into(),
+                    );
                 }
                 for j in 0..k {
                     cols[j][i] = xs_2d[i][j];
@@ -94,7 +98,10 @@ pub fn codcel_linest(
     let xtx = x.transpose() * &x;
     let xty = x.transpose() * &y;
 
-    let beta = xtx.clone().lu().solve(&xty)
+    let beta = xtx
+        .clone()
+        .lu()
+        .solve(&xty)
         .ok_or("LINEST: Cannot solve the linear system (singular matrix).")?;
 
     // Extract coefficients
@@ -114,7 +121,11 @@ pub fn codcel_linest(
 
     // Calculate statistics
     let n_f = n as f64;
-    let df_residual = if constant { n_f - k as f64 - 1.0 } else { n_f - k as f64 };
+    let df_residual = if constant {
+        n_f - k as f64 - 1.0
+    } else {
+        n_f - k as f64
+    };
 
     if df_residual <= 0.0 {
         return Err("LINEST: Not enough data points for regression statistics.".into());
@@ -130,7 +141,10 @@ pub fn codcel_linest(
     // SST (total sum of squares)
     let mean_y = known_ys.iter().sum::<f64>() / n_f;
     let sst = if constant {
-        known_ys.iter().map(|&yi| (yi - mean_y).powi(2)).sum::<f64>()
+        known_ys
+            .iter()
+            .map(|&yi| (yi - mean_y).powi(2))
+            .sum::<f64>()
     } else {
         known_ys.iter().map(|&yi| yi.powi(2)).sum::<f64>()
     };
@@ -148,7 +162,9 @@ pub fn codcel_linest(
     let mse = sse / df_residual;
     let xtx_inv = xtx.lu().solve(&DMatrix::identity(p, p));
     let se_coeffs: Vec<f64> = if let Some(inv) = xtx_inv {
-        (0..p).map(|j| crate::portable_math::sqrt(inv[(j, j)] * mse)).collect()
+        (0..p)
+            .map(|j| crate::portable_math::sqrt(inv[(j, j)] * mse))
+            .collect()
     } else {
         vec![f64::NAN; p]
     };
@@ -250,11 +266,11 @@ mod tests {
     fn test_linest_multiple_regression() {
         // y = 2*x1 + 3*x2 + 1
         let known_ys = vec![
-            2.0 * 1.0 + 3.0 * 0.0 + 1.0,   // 3.0
-            2.0 * 0.0 + 3.0 * 1.0 + 1.0,   // 4.0
-            2.0 * 1.0 + 3.0 * 1.0 + 1.0,   // 6.0
-            2.0 * 2.0 + 3.0 * 1.0 + 1.0,   // 8.0
-            2.0 * 1.0 + 3.0 * 2.0 + 1.0,   // 9.0
+            2.0 * 1.0 + 3.0 * 0.0 + 1.0, // 3.0
+            2.0 * 0.0 + 3.0 * 1.0 + 1.0, // 4.0
+            2.0 * 1.0 + 3.0 * 1.0 + 1.0, // 6.0
+            2.0 * 2.0 + 3.0 * 1.0 + 1.0, // 8.0
+            2.0 * 1.0 + 3.0 * 2.0 + 1.0, // 9.0
         ];
         let known_xs = Some(vec![
             vec![1.0, 0.0],

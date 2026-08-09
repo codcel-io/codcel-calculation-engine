@@ -340,7 +340,10 @@ pub fn codcel_aggregate(
             let position = k * (n + 1.0) - 1.0;
 
             if position < 0.0 || position >= n {
-                return Err("AGGREGATE: The quartile value results in a position outside array bounds.".into());
+                return Err(
+                    "AGGREGATE: The quartile value results in a position outside array bounds."
+                        .into(),
+                );
             }
 
             let lower_index = position.floor() as usize;

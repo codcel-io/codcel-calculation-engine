@@ -42,10 +42,26 @@ mod tests {
                 Value::String("Dept".into()),
                 Value::String("Salary".into()),
             ],
-            vec![Value::String("Alice".into()), Value::String("Eng".into()), Value::F64(100.0)],
-            vec![Value::String("Bob".into()), Value::String("Eng".into()), Value::F64(80.0)],
-            vec![Value::String("Carol".into()), Value::String("Sales".into()), Value::F64(120.0)],
-            vec![Value::String("Dave".into()), Value::String("Sales".into()), Value::F64(90.0)],
+            vec![
+                Value::String("Alice".into()),
+                Value::String("Eng".into()),
+                Value::F64(100.0),
+            ],
+            vec![
+                Value::String("Bob".into()),
+                Value::String("Eng".into()),
+                Value::F64(80.0),
+            ],
+            vec![
+                Value::String("Carol".into()),
+                Value::String("Sales".into()),
+                Value::F64(120.0),
+            ],
+            vec![
+                Value::String("Dave".into()),
+                Value::String("Sales".into()),
+                Value::F64(90.0),
+            ],
         ])
     }
 
@@ -59,13 +75,15 @@ mod tests {
     #[test]
     fn dsum_basic() {
         // =DSUM(db, "Salary", {"Dept"; "Eng"}) → 100 + 80 = 180
-        let result = codcel_dsum(db(), Value::String("Salary".into()), criteria("Eng"), &vf()).unwrap();
+        let result =
+            codcel_dsum(db(), Value::String("Salary".into()), criteria("Eng"), &vf()).unwrap();
         assert_eq!(result, Value::F64(180.0));
     }
 
     #[test]
     fn dsum_no_match_returns_zero() {
-        let result = codcel_dsum(db(), Value::String("Salary".into()), criteria("HR"), &vf()).unwrap();
+        let result =
+            codcel_dsum(db(), Value::String("Salary".into()), criteria("HR"), &vf()).unwrap();
         assert_eq!(result, Value::F64(0.0));
     }
 

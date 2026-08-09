@@ -91,12 +91,11 @@ pub fn codcel_groupby(
     // transpiler handles header positioning separately.
     let (data_row_fields, data_values) = if field_headers == 1 || field_headers == 3 {
         if row_fields.len() < 2 {
-            return Err("GROUPBY: field_headers indicates headers present, but data has only 1 row".into());
+            return Err(
+                "GROUPBY: field_headers indicates headers present, but data has only 1 row".into(),
+            );
         }
-        (
-            row_fields[1..].to_vec(),
-            values[1..].to_vec(),
-        )
+        (row_fields[1..].to_vec(), values[1..].to_vec())
     } else {
         (row_fields, values)
     };
@@ -174,12 +173,12 @@ fn compare_values(a: &Value, b: &Value) -> std::cmp::Ordering {
     match (a, b) {
         (Value::I32(a), Value::I32(b)) => a.cmp(b),
         (Value::F64(a), Value::F64(b)) => a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal),
-        (Value::I32(a), Value::F64(b)) => {
-            (*a as f64).partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal)
-        }
-        (Value::F64(a), Value::I32(b)) => {
-            a.partial_cmp(&(*b as f64)).unwrap_or(std::cmp::Ordering::Equal)
-        }
+        (Value::I32(a), Value::F64(b)) => (*a as f64)
+            .partial_cmp(b)
+            .unwrap_or(std::cmp::Ordering::Equal),
+        (Value::F64(a), Value::I32(b)) => a
+            .partial_cmp(&(*b as f64))
+            .unwrap_or(std::cmp::Ordering::Equal),
         (Value::String(a), Value::String(b)) => a.to_lowercase().cmp(&b.to_lowercase()),
         (Value::Bool(a), Value::Bool(b)) => a.cmp(b),
         // For mixed types, use a type ordering: None < Bool < Number < String
@@ -264,7 +263,7 @@ mod tests {
 
     fn make_test_data_with_headers() -> (Vec<Vec<Value>>, Vec<Vec<Value>>) {
         let row_fields = vec![
-            vec![s("Fruit")],  // header
+            vec![s("Fruit")], // header
             vec![s("Apple")],
             vec![s("Banana")],
             vec![s("Apple")],
@@ -272,7 +271,7 @@ mod tests {
             vec![s("Apple")],
         ];
         let values = vec![
-            vec![s("Sales")],  // header
+            vec![s("Sales")], // header
             vec![i(10)],
             vec![i(20)],
             vec![i(30)],
@@ -351,12 +350,7 @@ mod tests {
             vec![s("Apple"), s("East")],
             vec![s("Banana"), s("East")],
         ];
-        let values = vec![
-            vec![i(10)],
-            vec![i(20)],
-            vec![i(30)],
-            vec![i(40)],
-        ];
+        let values = vec![vec![i(10)], vec![i(20)], vec![i(30)], vec![i(40)]];
         let result = codcel_groupby(row_fields, values, None, None, None, None).unwrap();
 
         assert_eq!(result.groups.len(), 3);
@@ -370,11 +364,7 @@ mod tests {
 
     #[test]
     fn multi_column_values() {
-        let row_fields = vec![
-            vec![s("Apple")],
-            vec![s("Banana")],
-            vec![s("Apple")],
-        ];
+        let row_fields = vec![vec![s("Apple")], vec![s("Banana")], vec![s("Apple")]];
         let values = vec![
             vec![i(10), f(1.5)],
             vec![i(20), f(2.5)],

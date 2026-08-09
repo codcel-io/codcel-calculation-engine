@@ -4,18 +4,19 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
+use crate::codcel_information;
 use crate::information::codcel_cell::codcel_cell;
 use crate::lookup_and_reference::codcel_address::codcel_address;
 use crate::lookup_and_reference::codcel_areas::codcel_areas;
 use crate::lookup_and_reference::codcel_choosecols::codcel_choosecols;
+use crate::lookup_and_reference::codcel_chooserows::codcel_chooserows;
 use crate::lookup_and_reference::codcel_column::codcel_column;
 use crate::lookup_and_reference::codcel_columns::codcel_columns;
-use crate::lookup_and_reference::codcel_row::codcel_row;
-use crate::lookup_and_reference::codcel_rows::codcel_rows;
-use crate::lookup_and_reference::codcel_chooserows::codcel_chooserows;
 use crate::lookup_and_reference::codcel_drop::codcel_drop;
 use crate::lookup_and_reference::codcel_expand::codcel_expand;
 use crate::lookup_and_reference::codcel_offset::codcel_offset;
+use crate::lookup_and_reference::codcel_row::codcel_row;
+use crate::lookup_and_reference::codcel_rows::codcel_rows;
 use crate::lookup_and_reference::codcel_take::codcel_take;
 use crate::lookup_and_reference::codcel_tocol::codcel_tocol;
 use crate::lookup_and_reference::codcel_torow::codcel_torow;
@@ -23,10 +24,9 @@ use crate::lookup_and_reference::codcel_transpose::codcel_transpose;
 use crate::lookup_and_reference::codcel_trimrange::codcel_trimrange;
 use crate::lookup_and_reference::codcel_wrapcols::codcel_wrapcols;
 use crate::lookup_and_reference::codcel_wraprows::codcel_wraprows;
-use crate::codcel_information;
-use crate::value::Value;
-use crate::value::vec_value_to_vec_i32;
 use crate::text::dbcs_utils::dbcs_byte_len;
+use crate::value::vec_value_to_vec_i32;
+use crate::value::Value;
 use crate::value_format::ValueFormat;
 use std::cmp::Ordering;
 use std::collections::HashMap;
@@ -132,7 +132,11 @@ pub fn sort(
     let descending = sort_order.option_i32(format)?.unwrap_or(1) == -1;
 
     // Transpose the matrix if by_col is true
-    let transposed_values = if by_col { transpose_internal(&values) } else { values };
+    let transposed_values = if by_col {
+        transpose_internal(&values)
+    } else {
+        values
+    };
 
     // Create a new sorted matrix
     let sorted_values = sort_row(transposed_values, sort_index, descending, format);
@@ -184,7 +188,11 @@ pub fn unique(
     };
 
     // Transpose the matrix if by_col is true
-    let transposed_values = if by_col { transpose_internal(&values) } else { values };
+    let transposed_values = if by_col {
+        transpose_internal(&values)
+    } else {
+        values
+    };
 
     // HashMap to keep track of occurrences of each value
     let mut occurrences: HashMap<Value, usize> = HashMap::new();
@@ -403,7 +411,11 @@ pub fn wraprows(
 ) -> Result<Value, Box<dyn Error + Send + Sync>> {
     let array = area.area_of_value()?;
     let wrap_count = wrap_count.i32(value_format)?;
-    let pad_with = if pad_with.is_none() { None } else { Some(pad_with) };
+    let pad_with = if pad_with.is_none() {
+        None
+    } else {
+        Some(pad_with)
+    };
     codcel_wraprows(array, wrap_count, pad_with)
 }
 
@@ -415,7 +427,11 @@ pub fn wrapcols(
 ) -> Result<Value, Box<dyn Error + Send + Sync>> {
     let array = area.area_of_value()?;
     let wrap_count = wrap_count.i32(value_format)?;
-    let pad_with = if pad_with.is_none() { None } else { Some(pad_with) };
+    let pad_with = if pad_with.is_none() {
+        None
+    } else {
+        Some(pad_with)
+    };
     codcel_wrapcols(array, wrap_count, pad_with)
 }
 
@@ -433,7 +449,11 @@ pub fn expand(
         rows.i32(value_format)?
     };
     let columns = columns.option_i32(value_format)?;
-    let pad_with = if pad_with.is_none() { None } else { Some(pad_with) };
+    let pad_with = if pad_with.is_none() {
+        None
+    } else {
+        Some(pad_with)
+    };
     codcel_expand(array, target_rows, columns, pad_with)
 }
 
@@ -568,7 +588,10 @@ pub fn len(area: Value, value_format: &ValueFormat) -> Result<Value, Box<dyn Err
     Ok(Value::AreaValue(result))
 }
 
-pub fn lenb(area: Value, value_format: &ValueFormat) -> Result<Value, Box<dyn Error + Send + Sync>> {
+pub fn lenb(
+    area: Value,
+    value_format: &ValueFormat,
+) -> Result<Value, Box<dyn Error + Send + Sync>> {
     let values = area.area_of_value()?;
 
     let mut result: Vec<Vec<Value>> = Vec::new();

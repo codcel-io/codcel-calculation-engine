@@ -104,8 +104,18 @@ mod tests {
         vec![
             vec![Value::I32(1), Value::I32(2), Value::I32(3), Value::I32(4)],
             vec![Value::I32(5), Value::I32(6), Value::I32(7), Value::I32(8)],
-            vec![Value::I32(9), Value::I32(10), Value::I32(11), Value::I32(12)],
-            vec![Value::I32(13), Value::I32(14), Value::I32(15), Value::I32(16)],
+            vec![
+                Value::I32(9),
+                Value::I32(10),
+                Value::I32(11),
+                Value::I32(12),
+            ],
+            vec![
+                Value::I32(13),
+                Value::I32(14),
+                Value::I32(15),
+                Value::I32(16),
+            ],
         ]
     }
 

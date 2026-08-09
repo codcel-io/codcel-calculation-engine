@@ -30,15 +30,9 @@ pub fn codcel_proper<S: AsRef<str>>(text: S) -> Result<String, Box<dyn Error + S
         if first_char.is_whitespace()
             || first_char.is_ascii_punctuation()
             || matches!(
+                // em dash, en dash, apostrophe, quote, guillemets, slashes
                 first_char,
-                '—' | // em dash
-            '–' | // en dash
-            '\'' | 
-            '"' |
-            '«' |
-            '»' |
-            '/' |
-            '\\'
+                '—' | '–' | '\'' | '"' | '«' | '»' | '/' | '\\'
             )
         {
             capitalize_next = true;

@@ -60,42 +60,48 @@ mod tests {
     #[test]
     fn test_accr_intm_basis_0() {
         // =ACCRINTM(DATE(2020,1,1),DATE(2021,1,1),0.05,1000,0) = 50.0
-        let result = codcel_accr_intm(dt(2020, 1, 1), dt(2021, 1, 1), 0.05, 1000.0, Some(0)).unwrap();
+        let result =
+            codcel_accr_intm(dt(2020, 1, 1), dt(2021, 1, 1), 0.05, 1000.0, Some(0)).unwrap();
         assert!((result - 50.0).abs() < 0.000001);
     }
 
     #[test]
     fn test_accr_intm_basis_1_annual() {
         // =ACCRINTM(DATE(2018,3,15),DATE(2019,3,15),0.065,5000,1) = 325.0
-        let result = codcel_accr_intm(dt(2018, 3, 15), dt(2019, 3, 15), 0.065, 5000.0, Some(1)).unwrap();
+        let result =
+            codcel_accr_intm(dt(2018, 3, 15), dt(2019, 3, 15), 0.065, 5000.0, Some(1)).unwrap();
         assert!((result - 325.0).abs() < 0.000001);
     }
 
     #[test]
     fn test_accr_intm_basis_1_10yr() {
         // =ACCRINTM(DATE(2010,1,1),DATE(2020,1,1),0.03,1000,1) = 299.940268790443
-        let result = codcel_accr_intm(dt(2010, 1, 1), dt(2020, 1, 1), 0.03, 1000.0, Some(1)).unwrap();
+        let result =
+            codcel_accr_intm(dt(2010, 1, 1), dt(2020, 1, 1), 0.03, 1000.0, Some(1)).unwrap();
         assert!((result - 299.940268790443).abs() < 0.000001);
     }
 
     #[test]
     fn test_accr_intm_basis_1_dec31() {
         // =ACCRINTM(DATE(2022,12,31),DATE(2023,6,30),0.08,2000,1) = 79.34246575342466
-        let result = codcel_accr_intm(dt(2022, 12, 31), dt(2023, 6, 30), 0.08, 2000.0, Some(1)).unwrap();
+        let result =
+            codcel_accr_intm(dt(2022, 12, 31), dt(2023, 6, 30), 0.08, 2000.0, Some(1)).unwrap();
         assert!((result - 79.34246575342466).abs() < 0.000001);
     }
 
     #[test]
     fn test_accr_intm_default_par_basis_0() {
         // =ACCRINTM(DATE(2020,1,1),DATE(2020,7,1),0.1,1000,0) = 50.0
-        let result = codcel_accr_intm(dt(2020, 1, 1), dt(2020, 7, 1), 0.1, 1000.0, Some(0)).unwrap();
+        let result =
+            codcel_accr_intm(dt(2020, 1, 1), dt(2020, 7, 1), 0.1, 1000.0, Some(0)).unwrap();
         assert!((result - 50.0).abs() < 0.000001);
     }
 
     #[test]
     fn test_accr_intm_basis_3() {
         // =ACCRINTM(DATE(2021,1,1),DATE(2021,10,1),0.05,10000,3) = 373.972602739726
-        let result = codcel_accr_intm(dt(2021, 1, 1), dt(2021, 10, 1), 0.05, 10000.0, Some(3)).unwrap();
+        let result =
+            codcel_accr_intm(dt(2021, 1, 1), dt(2021, 10, 1), 0.05, 10000.0, Some(3)).unwrap();
         assert!((result - 373.972602739726).abs() < 0.000001);
     }
 }

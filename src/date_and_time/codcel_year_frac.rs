@@ -10,7 +10,11 @@ use std::error::Error;
 
 /// Returns the last day of February for the given year (28 or 29).
 fn last_day_of_feb(year: i32) -> i32 {
-    if is_leap_year(year) { 29 } else { 28 }
+    if is_leap_year(year) {
+        29
+    } else {
+        28
+    }
 }
 
 /// Excel-compatible `YEARFRAC` that calculates the fraction of a year between two dates.
@@ -77,8 +81,7 @@ pub fn codcel_year_frac(
 
             // Determine if the period "appears to be ≤ 1 year":
             // Same year, or adjacent years where (start_month, start_day) >= (end_month, end_day)
-            let short_period = sy == ey
-                || ((sy + 1) == ey && (sm > em || (sm == em && sd >= ed)));
+            let short_period = sy == ey || ((sy + 1) == ey && (sm > em || (sm == em && sd >= ed)));
 
             if short_period {
                 // Short period: use 365 or 366 based on Feb 29 presence
@@ -116,9 +119,7 @@ pub fn codcel_year_frac(
                         false
                     };
 
-                    if feb29_between(&actual_start, &actual_end)
-                        || (em == 2 && ed == 29)
-                    {
+                    if feb29_between(&actual_start, &actual_end) || (em == 2 && ed == 29) {
                         ylength = 366;
                     }
                 }
@@ -127,18 +128,15 @@ pub fn codcel_year_frac(
             } else {
                 // Long period (> 1 year): use average year length
                 let num_years = (ey - sy) + 1;
-                let jan1_start =
-                    NaiveDate::from_ymd_opt(sy, 1, 1)
-                        .ok_or("YEARFRAC: Invalid date")?
-                        .and_hms_opt(0, 0, 0)
-                        .ok_or("YEARFRAC: Invalid time")?;
-                let jan1_end_plus1 =
-                    NaiveDate::from_ymd_opt(ey + 1, 1, 1)
-                        .ok_or("YEARFRAC: Invalid date")?
-                        .and_hms_opt(0, 0, 0)
-                        .ok_or("YEARFRAC: Invalid time")?;
-                let jan1_start_dt =
-                    DateTime::<Utc>::from_naive_utc_and_offset(jan1_start, Utc);
+                let jan1_start = NaiveDate::from_ymd_opt(sy, 1, 1)
+                    .ok_or("YEARFRAC: Invalid date")?
+                    .and_hms_opt(0, 0, 0)
+                    .ok_or("YEARFRAC: Invalid time")?;
+                let jan1_end_plus1 = NaiveDate::from_ymd_opt(ey + 1, 1, 1)
+                    .ok_or("YEARFRAC: Invalid date")?
+                    .and_hms_opt(0, 0, 0)
+                    .ok_or("YEARFRAC: Invalid time")?;
+                let jan1_start_dt = DateTime::<Utc>::from_naive_utc_and_offset(jan1_start, Utc);
                 let jan1_end_plus1_dt =
                     DateTime::<Utc>::from_naive_utc_and_offset(jan1_end_plus1, Utc);
                 let total_year_days = (jan1_end_plus1_dt - jan1_start_dt).num_days();
@@ -299,35 +297,40 @@ mod tests {
     #[test]
     fn test_year_frac_basis_0_feb28_to_aug28() {
         // =YEARFRAC(DATE(2023,2,28),DATE(2023,8,28),0) = 0.49444444444444446
-        let result = codcel_year_frac(create_date(2023, 2, 28), create_date(2023, 8, 28), Some(0)).unwrap();
+        let result =
+            codcel_year_frac(create_date(2023, 2, 28), create_date(2023, 8, 28), Some(0)).unwrap();
         assert!((result - 0.49444444444444446).abs() < 0.000001);
     }
 
     #[test]
     fn test_year_frac_basis_0_feb29_to_aug29() {
         // =YEARFRAC(DATE(2024,2,29),DATE(2024,8,29),0) = 0.49722222222222223
-        let result = codcel_year_frac(create_date(2024, 2, 29), create_date(2024, 8, 29), Some(0)).unwrap();
+        let result =
+            codcel_year_frac(create_date(2024, 2, 29), create_date(2024, 8, 29), Some(0)).unwrap();
         assert!((result - 0.49722222222222223).abs() < 0.000001);
     }
 
     #[test]
     fn test_year_frac_basis_0_feb28_to_feb28_next_year() {
         // =YEARFRAC(DATE(2023,2,28),DATE(2024,2,28),0) = 0.9944444444444445
-        let result = codcel_year_frac(create_date(2023, 2, 28), create_date(2024, 2, 28), Some(0)).unwrap();
+        let result =
+            codcel_year_frac(create_date(2023, 2, 28), create_date(2024, 2, 28), Some(0)).unwrap();
         assert!((result - 0.9944444444444445).abs() < 0.000001);
     }
 
     #[test]
     fn test_year_frac_basis_0_feb29_to_feb28_next_year() {
         // =YEARFRAC(DATE(2024,2,29),DATE(2025,2,28),0) = 1.0
-        let result = codcel_year_frac(create_date(2024, 2, 29), create_date(2025, 2, 28), Some(0)).unwrap();
+        let result =
+            codcel_year_frac(create_date(2024, 2, 29), create_date(2025, 2, 28), Some(0)).unwrap();
         assert!((result - 1.0).abs() < 0.000001);
     }
 
     #[test]
     fn test_year_frac_basis_0_feb29_to_aug31() {
         // =YEARFRAC(DATE(2024,2,29),DATE(2024,8,31),0) = 0.5027777777777778
-        let result = codcel_year_frac(create_date(2024, 2, 29), create_date(2024, 8, 31), Some(0)).unwrap();
+        let result =
+            codcel_year_frac(create_date(2024, 2, 29), create_date(2024, 8, 31), Some(0)).unwrap();
         assert!((result - 0.5027777777777778).abs() < 0.000001);
     }
 }

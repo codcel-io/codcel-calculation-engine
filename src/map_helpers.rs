@@ -9,9 +9,9 @@
 //! These functions enable applying async transformations to arrays while preserving
 //! their structure (1D VecValue or 2D AreaValue).
 
+use crate::value::Value;
 use std::error::Error;
 use std::future::Future;
-use crate::value::Value;
 
 /// Maps an async function over a Value, preserving structure (1D vs 2D).
 ///
@@ -26,10 +26,7 @@ use crate::value::Value;
 ///     Ok(map_lambda_xxx(input, lambda_param_x).await?)
 /// }).await?
 /// ```
-pub async fn map_value<F, Fut>(
-    value: Value,
-    f: F,
-) -> Result<Value, Box<dyn Error + Send + Sync>>
+pub async fn map_value<F, Fut>(value: Value, f: F) -> Result<Value, Box<dyn Error + Send + Sync>>
 where
     F: Fn(Value) -> Fut,
     Fut: Future<Output = Result<Value, Box<dyn Error + Send + Sync>>>,
@@ -136,7 +133,7 @@ where
         Value::VecValue(vec) => vec,
         Value::AreaValue(rows) => rows.into_iter().flatten().collect(),
         Value::None => return Ok(initial), // Empty array returns initial
-        single => vec![single], // Single value treated as one-element array
+        single => vec![single],            // Single value treated as one-element array
     };
 
     // Handle empty array case - return initial value
@@ -270,13 +267,11 @@ where
         _ => {
             // Try to extract from single-element arrays or other Value types
             match rows.clone() {
-                Value::VecValue(vec) if vec.len() == 1 => {
-                    match &vec[0] {
-                        Value::F64(v) => *v as usize,
-                        Value::I32(v) => *v as usize,
-                        _ => return Ok(Value::AreaValue(vec![])),
-                    }
-                }
+                Value::VecValue(vec) if vec.len() == 1 => match &vec[0] {
+                    Value::F64(v) => *v as usize,
+                    Value::I32(v) => *v as usize,
+                    _ => return Ok(Value::AreaValue(vec![])),
+                },
                 Value::AreaValue(area) if area.len() == 1 && area[0].len() == 1 => {
                     match &area[0][0] {
                         Value::F64(v) => *v as usize,
@@ -295,13 +290,11 @@ where
         _ => {
             // Try to extract from single-element arrays or other Value types
             match cols.clone() {
-                Value::VecValue(vec) if vec.len() == 1 => {
-                    match &vec[0] {
-                        Value::F64(v) => *v as usize,
-                        Value::I32(v) => *v as usize,
-                        _ => return Ok(Value::AreaValue(vec![])),
-                    }
-                }
+                Value::VecValue(vec) if vec.len() == 1 => match &vec[0] {
+                    Value::F64(v) => *v as usize,
+                    Value::I32(v) => *v as usize,
+                    _ => return Ok(Value::AreaValue(vec![])),
+                },
                 Value::AreaValue(area) if area.len() == 1 && area[0].len() == 1 => {
                     match &area[0][0] {
                         Value::F64(v) => *v as usize,
@@ -361,10 +354,7 @@ where
 /// ).await?
 /// // Result: VecValue([6, 15, 24])
 /// ```
-pub async fn byrow_value<F, Fut>(
-    array: Value,
-    f: F,
-) -> Result<Value, Box<dyn Error + Send + Sync>>
+pub async fn byrow_value<F, Fut>(array: Value, f: F) -> Result<Value, Box<dyn Error + Send + Sync>>
 where
     F: Fn(Value) -> Fut,
     Fut: Future<Output = Result<Value, Box<dyn Error + Send + Sync>>>,
@@ -431,10 +421,7 @@ where
 /// ).await?
 /// // Result: VecValue([12, 15, 18])
 /// ```
-pub async fn bycol_value<F, Fut>(
-    array: Value,
-    f: F,
-) -> Result<Value, Box<dyn Error + Send + Sync>>
+pub async fn bycol_value<F, Fut>(array: Value, f: F) -> Result<Value, Box<dyn Error + Send + Sync>>
 where
     F: Fn(Value) -> Fut,
     Fut: Future<Output = Result<Value, Box<dyn Error + Send + Sync>>>,
@@ -583,21 +570,29 @@ where
     }
 
     // Add grand total row if total_depth requires it (1, 2, -1, -2)
-    if (total_depth_val == 1 || total_depth_val == 2 || total_depth_val == -1 || total_depth_val == -2)
-        && !group_data.all_values.is_empty() {
-            let all_values = Value::AreaValue(group_data.all_values.clone());
-            let grand_total = f(all_values).await?;
+    if (total_depth_val == 1
+        || total_depth_val == 2
+        || total_depth_val == -1
+        || total_depth_val == -2)
+        && !group_data.all_values.is_empty()
+    {
+        let all_values = Value::AreaValue(group_data.all_values.clone());
+        let grand_total = f(all_values).await?;
 
-            let mut total_row: Vec<Value> = Vec::new();
-            // Use "Grand Total" for total_depth -2, "Total" for others
-            let label = if total_depth_val == -2 { "Grand Total" } else { "Total" };
-            total_row.push(Value::String(label.to_string()));
-            for _ in 1..num_key_cols {
-                total_row.push(Value::None);
-            }
-            append_agg_result(&mut total_row, &grand_total, group_data.num_value_cols);
-            result_rows.push(total_row);
+        let mut total_row: Vec<Value> = Vec::new();
+        // Use "Grand Total" for total_depth -2, "Total" for others
+        let label = if total_depth_val == -2 {
+            "Grand Total"
+        } else {
+            "Total"
+        };
+        total_row.push(Value::String(label.to_string()));
+        for _ in 1..num_key_cols {
+            total_row.push(Value::None);
         }
+        append_agg_result(&mut total_row, &grand_total, group_data.num_value_cols);
+        result_rows.push(total_row);
+    }
 
     if result_rows.is_empty() {
         Ok(Value::AreaValue(vec![vec![Value::None]]))
@@ -635,28 +630,34 @@ fn value_to_option_i32(v: &Value) -> Option<i32> {
 /// Extract a boolean vector from a Value (for filter_array).
 fn value_to_bool_vec(v: &Value) -> Option<Vec<bool>> {
     match v {
-        Value::VecValue(vec) => {
-            Some(vec.iter().map(|v| match v {
-                Value::Bool(b) => *b,
-                Value::I32(n) => *n != 0,
-                Value::F64(n) => *n != 0.0,
-                _ => true,
-            }).collect())
-        }
+        Value::VecValue(vec) => Some(
+            vec.iter()
+                .map(|v| match v {
+                    Value::Bool(b) => *b,
+                    Value::I32(n) => *n != 0,
+                    Value::F64(n) => *n != 0.0,
+                    _ => true,
+                })
+                .collect(),
+        ),
         Value::AreaValue(area) => {
             // Flatten 2D to 1D (take first column)
-            Some(area.iter().map(|row| {
-                if let Some(v) = row.first() {
-                    match v {
-                        Value::Bool(b) => *b,
-                        Value::I32(n) => *n != 0,
-                        Value::F64(n) => *n != 0.0,
-                        _ => true,
-                    }
-                } else {
-                    true
-                }
-            }).collect())
+            Some(
+                area.iter()
+                    .map(|row| {
+                        if let Some(v) = row.first() {
+                            match v {
+                                Value::Bool(b) => *b,
+                                Value::I32(n) => *n != 0,
+                                Value::F64(n) => *n != 0.0,
+                                _ => true,
+                            }
+                        } else {
+                            true
+                        }
+                    })
+                    .collect(),
+            )
         }
         Value::None => None,
         _ => None,
