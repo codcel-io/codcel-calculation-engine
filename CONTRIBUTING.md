@@ -150,6 +150,24 @@ Where possible, include:
 
 ---
 
+## Local Development Across Repositories
+
+This crate is the leaf of the engine dependency graph — `codcel-table-engine`,
+`codcel-parquet-engine` and `codcel-postgresql-engine` all depend on it by published
+version. To have those crates pick up unreleased changes from your local checkout, add a
+`[patch.crates-io]` section to your `~/.cargo/config.toml`:
+
+```toml
+[patch.crates-io]
+codcel-calculation-engine = { path = "/path/to/codcel-calculation-engine" }
+codcel-table-engine       = { path = "/path/to/codcel-table-engine" }
+```
+
+This applies to every cargo invocation on your machine. Remove or comment it out before
+verifying that a change works against the published crates.
+
+---
+
 ## Tests
 
 Tests are required for behaviour changes.

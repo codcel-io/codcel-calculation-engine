@@ -1,8 +1,8 @@
 <p align="center">
   <a href="https://codcel.io">
     <picture>
-      <source media="(prefers-color-scheme: dark)" srcset="assets/codcel-logo-lockup-dark.svg">
-      <img src="assets/codcel-logo-lockup.svg" alt="Codcel" width="320">
+      <source media="(prefers-color-scheme: dark)" srcset="https://raw.githubusercontent.com/codcel-io/codcel-calculation-engine/refs/tags/release-0.1.9/assets/codcel-logo-lockup-dark.svg">
+      <img src="https://raw.githubusercontent.com/codcel-io/codcel-calculation-engine/refs/tags/release-0.1.9/assets/codcel-logo-lockup.svg" alt="Codcel" width="320">
     </picture>
   </a>
 </p>
@@ -42,7 +42,7 @@ Add the crate to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-codcel-calculation-engine = { git = "https://github.com/codcel-io/codcel-calculation-engine.git", branch = "main" }
+codcel-calculation-engine = "0.1.9"
 ```
 
 Use a function directly:
@@ -67,7 +67,7 @@ use codcel_calculation_engine::financial_base::FinancialBase;
 ## Excel Compatibility
 
 - Aims for behavioral fidelity with Excel results, including edge cases
-- Handles both 1900 and 1904 date serial number systems
+- Handles the 1900 date serial number system, including the Lotus 1-2-3 1900 leap-year bug
 - Reproduces Excel's rounding behavior (banker's rounding, standard rounding)
 - Covers day-count basis conventions (30/360, actual/actual, etc.) for financial functions
 
@@ -85,6 +85,22 @@ CODCEL_USE_PORTABLE_MATH=true cargo test
 | Variable | Default | Description |
 |---|---|---|
 | `CODCEL_USE_PORTABLE_MATH` | `false` | Use pure-Rust math implementations for cross-platform determinism |
+
+## WebAssembly
+
+The engine builds for `wasm32-unknown-unknown` with no feature flags and no platform shims — there is no filesystem, network, thread, or process usage anywhere in `src/`.
+
+```bash
+cargo check --target wasm32-unknown-unknown
+```
+
+Three behaviours differ inside a WASM sandbox and are worth knowing before you rely on them:
+
+- **Locale detection is unavailable.** `sys-locale` has no provider on `wasm32-unknown-unknown` and returns nothing, and `std::env::var` always fails, so the `CODCEL_*` overrides listed above are ignored. `ValueFormat` falls back to the values supplied by the caller — pass one explicitly if you need particular separators or a currency symbol.
+- **`NOW()` and `TODAY()` require a JavaScript host.** `chrono`'s default `wasmbind` feature resolves the current time through `js_sys::Date`, so these link a JS import. Browser and Node hosts via `wasm-bindgen` satisfy this; a bare runtime such as Wasmtime does not.
+- **`RAND()` and `RANDBETWEEN()` are deterministic.** `fastrand` has no entropy source in the sandbox and falls back to a fixed seed, so every instance produces the same sequence. Seed explicitly if you need variation — this matters for any simulation or Monte Carlo work.
+
+The crate exposes no `#[wasm_bindgen]` items and is not built as a `cdylib`; supply your own binding layer for the functions you want to call from JavaScript.
 
 ## Contributing
 

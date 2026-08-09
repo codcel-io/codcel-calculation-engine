@@ -9,10 +9,14 @@
 //! Rust implementations of Excel-compatible functions, covering the financial,
 //! statistical, mathematical, engineering, text, date and lookup categories.
 //! Excel behavioural fidelity is preserved, including banker's rounding, the
-//! 1900 and 1904 date serial systems, and the Lotus 1-2-3 1900 leap-year bug.
+//! 1900 date serial system, and the Lotus 1-2-3 1900 leap-year bug.
 //!
 //! Set `CODCEL_USE_PORTABLE_MATH=true` to compute transcendental functions via
 //! `libm` for bit-identical results across platforms.
+//!
+//! The crate builds for `wasm32-unknown-unknown` as well as native targets. Locale
+//! detection, environment overrides and random seeding all degrade to fixed defaults
+//! inside a WASM sandbox — see the README's WebAssembly section for the details.
 
 
 

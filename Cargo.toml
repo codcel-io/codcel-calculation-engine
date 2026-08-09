@@ -2,17 +2,28 @@
 name = "codcel-calculation-engine"
 version = "0.1.9"
 edition = "2021"
+rust-version = "1.89"
 authors = ["Codcel <support@codcel.io>"]
-description = "Rust implementations of Excel financial functions, developed for Codcel but available as a standalone crate."
-documentation = "https://codcel.io"
+description = "Rust implementations of Excel functions: financial, statistical, engineering, text and date. Builds for native and WebAssembly targets. The calculation core of Codcel (codcel.io): Excel in, real code out."
 readme = "README.md"
 license = "MIT OR Apache-2.0"
 repository = "https://github.com/codcel-io/codcel-calculation-engine"
-homepage   = "https://codcel.io"
-keywords = ["excel", "finance", "codcel", "spreadsheet", "functions"]
-categories = ["mathematics", "finance"]
+homepage = "https://codcel.io"
+keywords = ["excel", "spreadsheet", "formulas", "finance", "statistics"]
+categories = ["mathematics", "finance", "science"]
+include = [
+    "src/**/*.rs",
+    "README.md",
+    "CONTRIBUTING.md",
+    "LICENSE-MIT",
+    "LICENSE-APACHE",
+]
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[package.metadata.docs.rs]
+all-features = true
+targets = ["x86_64-unknown-linux-gnu"]
 
 [dependencies]
 serde = { version= "1.0.229", features= ['derive'] }
