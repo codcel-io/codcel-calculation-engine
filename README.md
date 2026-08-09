@@ -9,6 +9,7 @@
 
 # Codcel Calculation Engine
 
+[![CI](https://github.com/codcel-io/codcel-calculation-engine/actions/workflows/ci.yml/badge.svg)](https://github.com/codcel-io/codcel-calculation-engine/actions/workflows/ci.yml)
 [![License: MIT OR Apache-2.0](https://img.shields.io/badge/license-MIT%20OR%20Apache--2.0-blue.svg)](#licensing)
 
 A high-performance Rust library implementing 460+ Excel-compatible functions — financial, statistical, mathematical, engineering, text, date/time, and more.
