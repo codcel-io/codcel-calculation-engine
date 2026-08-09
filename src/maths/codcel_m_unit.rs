@@ -33,7 +33,7 @@ mod tests {
     use super::*;
 
     // Helper function to check if two matrices are approximately equal
-    fn assert_matrices_eq(a: &Vec<Vec<f64>>, b: &Vec<Vec<f64>>, epsilon: f64) {
+    fn assert_matrices_eq(a: &[Vec<f64>], b: &[Vec<f64>], epsilon: f64) {
         assert_eq!(a.len(), b.len());
         for i in 0..a.len() {
             assert_eq!(a[i].len(), b[i].len());
@@ -94,12 +94,12 @@ mod tests {
         }
 
         // Check that it's an identity matrix
-        for i in 0..5 {
-            for j in 0..5 {
+        for (i, row) in result.iter().enumerate() {
+            for (j, value) in row.iter().enumerate() {
                 if i == j {
-                    assert!((result[i][j] - 1.0).abs() < 1e-10);
+                    assert!((value - 1.0).abs() < 1e-10);
                 } else {
-                    assert!((result[i][j] - 0.0).abs() < 1e-10);
+                    assert!((value - 0.0).abs() < 1e-10);
                 }
             }
         }

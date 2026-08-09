@@ -212,7 +212,7 @@ mod tests {
         )
         .unwrap();
         assert!(
-            result >= 0.0 && result <= 1.0,
+            (0.0..=1.0).contains(&result),
             "Alpha should be in [0, 1], got {result}"
         );
     }
@@ -229,7 +229,7 @@ mod tests {
         )
         .unwrap();
         assert!(
-            result >= 0.0 && result <= 1.0,
+            (0.0..=1.0).contains(&result),
             "Beta should be in [0, 1], got {result}"
         );
     }
@@ -246,7 +246,7 @@ mod tests {
         )
         .unwrap();
         assert!(
-            result >= 0.0 && result <= 1.0,
+            (0.0..=1.0).contains(&result),
             "Gamma should be in [0, 1], got {result}"
         );
     }
@@ -298,7 +298,7 @@ mod tests {
         )
         .unwrap();
         assert!(
-            result >= 0.0 && result <= 2.0,
+            (0.0..=2.0).contains(&result),
             "SMAPE should be in [0, 2], got {result}"
         );
     }
@@ -504,8 +504,8 @@ mod tests {
             codcel_forecast_ets_stat(values.clone(), timeline.clone(), 7, Some(0), None, None)
                 .unwrap();
 
-        assert!(alpha >= 0.0 && alpha <= 1.0, "Alpha={alpha}");
-        assert!(beta >= 0.0 && beta <= 1.0, "Beta={beta}");
+        assert!((0.0..=1.0).contains(&alpha), "Alpha={alpha}");
+        assert!((0.0..=1.0).contains(&beta), "Beta={beta}");
         assert!(
             (gamma - 0.0).abs() < 1e-10,
             "Gamma should be 0 for EDS, got {gamma}"
@@ -527,7 +527,7 @@ mod tests {
         )
         .unwrap();
         assert!(
-            result >= 0.0 && result <= 1.0,
+            (0.0..=1.0).contains(&result),
             "Alpha with defaults should be in [0, 1], got {result}"
         );
     }

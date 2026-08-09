@@ -79,7 +79,7 @@ mod tests {
     fn test_hypgeom_dot_dist_pmf_basic() {
         // =HYPGEOM.DIST(1, 4, 8, 20, FALSE) = C(8,1)*C(12,3)/C(20,4)
         let result = codcel_hypgeom_dot_dist(1.0, 4.0, 8.0, 20.0, false).unwrap();
-        assert!((result - 0.36326109391124872).abs() < 1e-10);
+        assert!((result - 0.363_261_093_911_248_7).abs() < 1e-10);
     }
 
     #[test]

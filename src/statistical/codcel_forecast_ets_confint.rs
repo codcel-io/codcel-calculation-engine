@@ -415,8 +415,8 @@ mod tests {
         let step = compute_min_step(&proc_timeline).unwrap();
         println!("Month day: {month_day}");
         println!("Step: {step}");
-        println!("Proc timeline: {:?}", &proc_timeline);
-        println!("Proc values: {:?}", &proc_values);
+        println!("Proc timeline: {proc_timeline:?}");
+        println!("Proc values: {proc_values:?}");
         println!("n={}", proc_values.len());
 
         // Check target date in month space

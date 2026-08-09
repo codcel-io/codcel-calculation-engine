@@ -23,6 +23,9 @@ pub fn codcel_sec(x: f64) -> Result<f64, Box<dyn Error + Send + Sync>> {
 
 #[cfg(test)]
 mod tests {
+    // Literals such as 3.14159 and 1.41421 are Excel-visible values under test,
+    // not stand-ins for std::f64::consts.
+    #![allow(clippy::approx_constant)]
     use super::*;
     use std::f64::consts::PI;
 

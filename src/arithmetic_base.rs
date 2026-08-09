@@ -3481,6 +3481,9 @@ pub fn codcel_maths(result: f64) -> Result<Value, Box<dyn Error + Send + Sync>> 
 
 #[cfg(test)]
 mod tests {
+    // Literals such as 3.14159 and 1.41421 are Excel-visible values under test,
+    // not stand-ins for std::f64::consts.
+    #![allow(clippy::approx_constant)]
     use super::*;
     use crate::value::{
         area_f64 as value_area_f64, bool as value_bool, f64 as value_f64, i32 as value_i32,

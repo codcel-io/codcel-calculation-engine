@@ -56,7 +56,7 @@ mod tests {
     use super::*;
 
     // Helper function to check if two matrices are approximately equal
-    fn assert_matrices_eq(a: &Vec<Vec<f64>>, b: &Vec<Vec<f64>>, epsilon: f64) {
+    fn assert_matrices_eq(a: &[Vec<f64>], b: &[Vec<f64>], epsilon: f64) {
         assert_eq!(a.len(), b.len());
         for i in 0..a.len() {
             assert_eq!(a[i].len(), b[i].len());

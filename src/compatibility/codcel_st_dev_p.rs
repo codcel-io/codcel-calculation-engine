@@ -22,6 +22,9 @@ pub fn codcel_st_dev_p(array: Vec<f64>) -> Result<f64, Box<dyn std::error::Error
 
 #[cfg(test)]
 mod tests {
+    // Literals such as 3.14159 and 1.41421 are Excel-visible values under test,
+    // not stand-ins for std::f64::consts.
+    #![allow(clippy::approx_constant)]
     use super::*;
 
     #[test]
