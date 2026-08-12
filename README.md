@@ -109,7 +109,7 @@ Contributions are welcome! Please read [CONTRIBUTING.md](CONTRIBUTING.md) before
 
 ## About Codcel
 
-[Codcel](https://codcel.io) turns Excel spreadsheets into production-ready software — real source code in Rust, Python, Java, C#, TypeScript, Go, Swift, and more, with zero platform lock-in.
+[Codcel](https://codcel.io) turns Excel spreadsheets into production-ready software — real code in Rust, Python, Java, C#, TypeScript, Go, Swift, and more, with zero platform lock-in.
 
 This calculation engine is one of several open-source components that power Codcel. Learn more at [codcel.io](https://codcel.io).
 
