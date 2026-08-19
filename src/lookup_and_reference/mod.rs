@@ -34,3 +34,4 @@ pub mod codcel_wrapcols;
 pub mod codcel_wraprows;
 pub mod codcel_x_lookup;
 pub mod codcel_x_match;
+pub mod lookup_match;

@@ -113,12 +113,15 @@ pub fn match_array(
 /// - `col_index_num`: the column number (1-based) in the table from which to return a value.
 /// - `range_lookup`: determines the match type:
 ///   - `true` or omitted: approximate match (first column must be sorted ascending).
-///   - `false`: exact match required.
+///   - `false`: exact match required, and the lookup value may contain the wildcards `*`,
+///     `?` and the escape `~`.
 /// - `value_format`: locale settings for type conversion.
 ///
-/// Returns the value from the specified column in the matching row.
+/// Returns the value from the specified column in the matching row. Matching is
+/// case-insensitive, and numbers match across storage types, but numbers never match text.
 ///
-/// Returns an error if no match is found or if `col_index_num` is out of range.
+/// Returns `#VALUE!` when `col_index_num` is less than 1, `#REF!` when it exceeds the table
+/// width, and `#N/A` when no row matches.
 pub fn v_lookup_array(
     lookup_value: Value,
     lookup_array: Value,
@@ -188,12 +191,15 @@ pub fn lookup_array(
 /// - `col_index_num`: the row number (1-based) in the table from which to return a value.
 /// - `range_lookup`: determines the match type:
 ///   - `true` or omitted: approximate match (first row must be sorted ascending).
-///   - `false`: exact match required.
+///   - `false`: exact match required, and the lookup value may contain the wildcards `*`,
+///     `?` and the escape `~`.
 /// - `value_format`: locale settings for type conversion.
 ///
-/// Returns the value from the specified row in the matching column.
+/// Returns the value from the specified row in the matching column. Matching is
+/// case-insensitive, and numbers match across storage types, but numbers never match text.
 ///
-/// Returns an error if no match is found or if `col_index_num` is out of range.
+/// Returns `#VALUE!` when `col_index_num` is less than 1, `#REF!` when it exceeds the table
+/// height, and `#N/A` when no column matches.
 pub fn h_lookup_array(
     lookup_value: Value,
     lookup_array: Value,
