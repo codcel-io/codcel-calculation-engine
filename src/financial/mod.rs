@@ -12,6 +12,7 @@
 //! than returning Excel error codes, making the API ergonomic for Rust
 //! applications while preserving familiar semantics.
 pub(crate) mod helpers;
+pub(crate) mod root_finding;
 
 // Financial functions
 pub mod codcel_accr_int;
