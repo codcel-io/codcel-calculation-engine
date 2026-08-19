@@ -4,8 +4,8 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
+use crate::statistical::standard_normal::{std_normal_cdf, std_normal_pdf};
 use std::error::Error;
-use std::f64::consts::PI;
 
 /// Excel-compatible `NORM.S.DIST` that returns the standard normal distribution.
 /// - `z`: the value at which to evaluate the distribution (z-score).
@@ -22,27 +22,9 @@ pub fn codcel_norm_dot_s_dot_dist(
     }
 
     if cumulative {
-        // Calculate the cumulative distribution function (CDF)
-        const P: f64 = 0.2316419;
-        const B1: f64 = 0.319381530;
-        const B2: f64 = -0.356563782;
-        const B3: f64 = 1.781477937;
-        const B4: f64 = -1.821255978;
-        const B5: f64 = 1.330274429;
-
-        let x = if z < 0.0 { -z } else { z };
-
-        let pdf = crate::portable_math::exp(-x * x / 2.0) / crate::portable_math::sqrt(2.0 * PI);
-        let t = 1.0 / (1.0 + P * x);
-        let poly = t * (B1 + t * (B2 + t * (B3 + t * (B4 + t * B5))));
-        let cdf = 1.0 - pdf * poly;
-
-        let result = if z < 0.0 { 1.0 - cdf } else { cdf };
-        Ok(result)
+        Ok(std_normal_cdf(z))
     } else {
-        // Calculate the probability density function (PDF)
-        let pdf = crate::portable_math::exp(-z * z / 2.0) / crate::portable_math::sqrt(2.0 * PI);
-        Ok(pdf)
+        Ok(std_normal_pdf(z))
     }
 }
 
@@ -50,12 +32,15 @@ pub fn codcel_norm_dot_s_dot_dist(
 mod tests {
     use super::*;
 
+    // Expected values were computed with mpmath at 60 decimal digits and rounded to the nearest
+    // f64, so they pin the full precision Excel reports rather than the four displayed decimals.
+
     #[test]
     fn test_norm_dot_s_dot_dist_pdf_zero() {
         // =NORM.S.DIST(0, FALSE) in US format
         // =NORM.S.DIST(0; FALSE) in German format
         let result = codcel_norm_dot_s_dot_dist(0.0, false).unwrap();
-        assert!((result - 0.3989).abs() < 0.0001);
+        assert!((result - 0.3989422804014327).abs() < 1e-16);
     }
 
     #[test]
@@ -63,7 +48,7 @@ mod tests {
         // =NORM.S.DIST(1, FALSE) in US format
         // =NORM.S.DIST(1; FALSE) in German format
         let result = codcel_norm_dot_s_dot_dist(1.0, false).unwrap();
-        assert!((result - 0.2420).abs() < 0.0001);
+        assert!((result - 0.24197072451914334).abs() < 1e-16);
     }
 
     #[test]
@@ -71,7 +56,7 @@ mod tests {
         // =NORM.S.DIST(-1, FALSE) in US format
         // =NORM.S.DIST(-1; FALSE) in German format
         let result = codcel_norm_dot_s_dot_dist(-1.0, false).unwrap();
-        assert!((result - 0.2420).abs() < 0.0001);
+        assert!((result - 0.24197072451914334).abs() < 1e-16);
     }
 
     #[test]
@@ -79,7 +64,7 @@ mod tests {
         // =NORM.S.DIST(3, FALSE) in US format
         // =NORM.S.DIST(3; FALSE) in German format
         let result = codcel_norm_dot_s_dot_dist(3.0, false).unwrap();
-        assert!((result - 0.0044).abs() < 0.0001);
+        assert!((result - 0.0044318484119380075).abs() < 1e-17);
     }
 
     #[test]
@@ -87,7 +72,7 @@ mod tests {
         // =NORM.S.DIST(-3, FALSE) in US format
         // =NORM.S.DIST(-3; FALSE) in German format
         let result = codcel_norm_dot_s_dot_dist(-3.0, false).unwrap();
-        assert!((result - 0.0044).abs() < 0.0001);
+        assert!((result - 0.0044318484119380075).abs() < 1e-17);
     }
 
     #[test]
@@ -95,7 +80,7 @@ mod tests {
         // =NORM.S.DIST(0, TRUE) in US format
         // =NORM.S.DIST(0; TRUE) in German format
         let result = codcel_norm_dot_s_dot_dist(0.0, true).unwrap();
-        assert!((result - 0.5).abs() < 0.0001);
+        assert_eq!(result, 0.5);
     }
 
     #[test]
@@ -103,7 +88,7 @@ mod tests {
         // =NORM.S.DIST(1, TRUE) in US format
         // =NORM.S.DIST(1; TRUE) in German format
         let result = codcel_norm_dot_s_dot_dist(1.0, true).unwrap();
-        assert!((result - 0.8413).abs() < 0.0001);
+        assert!((result - 0.8413447460685429).abs() < 1e-15);
     }
 
     #[test]
@@ -111,7 +96,7 @@ mod tests {
         // =NORM.S.DIST(-1, TRUE) in US format
         // =NORM.S.DIST(-1; TRUE) in German format
         let result = codcel_norm_dot_s_dot_dist(-1.0, true).unwrap();
-        assert!((result - 0.1587).abs() < 0.0001);
+        assert!((result - 0.15865525393145705).abs() < 1e-16);
     }
 
     #[test]
@@ -119,7 +104,7 @@ mod tests {
         // =NORM.S.DIST(3, TRUE) in US format
         // =NORM.S.DIST(3; TRUE) in German format
         let result = codcel_norm_dot_s_dot_dist(3.0, true).unwrap();
-        assert!((result - 0.9987).abs() < 0.0001);
+        assert!((result - 0.9986501019683699).abs() < 1e-15);
     }
 
     #[test]
@@ -127,7 +112,28 @@ mod tests {
         // =NORM.S.DIST(-3, TRUE) in US format
         // =NORM.S.DIST(-3; TRUE) in German format
         let result = codcel_norm_dot_s_dot_dist(-3.0, true).unwrap();
-        assert!((result - 0.0013).abs() < 0.0001);
+        assert!((result - 0.0013498980316300946).abs() < 1e-17);
+    }
+
+    #[test]
+    fn test_norm_dot_s_dot_dist_cdf_far_left_tail() {
+        // =NORM.S.DIST(-8, TRUE) in US format
+        // =NORM.S.DIST(-8; TRUE) in German format
+        //
+        // The Abramowitz & Stegun 26.2.17 approximation this function used to carry has an
+        // absolute error bound of 7.5e-8, which says nothing at all about values this small: it
+        // returned exactly 0.0 from about z = -9 outward. These cases exist to keep it that way.
+        for (z, expected) in [
+            (-6.0, 9.86587645037698e-10),
+            (-8.0, 6.220960574271784e-16),
+            (-10.0, 7.619853024160525e-24),
+        ] {
+            let result = codcel_norm_dot_s_dot_dist(z, true).unwrap();
+            assert!(
+                ((result - expected) / expected).abs() < 1e-13,
+                "NORM.S.DIST({z}, TRUE) = {result}, expected {expected}"
+            );
+        }
     }
 
     #[test]

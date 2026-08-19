@@ -4,8 +4,8 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
+use crate::statistical::codcel_norm_dot_s_dot_dist::codcel_norm_dot_s_dot_dist;
 use std::error::Error;
-use std::f64::consts::PI;
 
 /// Excel-compatible `NORMSDIST`/`NORM.S.DIST` function (cumulative).
 /// Returns the standard normal cumulative distribution.
@@ -13,38 +13,14 @@ use std::f64::consts::PI;
 ///
 /// Returns an error when `z` is not finite (NaN or infinite).
 pub fn codcel_norm_s_dist(z: f64) -> Result<f64, Box<dyn Error + Send + Sync>> {
-    // Check if input is valid (not NaN or infinite)
+    // Checked here rather than left to NORM.S.DIST so the message names the function the caller
+    // actually wrote.
     if !z.is_finite() {
         return Err("NORMSDIST: Input must be a finite number".into());
     }
 
-    // Constants for the approximation
-    const P: f64 = 0.2316419;
-    const B1: f64 = 0.319381530;
-    const B2: f64 = -0.356563782;
-    const B3: f64 = 1.781477937;
-    const B4: f64 = -1.821255978;
-    const B5: f64 = 1.330274429;
-
-    // If z is negative, we use the relationship CDF(z) = 1 - CDF(-z)
-    let x = if z < 0.0 { -z } else { z };
-
-    // Calculate PDF at x
-    let pdf = crate::portable_math::exp(-x * x / 2.0) / crate::portable_math::sqrt(2.0 * PI);
-
-    // Calculate t
-    let t = 1.0 / (1.0 + P * x);
-
-    // Calculate the polynomial approximation
-    let poly = t * (B1 + t * (B2 + t * (B3 + t * (B4 + t * B5))));
-
-    // Calculate CDF
-    let cdf = 1.0 - pdf * poly;
-
-    // Adjust if z was negative
-    let result = if z < 0.0 { 1.0 - cdf } else { cdf };
-
-    Ok(result)
+    // NORMSDIST is the cumulative branch of NORM.S.DIST.
+    codcel_norm_dot_s_dot_dist(z, true)
 }
 
 /// Convenience wrapper for `NORMSDIST` that accepts a single-element vector.
@@ -61,13 +37,15 @@ pub fn codcel_norm_s_dist_vec(inputs: Vec<f64>) -> Result<f64, Box<dyn Error + S
 mod tests {
     use super::*;
 
+    // Expected values were computed with mpmath at 60 decimal digits and rounded to the nearest
+    // f64.
+
     #[test]
     fn test_norm_s_dist_zero() {
         // =NORMSDIST(0) in US format
         // =NORMSDIST(0) in German format
         let result = codcel_norm_s_dist(0.0).unwrap();
-        println!("{result}");
-        assert!((result - 0.5).abs() < 0.0001);
+        assert_eq!(result, 0.5);
     }
 
     #[test]
@@ -75,8 +53,7 @@ mod tests {
         // =NORMSDIST(1) in US format
         // =NORMSDIST(1) in German format
         let result = codcel_norm_s_dist(1.0).unwrap();
-        println!("{result}");
-        assert!((result - 0.8413447461).abs() < 0.0001);
+        assert!((result - 0.8413447460685429).abs() < 1e-15);
     }
 
     #[test]
@@ -84,8 +61,7 @@ mod tests {
         // =NORMSDIST(-1) in US format
         // =NORMSDIST(-1) in German format
         let result = codcel_norm_s_dist(-1.0).unwrap();
-        println!("{result}");
-        assert!((result - 0.1586552539).abs() < 0.0001);
+        assert!((result - 0.15865525393145705).abs() < 1e-16);
     }
 
     #[test]
@@ -93,8 +69,7 @@ mod tests {
         // =NORMSDIST(3) in US format
         // =NORMSDIST(3) in German format
         let result = codcel_norm_s_dist(3.0).unwrap();
-        println!("{result}");
-        assert!((result - 0.9986501020).abs() < 0.0001);
+        assert!((result - 0.9986501019683699).abs() < 1e-15);
     }
 
     #[test]
@@ -102,8 +77,7 @@ mod tests {
         // =NORMSDIST(-3) in US format
         // =NORMSDIST(-3) in German format
         let result = codcel_norm_s_dist(-3.0).unwrap();
-        println!("{result}");
-        assert!((result - 0.0013498980).abs() < 0.0001);
+        assert!((result - 0.0013498980316300946).abs() < 1e-17);
     }
 
     #[test]
@@ -111,16 +85,25 @@ mod tests {
         // =NORMSDIST(0.5) in US format
         // =NORMSDIST(0,5) in German format
         let result = codcel_norm_s_dist(0.5).unwrap();
-        println!("{result}");
-        assert!((result - 0.6914624613).abs() < 0.0001);
+        assert!((result - 0.6914624612740131).abs() < 1e-16);
     }
 
     #[test]
-    #[should_panic]
+    fn test_norm_s_dist_agrees_with_norm_dot_s_dot_dist() {
+        // The two names are one Excel function; they must not drift apart again.
+        for z in [-5.0, -2.0, -1.0, -0.5, 0.0, 0.5, 1.0, 2.0, 5.0] {
+            assert_eq!(
+                codcel_norm_s_dist(z).unwrap(),
+                codcel_norm_dot_s_dot_dist(z, true).unwrap()
+            );
+        }
+    }
+
+    #[test]
     fn test_norm_s_dist_infinity() {
         // =NORMSDIST(∞) in US format
         // =NORMSDIST(∞) in German format
-        let result = codcel_norm_s_dist(f64::INFINITY).unwrap();
-        println!("{result}");
+        let result = codcel_norm_s_dist(f64::INFINITY);
+        assert!(result.is_err());
     }
 }

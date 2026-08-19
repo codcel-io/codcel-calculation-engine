@@ -4,6 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
+use crate::statistical::standard_normal::std_normal_inv;
 use std::error::Error;
 
 /// Excel-compatible `NORM.S.INV` that returns the inverse of the standard normal cumulative distribution.
@@ -11,63 +12,13 @@ use std::error::Error;
 ///
 /// Returns the z-score (number of standard deviations from the mean)
 /// such that NORM.S.DIST(z, TRUE) = probability.
-#[allow(clippy::excessive_precision)]
 pub fn codcel_norm_dot_s_dot_inv(probability: f64) -> Result<f64, Box<dyn Error + Send + Sync>> {
-    if !(0.0..1.0).contains(&probability) {
+    // Excel gives #NUM! at both endpoints, where the z-score is infinite.
+    if !(probability > 0.0 && probability < 1.0) {
         return Err("NORM.S.INV: Probability must be between 0 and 1 (exclusive).".into());
     }
 
-    // Constants for the rational approximation
-    const A1: f64 = -39.69683028665376;
-    const A2: f64 = 220.9460984245205;
-    const A3: f64 = -275.9285104469687;
-    const A4: f64 = 138.3577518672690;
-    const A5: f64 = -30.66479806614716;
-    const A6: f64 = 2.506628277459239;
-
-    const B1: f64 = -54.47609879822406;
-    const B2: f64 = 161.5858368580409;
-    const B3: f64 = -155.6989798598866;
-    const B4: f64 = 66.80131188771972;
-    const B5: f64 = -13.28068155288572;
-
-    const C1: f64 = -7.784894002430293e-03;
-    const C2: f64 = -0.3223964580411365;
-    const C3: f64 = -2.400758277161838;
-    const C4: f64 = -2.549732539343734;
-    const C5: f64 = 4.374664141464968;
-    const C6: f64 = 2.938163982698783;
-
-    const D1: f64 = 7.784695709041462e-03;
-    const D2: f64 = 0.3224671290700398;
-    const D3: f64 = 2.445134137142996;
-    const D4: f64 = 3.754408661907416;
-
-    const P_LOW: f64 = 0.02425;
-    const P_HIGH: f64 = 1.0 - P_LOW;
-
-    let q: f64;
-    let result: f64;
-
-    if probability < P_LOW {
-        // Rational approximation for lower region
-        q = crate::portable_math::sqrt(-2.0 * crate::portable_math::ln(probability));
-        result = (((((C1 * q + C2) * q + C3) * q + C4) * q + C5) * q + C6)
-            / ((((D1 * q + D2) * q + D3) * q + D4) * q + 1.0);
-    } else if probability > P_HIGH {
-        // Rational approximation for upper region
-        q = crate::portable_math::sqrt(-2.0 * crate::portable_math::ln(1.0 - probability));
-        result = -(((((C1 * q + C2) * q + C3) * q + C4) * q + C5) * q + C6)
-            / ((((D1 * q + D2) * q + D3) * q + D4) * q + 1.0);
-    } else {
-        // Rational approximation for central region
-        q = probability - 0.5;
-        let r = q * q;
-        result = (((((A1 * r + A2) * r + A3) * r + A4) * r + A5) * r + A6) * q
-            / (((((B1 * r + B2) * r + B3) * r + B4) * r + B5) * r + 1.0);
-    }
-
-    Ok(result)
+    Ok(std_normal_inv(probability))
 }
 
 pub fn codcel_norm_dot_s_dot_inv_vec(
@@ -84,12 +35,16 @@ pub fn codcel_norm_dot_s_dot_inv_vec(
 mod tests {
     use super::*;
 
+    // Expected values were computed with mpmath at 60 decimal digits and rounded to the nearest
+    // f64. The previous tolerances here were as loose as 1e-2 against values Excel reports to 15
+    // significant digits, which could not have caught a precision regression.
+
     #[test]
     fn test_norm_dot_s_dot_inv_median() {
         // =NORM.S.INV(0.5) in US format
         // =NORM.S.INV(0,5) in German format
         let result = codcel_norm_dot_s_dot_inv(0.5).unwrap();
-        assert!((result - 0.0).abs() < 0.0001);
+        assert_eq!(result, 0.0);
     }
 
     #[test]
@@ -97,7 +52,7 @@ mod tests {
         // =NORM.S.INV(0.975) in US format
         // =NORM.S.INV(0,975) in German format
         let result = codcel_norm_dot_s_dot_inv(0.975).unwrap();
-        assert!((result - 1.96).abs() < 0.01);
+        assert!((result - 1.9599639845400543).abs() < 1e-15);
     }
 
     #[test]
@@ -105,7 +60,7 @@ mod tests {
         // =NORM.S.INV(0.025) in US format
         // =NORM.S.INV(0,025) in German format
         let result = codcel_norm_dot_s_dot_inv(0.025).unwrap();
-        assert!((result + 1.96).abs() < 0.01);
+        assert!((result + 1.9599639845400543).abs() < 1e-15);
     }
 
     #[test]
@@ -113,7 +68,7 @@ mod tests {
         // =NORM.S.INV(0.3) in US format
         // =NORM.S.INV(0,3) in German format
         let result = codcel_norm_dot_s_dot_inv(0.3).unwrap();
-        assert!((result + 0.524).abs() < 0.001);
+        assert!((result + 0.5244005127080408).abs() < 1e-15);
     }
 
     #[test]
@@ -121,7 +76,7 @@ mod tests {
         // =NORM.S.INV(0.01) in US format
         // =NORM.S.INV(0,01) in German format
         let result = codcel_norm_dot_s_dot_inv(0.01).unwrap();
-        assert!((result + 2.326).abs() < 0.001);
+        assert!((result + 2.326347874040841).abs() < 1e-15);
     }
 
     #[test]
@@ -129,7 +84,7 @@ mod tests {
         // =NORM.S.INV(0.99) in US format
         // =NORM.S.INV(0,99) in German format
         let result = codcel_norm_dot_s_dot_inv(0.99).unwrap();
-        assert!((result - 2.326).abs() < 0.001);
+        assert!((result - 2.326347874040841).abs() < 1e-15);
     }
 
     #[test]
@@ -137,7 +92,7 @@ mod tests {
         // =NORM.S.INV(0.001) in US format
         // =NORM.S.INV(0,001) in German format
         let result = codcel_norm_dot_s_dot_inv(0.001).unwrap();
-        assert!((result + 3.09).abs() < 0.01);
+        assert!((result + 3.0902323061678136).abs() < 1e-15);
     }
 
     #[test]
@@ -145,17 +100,38 @@ mod tests {
         // =NORM.S.INV(0.999) in US format
         // =NORM.S.INV(0,999) in German format
         let result = codcel_norm_dot_s_dot_inv(0.999).unwrap();
-        assert!((result - 3.09).abs() < 0.01);
+        assert!((result - 3.0902323061678136).abs() < 1e-15);
     }
 
-    /* TODO IN EXCEL THIS GIVES #NUM! #[test]
+    #[test]
+    fn test_norm_dot_s_dot_inv_extreme_tail() {
+        // =NORM.S.INV(0.00000001) in US format
+        // =NORM.S.INV(0,00000001) in German format
+        let result = codcel_norm_dot_s_dot_inv(1e-8).unwrap();
+        assert!((result + 5.612001244174789).abs() < 1e-14);
+    }
+
+    #[test]
+    fn test_norm_dot_s_dot_inv_inverts_norm_dot_s_dot_dist() {
+        use crate::statistical::codcel_norm_dot_s_dot_dist::codcel_norm_dot_s_dot_dist;
+        for z in [-5.0, -3.0, -2.0, -1.0, -0.5, 0.0] {
+            let probability = codcel_norm_dot_s_dot_dist(z, true).unwrap();
+            let round_tripped = codcel_norm_dot_s_dot_inv(probability).unwrap();
+            assert!(
+                (round_tripped - z).abs() < 1e-14 * z.abs().max(1.0),
+                "round trip of {z} gave {round_tripped}"
+            );
+        }
+    }
+
+    #[test]
     fn test_norm_dot_s_dot_inv_zero() {
         // =NORM.S.INV(0) in US format
         // =NORM.S.INV(0) in German format
+        // Excel gives #NUM! here.
         let result = codcel_norm_dot_s_dot_inv(0.0);
-        println!("{:?}", result);
         assert!(result.is_err());
-    }*/
+    }
 
     #[test]
     fn test_norm_dot_s_dot_inv_one() {
@@ -173,11 +149,18 @@ mod tests {
     }
 
     #[test]
+    fn test_norm_dot_s_dot_inv_nan() {
+        // NaN must not slip through the range check
+        let result = codcel_norm_dot_s_dot_inv(f64::NAN);
+        assert!(result.is_err());
+    }
+
+    #[test]
     fn test_norm_dot_s_dot_inv_vec_valid() {
         // Test the vector version with valid input
         let inputs = vec![0.5];
         let result = codcel_norm_dot_s_dot_inv_vec(inputs).unwrap();
-        assert!((result - 0.0).abs() < 0.0001);
+        assert_eq!(result, 0.0);
     }
 
     #[test]

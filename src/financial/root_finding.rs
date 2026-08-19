@@ -52,7 +52,7 @@ const DERIVATIVE_STEP: f64 = 1e-7;
 /// Relative step size below which a Newton iteration is considered settled.
 const STEP_TOLERANCE: f64 = 1e-14;
 
-/// Fallback starting point for the final Newton attempt, matching IronCalc's `compute_xirr`.
+/// Fallback starting point for the final Newton attempt
 const FAR_GUESS: f64 = 200.0;
 
 /// Rates are only meaningful above the pole at `-1`; this is the closest the search will go.

@@ -4,7 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
-use statrs::function::erf::erf;
+use crate::statistical::codcel_log_norm_dot_dist::codcel_log_norm_dot_dist;
 use std::error::Error;
 
 /// Excel-compatible `LOGNORMDIST`/`LOGNORM.DIST` function.
@@ -19,25 +19,8 @@ pub fn codcel_log_norm_dist(
     mean: f64,
     std_dev: f64,
 ) -> Result<f64, Box<dyn Error + Send + Sync>> {
-    // Input validation
-    if x <= 0.0 {
-        return Err("x must be greater than 0".into());
-    }
-    if std_dev <= 0.0 {
-        return Err("standard deviation must be greater than 0".into());
-    }
-
-    // Calculate the cumulative lognormal distribution
-    let ln_x = crate::portable_math::ln(x);
-
-    // Using the error function (erf) to calculate the cumulative distribution
-    let z = (ln_x - mean) / (std_dev * crate::portable_math::sqrt(2.0_f64));
-
-    // The cumulative distribution is related to the error function:
-    // CDF = 0.5 * (1 + erf(z/√2))
-    let result = 0.5 * (1.0 + erf(z));
-
-    Ok(result)
+    // LOGNORMDIST is the cumulative branch of LOGNORM.DIST, which also validates the inputs.
+    codcel_log_norm_dot_dist(x, mean, std_dev, true)
 }
 
 /// Convenience wrapper for `LOGNORMDIST` that accepts `[x, mean, std_dev]`.

@@ -4,7 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
-use statrs::distribution::ContinuousCDF;
+use crate::statistical::codcel_log_norm_inv::codcel_log_norm_inv;
 use std::error::Error;
 
 /// Excel-compatible `LOGINV`/`LOGNORM.INV` function.
@@ -19,19 +19,17 @@ pub fn codcel_log_inv(
     mean: f64,
     std_dev: f64,
 ) -> Result<f64, Box<dyn Error + Send + Sync>> {
-    // Input validation
-    if p <= 0.0 || p >= 1.0 {
+    // Validated here rather than left to LOGNORM.INV so the message names the function the
+    // caller actually wrote.
+    if !(p > 0.0 && p < 1.0) {
         return Err("LOGINV: p must be between 0 and 1 (exclusive)".into());
     }
     if std_dev <= 0.0 {
         return Err("LOGINV: standard deviation must be greater than 0".into());
     }
 
-    // Calculate the inverse of the log-normal cumulative distribution
-    let z = statrs::distribution::Normal::new(0.0, 1.0)?.inverse_cdf(p);
-    let result = crate::portable_math::exp(mean + z * std_dev);
-
-    Ok(result)
+    // LOGINV is the old name for LOGNORM.INV.
+    codcel_log_norm_inv(p, mean, std_dev)
 }
 
 /// Convenience wrapper for `LOGINV` that accepts `[p, mean, std_dev]`.

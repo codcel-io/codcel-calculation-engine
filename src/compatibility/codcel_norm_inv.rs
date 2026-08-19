@@ -4,38 +4,31 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
-use statrs::distribution::{ContinuousCDF, Normal};
+use crate::statistical::standard_normal::std_normal_inv;
 use std::error::Error;
 
 /// Excel-compatible `NORMINV`/`NORM.INV` function.
 /// Returns the inverse normal distribution for a cumulative probability.
-/// - `probability`: cumulative probability value in `[0, 1]`.
+/// - `probability`: cumulative probability value, strictly between 0 and 1.
 /// - `mean`: arithmetic mean of the distribution.
 /// - `std_dev`: standard deviation of the distribution (must be greater than 0).
 ///
-/// Returns an error on probabilities outside `[0, 1]` or non-positive standard deviation.
+/// Returns an error on probabilities outside `(0, 1)` or non-positive standard deviation.
 pub fn codcel_norm_inv(
     probability: f64,
     mean: f64,
     std_dev: f64,
 ) -> Result<f64, Box<dyn Error + Send + Sync>> {
-    // Validate inputs
-    if !(0.0..=1.0).contains(&probability) {
-        return Err("NORMINV: Probability must be between 0 and 1 inclusive".into());
+    // Excel gives #NUM! at both endpoints, where the result is infinite.
+    if !(probability > 0.0 && probability < 1.0) {
+        return Err("NORMINV: Probability must be between 0 and 1 exclusive".into());
     }
 
     if std_dev <= 0.0 {
         return Err("NORMINV: Standard deviation must be greater than 0".into());
     }
 
-    // Create a normal distribution with the given mean and standard deviation
-    let normal_dist = Normal::new(mean, std_dev)
-        .map_err(|e| format!("NORMINV: Failed to create normal distribution: {e}"))?;
-
-    // Calculate the inverse cumulative distribution (percent-point function)
-    let result = normal_dist.inverse_cdf(probability);
-
-    Ok(result)
+    Ok(mean + std_dev * std_normal_inv(probability))
 }
 
 /// Convenience wrapper for `NORMINV` that accepts `[probability, mean, std_dev]`.
@@ -52,13 +45,15 @@ pub fn codcel_norm_inv_vec(inputs: Vec<f64>) -> Result<f64, Box<dyn Error + Send
 mod tests {
     use super::*;
 
+    // Expected values were computed with mpmath at 60 decimal digits and rounded to the nearest
+    // f64.
+
     #[test]
     fn test_norm_inv_basic() {
         // =NORMINV(0.5, 0, 1) in US format
         // =NORMINV(0,5; 0; 1) in German format
         let result = codcel_norm_inv(0.5, 0.0, 1.0).unwrap();
-        println!("{result}");
-        assert!((result - 0.0).abs() < 0.0001);
+        assert_eq!(result, 0.0);
     }
 
     #[test]
@@ -66,8 +61,7 @@ mod tests {
         // =NORMINV(0.1, 0, 1) in US format
         // =NORMINV(0,1; 0; 1) in German format
         let result = codcel_norm_inv(0.1, 0.0, 1.0).unwrap();
-        println!("{result}");
-        assert!((result - (-1.2815515655)).abs() < 0.0001);
+        assert!((result + 1.2815515655446004).abs() < 1e-15);
     }
 
     #[test]
@@ -75,8 +69,7 @@ mod tests {
         // =NORMINV(0.9, 0, 1) in US format
         // =NORMINV(0,9; 0; 1) in German format
         let result = codcel_norm_inv(0.9, 0.0, 1.0).unwrap();
-        println!("{result}");
-        assert!((result - 1.2815515655).abs() < 0.0001);
+        assert!((result - 1.2815515655446004).abs() < 1e-15);
     }
 
     #[test]
@@ -84,8 +77,7 @@ mod tests {
         // =NORMINV(0.5, 10, 2) in US format
         // =NORMINV(0,5; 10; 2) in German format
         let result = codcel_norm_inv(0.5, 10.0, 2.0).unwrap();
-        println!("{result}");
-        assert!((result - 10.0).abs() < 0.0001);
+        assert_eq!(result, 10.0);
     }
 
     #[test]
@@ -93,8 +85,28 @@ mod tests {
         // =NORMINV(0.999, 0, 1) in US format
         // =NORMINV(0,999; 0; 1) in German format
         let result = codcel_norm_inv(0.999, 0.0, 1.0).unwrap();
-        println!("{result}");
-        assert!((result - 3.0902323062).abs() < 0.0001);
+        assert!((result - 3.0902323061678136).abs() < 1e-15);
+    }
+
+    #[test]
+    fn test_norm_inv_scaled_and_shifted() {
+        // =NORMINV(0.975, 10, 2) in US format
+        // =NORMINV(0,975; 10; 2) in German format
+        let result = codcel_norm_inv(0.975, 10.0, 2.0).unwrap();
+        assert!((result - 13.919927969080108).abs() < 1e-14);
+    }
+
+    #[test]
+    fn test_norm_inv_inverts_norm_dist() {
+        use crate::compatibility::codcel_norm_dist::codcel_norm_dist;
+        for x in [-3.0, -1.0, 0.0, 1.0, 3.0] {
+            let probability = codcel_norm_dist(x, 2.0, 1.5, true).unwrap();
+            let round_tripped = codcel_norm_inv(probability, 2.0, 1.5).unwrap();
+            assert!(
+                (round_tripped - x).abs() < 1e-12 * x.abs().max(1.0),
+                "round trip of {x} gave {round_tripped}"
+            );
+        }
     }
 
     #[test]
@@ -102,6 +114,19 @@ mod tests {
         // =NORMINV(1.5, 0, 1) in US format
         // =NORMINV(1,5; 0; 1) in German format
         let result = codcel_norm_inv(1.5, 0.0, 1.0);
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_norm_inv_probability_endpoints() {
+        // =NORMINV(0, 0, 1) and =NORMINV(1, 0, 1) both give #NUM! in Excel.
+        assert!(codcel_norm_inv(0.0, 0.0, 1.0).is_err());
+        assert!(codcel_norm_inv(1.0, 0.0, 1.0).is_err());
+    }
+
+    #[test]
+    fn test_norm_inv_nan_probability() {
+        let result = codcel_norm_inv(f64::NAN, 0.0, 1.0);
         assert!(result.is_err());
     }
 

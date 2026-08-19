@@ -4,7 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
-use statrs::distribution::ContinuousCDF;
+use crate::statistical::standard_normal::std_normal_cdf_minus_half;
 use std::error::Error;
 
 /// Excel-compatible `GAUSS` that returns the probability that a standard normal random variable
@@ -20,13 +20,9 @@ pub fn codcel_gauss(z: f64) -> Result<f64, Box<dyn Error + Send + Sync>> {
         return Err("GAUSS: Input must not be NaN.".into());
     }
 
-    // Standard normal cumulative distribution function
-    let cdf = statrs::distribution::Normal::new(0.0, 1.0)
-        .map_err(|_| "GAUSS: Failed to create standard normal distribution.")?
-        .cdf(z);
-
-    // Subtract 0.5 to get the cumulative probability for the range (0, z)
-    Ok(cdf - 0.5)
+    // Phi(z) - 0.5, evaluated directly as erf(z / sqrt(2)) / 2 rather than by subtracting 0.5
+    // from the CDF, which would cancel away the leading digits for small z.
+    Ok(std_normal_cdf_minus_half(z))
 }
 
 pub fn codcel_gauss_vec(inputs: Vec<f64>) -> Result<f64, Box<dyn Error + Send + Sync>> {

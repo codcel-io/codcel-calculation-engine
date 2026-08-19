@@ -4,9 +4,8 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
-use statrs::function::erf::erf;
+use crate::statistical::standard_normal::{std_normal_cdf, std_normal_pdf};
 use std::error::Error;
-use std::f64::consts::PI;
 
 /// Excel-compatible `LOGNORM.DIST` that returns the lognormal distribution.
 /// - `x`: the value at which to evaluate the distribution (must be > 0).
@@ -30,19 +29,14 @@ pub fn codcel_log_norm_dot_dist(
         return Err("standard deviation must be greater than 0".into());
     }
 
+    // ln(x) is normally distributed, so the lognormal is the standard normal in z.
+    let z = (crate::portable_math::ln(x) - mean) / std_dev;
+
     if cumulative {
-        // Calculate the cumulative lognormal distribution
-        let ln_x = crate::portable_math::ln(x);
-        let z = (ln_x - mean) / (std_dev * crate::portable_math::sqrt(2.0_f64));
-        let result = 0.5 * (1.0 + erf(z));
-        Ok(result)
+        Ok(std_normal_cdf(z))
     } else {
-        // Calculate the probability density function
-        let ln_x = crate::portable_math::ln(x);
-        let exponent = -((ln_x - mean).powi(2)) / (2.0 * std_dev.powi(2));
-        let coefficient = 1.0 / (x * std_dev * crate::portable_math::sqrt(2.0 * PI));
-        let result = coefficient * crate::portable_math::exp(exponent);
-        Ok(result)
+        // The Jacobian of the change of variable from ln(x) to x contributes the 1/(x * std_dev).
+        Ok(std_normal_pdf(z) / (x * std_dev))
     }
 }
 

@@ -4,7 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
-use statrs::distribution::ContinuousCDF;
+use crate::statistical::codcel_confidence_norm::codcel_confidence_norm;
 use std::error::Error;
 
 /// Excel-compatible `CONFIDENCE` function (z-based margin of error).
@@ -27,19 +27,14 @@ pub fn codcel_confidence(
         return Err("CONFIDENCE: Standard deviation (standard_dev) must be greater than 0".into());
     }
 
-    if size == 0 {
+    // Guards negative sizes too, which would otherwise reach sqrt() and return NaN.
+    if size < 1 {
         return Err("CONFIDENCE: Sample size (size) must be greater than 0".into());
     }
 
-    // Convert alpha to z-score: z = NORM.S.INV(1 - alpha / 2)
-    let z_score = statrs::distribution::Normal::new(0.0, 1.0)
-        .map_err(|_| "CONFIDENCE: Unable to create normal distribution")?
-        .inverse_cdf(1.0 - alpha / 2.0);
-
-    // Calculate margin of error: z * (standard_dev / sqrt(size))
-    let margin_of_error = z_score * (standard_dev / crate::portable_math::sqrt(size as f64));
-
-    Ok(margin_of_error)
+    // CONFIDENCE is the old name for CONFIDENCE.NORM. Validated above so the messages name the
+    // function the caller actually wrote.
+    codcel_confidence_norm(alpha, standard_dev, size)
 }
 
 #[cfg(test)]

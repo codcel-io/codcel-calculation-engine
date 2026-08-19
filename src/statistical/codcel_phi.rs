@@ -4,6 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
+use crate::statistical::standard_normal::std_normal_pdf;
 use std::error::Error;
 
 /// Excel-compatible `PHI` that returns the value of the density function for a standard normal distribution.
@@ -11,8 +12,7 @@ use std::error::Error;
 ///
 /// Returns the probability density of the standard normal distribution at x.
 pub fn codcel_phi(x: f64) -> Result<f64, Box<dyn Error + Send + Sync>> {
-    const SQRT_2PI: f64 = 2.5066282746310002; // Square root of 2π
-    Ok(crate::portable_math::exp(-x * x / 2.0) / SQRT_2PI)
+    Ok(std_normal_pdf(x))
 }
 
 pub fn codcel_phi_vec(inputs: Vec<f64>) -> Result<f64, Box<dyn Error + Send + Sync>> {

@@ -33,12 +33,16 @@ pub fn codcel_norm_dot_inv_vec(inputs: Vec<f64>) -> Result<f64, Box<dyn Error + 
 mod tests {
     use super::*;
 
+    // Expected values were computed with mpmath at 60 decimal digits and rounded to the nearest
+    // f64. These tests previously used tolerances as loose as 1e-2 against values Excel reports
+    // to 15 significant digits.
+
     #[test]
     fn test_norm_dot_inv_standard_median() {
         // =NORM.INV(0.5, 0, 1) in US format
         // =NORM.INV(0,5; 0; 1) in German format
         let result = codcel_norm_dot_inv(0.5, 0.0, 1.0).unwrap();
-        assert!((result - 0.0).abs() < 0.0001);
+        assert_eq!(result, 0.0);
     }
 
     #[test]
@@ -46,7 +50,7 @@ mod tests {
         // =NORM.INV(0.975, 0, 1) in US format
         // =NORM.INV(0,975; 0; 1) in German format
         let result = codcel_norm_dot_inv(0.975, 0.0, 1.0).unwrap();
-        assert!((result - 1.96).abs() < 0.01);
+        assert!((result - 1.9599639845400543).abs() < 1e-15);
     }
 
     #[test]
@@ -54,7 +58,7 @@ mod tests {
         // =NORM.INV(0.025, 0, 1) in US format
         // =NORM.INV(0,025; 0; 1) in German format
         let result = codcel_norm_dot_inv(0.025, 0.0, 1.0).unwrap();
-        assert!((result + 1.96).abs() < 0.01);
+        assert!((result + 1.9599639845400543).abs() < 1e-15);
     }
 
     #[test]
@@ -62,7 +66,7 @@ mod tests {
         // =NORM.INV(0.5, 10, 1) in US format
         // =NORM.INV(0,5; 10; 1) in German format
         let result = codcel_norm_dot_inv(0.5, 10.0, 1.0).unwrap();
-        assert!((result - 10.0).abs() < 0.0001);
+        assert_eq!(result, 10.0);
     }
 
     #[test]
@@ -70,7 +74,7 @@ mod tests {
         // =NORM.INV(0.975, 0, 2) in US format
         // =NORM.INV(0,975; 0; 2) in German format
         let result = codcel_norm_dot_inv(0.975, 0.0, 2.0).unwrap();
-        assert!((result - 3.92).abs() < 0.01);
+        assert!((result - 3.9199279690801085).abs() < 1e-14);
     }
 
     #[test]
@@ -78,23 +82,39 @@ mod tests {
         // =NORM.INV(0.975, 10, 2) in US format
         // =NORM.INV(0,975; 10; 2) in German format
         let result = codcel_norm_dot_inv(0.975, 10.0, 2.0).unwrap();
-        assert!((result - 13.92).abs() < 0.01);
+        assert!((result - 13.919927969080108).abs() < 1e-14);
+    }
+
+    #[test]
+    fn test_norm_dot_inv_agrees_with_norm_dot_s_dot_inv() {
+        // NORM.INV(p, 0, 1) and NORM.S.INV(p) are the same Excel function. They used to run
+        // through two unrelated rational approximations.
+        use crate::statistical::codcel_norm_dot_s_dot_inv::codcel_norm_dot_s_dot_inv;
+        for p in [1e-8, 0.001, 0.025, 0.1, 0.3, 0.5, 0.9, 0.975, 0.999] {
+            assert_eq!(
+                codcel_norm_dot_inv(p, 0.0, 1.0).unwrap(),
+                codcel_norm_dot_s_dot_inv(p).unwrap(),
+                "disagreement at p = {p}"
+            );
+        }
     }
 
     #[test]
     fn test_norm_dot_inv_probability_zero() {
         // =NORM.INV(0, 0, 1) in US format
         // =NORM.INV(0; 0; 1) in German format
-        let result = codcel_norm_dot_inv(0.0, 0.0, 1.0).unwrap();
-        assert!(result.is_infinite() && result.is_sign_negative());
+        // Excel gives #NUM! rather than -infinity.
+        let result = codcel_norm_dot_inv(0.0, 0.0, 1.0);
+        assert!(result.is_err());
     }
 
     #[test]
     fn test_norm_dot_inv_probability_one() {
         // =NORM.INV(1, 0, 1) in US format
         // =NORM.INV(1; 0; 1) in German format
-        let result = codcel_norm_dot_inv(1.0, 0.0, 1.0).unwrap();
-        assert!(result.is_infinite() && result.is_sign_positive());
+        // Excel gives #NUM! rather than +infinity.
+        let result = codcel_norm_dot_inv(1.0, 0.0, 1.0);
+        assert!(result.is_err());
     }
 
     #[test]
@@ -123,7 +143,7 @@ mod tests {
         // Test the vector version with valid inputs
         let inputs = vec![0.5, 0.0, 1.0];
         let result = codcel_norm_dot_inv_vec(inputs).unwrap();
-        assert!((result - 0.0).abs() < 0.0001);
+        assert_eq!(result, 0.0);
     }
 
     #[test]

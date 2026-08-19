@@ -4,7 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
-use statrs::distribution::ContinuousCDF;
+use crate::statistical::standard_normal::std_normal_inv;
 use std::error::Error;
 
 /// Excel-compatible `CONFIDENCE.NORM` that returns the confidence interval for a population mean using a normal distribution.
@@ -19,22 +19,20 @@ pub fn codcel_confidence_norm(
     standard_deviation: f64,
     size: i32,
 ) -> Result<f64, Box<dyn Error + Send + Sync>> {
-    // Input validation
-    if !(0.0..1.0).contains(&alpha) {
+    // Input validation. The bound is exclusive at both ends: alpha = 0 has no finite z-score.
+    if !(alpha > 0.0 && alpha < 1.0) {
         return Err("CONFIDENCE.NORM: Alpha must be in the range (0, 1).".into());
     }
     if standard_deviation <= 0.0 {
         return Err("CONFIDENCE.NORM: Standard deviation must be greater than 0.".into());
     }
-    if size == 0 {
+    // Guards negative sizes too, which would otherwise reach sqrt() and return NaN.
+    if size < 1 {
         return Err("CONFIDENCE.NORM: Sample size must be greater than 0.".into());
     }
 
     // Calculate the z-score for the given alpha
-    let z = match statrs::distribution::Normal::new(0.0, 1.0) {
-        Ok(normal_dist) => normal_dist.inverse_cdf(1.0 - alpha / 2.0),
-        Err(_) => return Err("CONFIDENCE.NORM: Error creating normal distribution.".into()),
-    };
+    let z = std_normal_inv(1.0 - alpha / 2.0);
 
     // Calculate the confidence interval width
     let confidence = z * (standard_deviation / crate::portable_math::sqrt(size as f64));

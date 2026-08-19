@@ -5,7 +5,7 @@
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
 use crate::compensated_sum::CompensatedSumExt;
-use statrs::distribution::{ContinuousCDF, Normal};
+use crate::statistical::standard_normal::std_normal_cdf;
 use std::error::Error;
 
 /// Excel-compatible `Z.TEST` that returns the one-tailed p-value of a z-test.
@@ -41,11 +41,9 @@ pub fn codcel_z_dot_test(
 
     let z_score = (mean - hyp_mean) / (std_dev / crate::portable_math::sqrt(n as f64));
 
-    // Compute the p-value using the standard normal distribution
-    let normal = Normal::new(0.0, 1.0).map_err(|_| "Failed to create normal distribution")?;
-    let p_value = 1.0 - normal.cdf(z_score);
-
-    Ok(p_value)
+    // The upper-tail probability, as Phi(-z) rather than 1 - Phi(z): the latter cancels the
+    // result away entirely once z is large enough for the tail to matter.
+    Ok(std_normal_cdf(-z_score))
 }
 
 #[cfg(test)]

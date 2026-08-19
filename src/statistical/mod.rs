@@ -114,3 +114,4 @@ pub(crate) mod hypergeom_prob;
 pub(crate) mod ln_binomial_coefficient;
 pub(crate) mod neg_binom_pmf;
 pub(crate) mod poisson_probability;
+pub(crate) mod standard_normal;

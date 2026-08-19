@@ -4,60 +4,8 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
-use crate::compensated_sum::CompensatedSum;
-use libm::{lgamma, tgamma};
+use statrs::distribution::{Continuous, ContinuousCDF};
 use std::error::Error;
-
-/// Regularized lower incomplete gamma function using series expansion
-fn regularized_gamma_lower(a: f64, x: f64) -> f64 {
-    const EPS: f64 = 1e-14;
-    const MAX_ITER: usize = 1000;
-
-    if x == 0.0 {
-        return 0.0;
-    }
-
-    if x < a + 1.0 {
-        // Series expansion
-        let mut sum = CompensatedSum::new();
-        sum.add(1.0 / a);
-        let mut term = 1.0 / a;
-        for n in 1..MAX_ITER {
-            term *= x / (a + n as f64);
-            sum.add(term);
-            if term.abs() < EPS * sum.total() {
-                break;
-            }
-        }
-
-        sum.total() * crate::portable_math::exp(-x) * crate::portable_math::powf(x, a) / tgamma(a)
-    } else {
-        // Continued fraction
-        let mut b = x + 1.0 - a;
-        let mut c = 1.0 / f64::MIN_POSITIVE;
-        let mut d = 1.0 / b;
-        let mut h = d;
-        for i in 1..MAX_ITER {
-            let an = -(i as f64) * (i as f64 - a);
-            b += 2.0;
-            d = an * d + b;
-            if d.abs() < f64::MIN_POSITIVE {
-                d = f64::MIN_POSITIVE;
-            }
-            c = b + an / c;
-            if c.abs() < f64::MIN_POSITIVE {
-                c = f64::MIN_POSITIVE;
-            }
-            d = 1.0 / d;
-            let delta = d * c;
-            h *= delta;
-            if (delta - 1.0).abs() < EPS {
-                break;
-            }
-        }
-        1.0 - crate::portable_math::exp(-x + a * crate::portable_math::ln(x) - lgamma(a)) * h
-    }
-}
 
 /// Excel-compatible `CHISQ.DIST` that returns the chi-squared distribution.
 /// - `x`: the value at which to evaluate the distribution (must be >= 0).
@@ -77,17 +25,20 @@ pub fn codcel_chisq_dist(
     if df <= 0.0 {
         return Err("CHISQ.DIST: degrees_of_freedom must be > 0.".into());
     }
+    // The density diverges at the origin for fewer than two degrees of freedom, where Excel
+    // gives #NUM! rather than an infinity.
+    if !cumulative && x == 0.0 && df < 2.0 {
+        return Err("CHISQ.DIST: density is undefined at x = 0 for df < 2.".into());
+    }
 
-    let a = df / 2.0;
-    let x_scaled = x / 2.0;
+    // Shared with CHISQ.DIST.RT, CHISQ.INV, CHISQ.INV.RT and CHISQ.TEST, so the five agree.
+    let distribution = statrs::distribution::ChiSquared::new(df)
+        .map_err(|_| "CHISQ.DIST: Error creating chi-squared distribution.")?;
 
     if cumulative {
-        Ok(regularized_gamma_lower(a, x_scaled))
+        Ok(distribution.cdf(x))
     } else {
-        let numerator =
-            crate::portable_math::powf(x, a - 1.0) * crate::portable_math::exp(-x_scaled);
-        let denominator = crate::portable_math::powf(2f64, a) * tgamma(a);
-        Ok(numerator / denominator)
+        Ok(distribution.pdf(x))
     }
 }
 
@@ -100,7 +51,7 @@ mod tests {
         // =CHISQ.DIST(2,3,FALSE) in US format
         // =CHISQ.DIST(2;3;FALSE) in German format
         let result = codcel_chisq_dist(2.0, 3.0, false).unwrap();
-        assert!((result - 0.2075537487).abs() < 1e-10); // PDF of Chi-squared(3) at x=2
+        assert!((result - 0.20755374871029736).abs() < 1e-15); // PDF of Chi-squared(3) at x=2
     }
 
     #[test]
@@ -109,7 +60,7 @@ mod tests {
         // =CHISQ.DIST(2;3;TRUE) in German format
         let result = codcel_chisq_dist(2.0, 3.0, true).unwrap();
         println!("{result:?}");
-        assert!((result - 0.42759329552911934).abs() < 1e-10); // CDF of Chi-squared(3) at x=2
+        assert!((result - 0.4275932955291202).abs() < 1e-15); // CDF of Chi-squared(3) at x=2
     }
 
     #[test]
@@ -126,7 +77,7 @@ mod tests {
         // =CHISQ.DIST(10;3;TRUE) in German format
         let result = codcel_chisq_dist(10.0, 3.0, true).unwrap();
         println!("{result:?}");
-        assert!((result - 0.9814338645369567).abs() < 1e-10); // CDF of Chi-squared(3) at x=10
+        assert!((result - 0.9814338645369568).abs() < 1e-15); // CDF of Chi-squared(3) at x=10
     }
 
     #[test]
@@ -134,7 +85,7 @@ mod tests {
         // =CHISQ.DIST(2,1,TRUE) in US format
         // =CHISQ.DIST(2;1;TRUE) in German format
         let result = codcel_chisq_dist(2.0, 1.0, true).unwrap();
-        assert!((result - 0.8427007929).abs() < 1e-10); // CDF of Chi-squared(1) at x=2
+        assert!((result - 0.8427007929497149).abs() < 1e-15); // CDF of Chi-squared(1) at x=2
     }
 
     #[test]
@@ -142,7 +93,7 @@ mod tests {
         // =CHISQ.DIST(20,10,TRUE) in US format
         // =CHISQ.DIST(20;10;TRUE) in German format
         let result = codcel_chisq_dist(20.0, 10.0, true).unwrap();
-        assert!((result - 0.970747312).abs() < 1e-10); // CDF of Chi-squared(10) at x=20
+        assert!((result - 0.970747311923039).abs() < 1e-15); // CDF of Chi-squared(10) at x=20
     }
 
     #[test]
@@ -159,7 +110,7 @@ mod tests {
         // =CHISQ.DIST(20;3;FALSE) in German format
         let result = codcel_chisq_dist(20.0, 3.0, false).unwrap();
         println!("{result:?}");
-        assert!((result - 8.099910956089115e-5).abs() < 1e-10); // PDF of Chi-squared(3) at x=20
+        assert!((result - 8.099910956089118e-5).abs() < 1e-18); // PDF of Chi-squared(3) at x=20
     }
 
     #[test]
@@ -184,5 +135,49 @@ mod tests {
         // =CHISQ.DIST(2;-1;TRUE) in German format (returns #NUM! error)
         let result = codcel_chisq_dist(2.0, -1.0, true);
         assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_chisq_dist_density_undefined_at_origin_for_low_df() {
+        // =CHISQ.DIST(0,1,FALSE) in US format
+        // =CHISQ.DIST(0;1;FALSE) in German format
+        // The density diverges here; Excel gives #NUM!.
+        assert!(codcel_chisq_dist(0.0, 1.0, false).is_err());
+        // Two degrees of freedom is the boundary case, where the density is finite.
+        assert!((codcel_chisq_dist(0.0, 2.0, false).unwrap() - 0.5).abs() < 1e-16);
+    }
+
+    #[test]
+    fn test_chisq_dist_complements_chisq_dist_rt() {
+        // CHISQ.DIST(x, df, TRUE) and CHISQ.DIST.RT(x, df) are the two tails of one distribution.
+        // They used to be computed by unrelated code: a bespoke incomplete gamma here and statrs
+        // there.
+        use crate::statistical::codcel_chisq_dist_rt::codcel_chisq_dist_rt;
+        for df in [1.0, 2.0, 3.0, 10.0, 50.0] {
+            for x in [0.5, 2.0, 10.0, 20.0] {
+                let left = codcel_chisq_dist(x, df, true).unwrap();
+                let right = codcel_chisq_dist_rt(x, df).unwrap();
+                assert!(
+                    (left + right - 1.0).abs() < 1e-14,
+                    "tails of ({x}, {df}) sum to {}",
+                    left + right
+                );
+            }
+        }
+    }
+
+    #[test]
+    fn test_chisq_dist_inverts_chisq_inv() {
+        use crate::statistical::codcel_chisq_inv::codcel_chisq_inv;
+        for df in [1.0, 3.0, 10.0] {
+            for p in [0.01, 0.25, 0.5, 0.75, 0.99] {
+                let x = codcel_chisq_inv(p, df).unwrap();
+                let round_tripped = codcel_chisq_dist(x, df, true).unwrap();
+                assert!(
+                    (round_tripped - p).abs() < 1e-12,
+                    "round trip of p = {p} at df = {df} gave {round_tripped}"
+                );
+            }
+        }
     }
 }

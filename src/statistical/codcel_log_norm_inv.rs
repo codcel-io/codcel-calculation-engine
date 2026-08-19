@@ -4,7 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
-use statrs::distribution::ContinuousCDF;
+use crate::statistical::standard_normal::std_normal_inv;
 use std::error::Error;
 
 /// Excel-compatible `LOGNORM.INV` that returns the inverse of the lognormal cumulative distribution.
@@ -27,11 +27,10 @@ pub fn codcel_log_norm_inv(
         return Err("LOGNORM.INV: standard deviation must be greater than 0".into());
     }
 
-    // Calculate the inverse of the log-normal cumulative distribution
-    let z = statrs::distribution::Normal::new(0.0, 1.0)?.inverse_cdf(p);
-    let result = crate::portable_math::exp(mean + z * std_dev);
+    // Invert the standard normal, then undo the log.
+    let z = std_normal_inv(p);
 
-    Ok(result)
+    Ok(crate::portable_math::exp(mean + z * std_dev))
 }
 
 pub fn codcel_log_norm_inv_vec(inputs: Vec<f64>) -> Result<f64, Box<dyn Error + Send + Sync>> {

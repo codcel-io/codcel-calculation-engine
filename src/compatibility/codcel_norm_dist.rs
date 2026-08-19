@@ -4,6 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
+use crate::statistical::standard_normal::{std_normal_cdf, std_normal_pdf};
 use std::error::Error;
 
 /// Excel-compatible `NORMDIST`/`NORM.DIST` function.
@@ -24,16 +25,13 @@ pub fn codcel_norm_dist(
         return Err("NORMDIST: Standard deviation must be greater than 0.".into());
     }
 
+    let z = (x - mean) / std_dev;
+
     if cumulative {
-        // Compute the cumulative distribution function (CDF)
-        let z = (x - mean) / std_dev;
-        Ok(0.5 * (1.0 + statrs::function::erf::erf(z / std::f64::consts::SQRT_2)))
+        Ok(std_normal_cdf(z))
     } else {
-        // Compute the probability density function (PDF)
-        let z = (x - mean) / std_dev;
-        let pdf = (1.0 / (std_dev * crate::portable_math::sqrt(2.0 * std::f64::consts::PI)))
-            * crate::portable_math::exp(-0.5 * z.powi(2));
-        Ok(pdf)
+        // The density is scaled by 1/std_dev to keep unit area after the change of variable.
+        Ok(std_normal_pdf(z) / std_dev)
     }
 }
 
@@ -41,13 +39,15 @@ pub fn codcel_norm_dist(
 mod tests {
     use super::*;
 
+    // Expected values were computed with mpmath at 60 decimal digits and rounded to the nearest
+    // f64.
+
     #[test]
     fn test_norm_dist_pdf_basic() {
         // =NORMDIST(1, 0, 1, FALSE) in US format
         // =NORMDIST(1; 0; 1; FALSE) in German format
         let result = codcel_norm_dist(1.0, 0.0, 1.0, false).unwrap();
-        println!("{result}");
-        assert!((result - 0.2419707245).abs() < 0.0001);
+        assert!((result - 0.24197072451914334).abs() < 1e-16);
     }
 
     #[test]
@@ -55,8 +55,7 @@ mod tests {
         // =NORMDIST(1, 0, 1, TRUE) in US format
         // =NORMDIST(1; 0; 1; TRUE) in German format
         let result = codcel_norm_dist(1.0, 0.0, 1.0, true).unwrap();
-        println!("{result}");
-        assert!((result - 0.8413447461).abs() < 0.0001);
+        assert!((result - 0.8413447460685429).abs() < 1e-15);
     }
 
     #[test]
@@ -64,8 +63,7 @@ mod tests {
         // =NORMDIST(5, 5, 2, TRUE) in US format
         // =NORMDIST(5; 5; 2; TRUE) in German format
         let result = codcel_norm_dist(5.0, 5.0, 2.0, true).unwrap();
-        println!("{result}");
-        assert!((result - 0.5).abs() < 0.0001);
+        assert_eq!(result, 0.5);
     }
 
     #[test]
@@ -73,8 +71,7 @@ mod tests {
         // =NORMDIST(5, 5, 2, FALSE) in US format
         // =NORMDIST(5; 5; 2; FALSE) in German format
         let result = codcel_norm_dist(5.0, 5.0, 2.0, false).unwrap();
-        println!("{result}");
-        assert!((result - 0.1994711402).abs() < 0.0001);
+        assert!((result - 0.19947114020071635).abs() < 1e-16);
     }
 
     #[test]
@@ -82,8 +79,7 @@ mod tests {
         // =NORMDIST(1, 0, 0.5, TRUE) in US format
         // =NORMDIST(1; 0; 0,5; TRUE) in German format
         let result = codcel_norm_dist(1.0, 0.0, 0.5, true).unwrap();
-        println!("{result}");
-        assert!((result - 0.9772498681).abs() < 0.0001);
+        assert!((result - 0.9772498680518208).abs() < 1e-15);
     }
 
     #[test]
@@ -91,8 +87,48 @@ mod tests {
         // =NORMDIST(-1, 0, 1, TRUE) in US format
         // =NORMDIST(-1; 0; 1; TRUE) in German format
         let result = codcel_norm_dist(-1.0, 0.0, 1.0, true).unwrap();
-        println!("{result}");
-        assert!((result - 0.1586552539).abs() < 0.0001);
+        assert!((result - 0.15865525393145705).abs() < 1e-16);
+    }
+
+    #[test]
+    fn test_norm_dist_non_standard() {
+        // =NORMDIST(3, 2, 1.5, TRUE) in US format
+        // =NORMDIST(3; 2; 1,5; TRUE) in German format
+        let result = codcel_norm_dist(3.0, 2.0, 1.5, true).unwrap();
+        assert!((result - 0.7475074624530771).abs() < 1e-15);
+        // =NORMDIST(3, 2, 1.5, FALSE)
+        let result = codcel_norm_dist(3.0, 2.0, 1.5, false).unwrap();
+        assert!((result - 0.21296533701490147).abs() < 1e-16);
+    }
+
+    #[test]
+    fn test_norm_dist_far_left_tail() {
+        // =NORMDIST(-10, 0, 1, TRUE) in US format
+        // =NORMDIST(-10; 0; 1; TRUE) in German format
+        //
+        // The `0.5 * (1 + erf(z / sqrt(2)))` form this used to carry cancels to exactly 0.0 here.
+        let result = codcel_norm_dist(-10.0, 0.0, 1.0, true).unwrap();
+        let expected = 7.619853024160525e-24;
+        assert!(
+            ((result - expected) / expected).abs() < 1e-13,
+            "got {result}"
+        );
+    }
+
+    #[test]
+    fn test_norm_dist_agrees_with_the_standard_normal() {
+        // NORM.DIST(z, 0, 1, ..) and NORM.S.DIST(z, ..) are the same Excel function; they used to
+        // disagree around the eighth decimal because each carried its own approximation.
+        use crate::statistical::codcel_norm_dot_s_dot_dist::codcel_norm_dot_s_dot_dist;
+        for z in [-5.0, -2.0, -1.0, -0.5, 0.0, 0.5, 1.0, 2.0, 5.0] {
+            for cumulative in [true, false] {
+                assert_eq!(
+                    codcel_norm_dist(z, 0.0, 1.0, cumulative).unwrap(),
+                    codcel_norm_dot_s_dot_dist(z, cumulative).unwrap(),
+                    "disagreement at z = {z}, cumulative = {cumulative}"
+                );
+            }
+        }
     }
 
     #[test]

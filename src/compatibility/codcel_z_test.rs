@@ -5,7 +5,7 @@
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
 use crate::compensated_sum::CompensatedSumExt;
-use statrs::distribution::{ContinuousCDF, Normal};
+use crate::statistical::standard_normal::std_normal_cdf;
 use std::error::Error;
 
 /// Excel-compatible `ZTEST`/`Z.TEST` function.
@@ -53,11 +53,9 @@ pub fn codcel_z_test(
     let z_score =
         (sample_mean - hyp_mean) / (std_dev / crate::portable_math::sqrt(data.len() as f64));
 
-    // Convert the z-score to a one-tailed probability
-    let normal = Normal::new(0.0, 1.0).unwrap(); // mean = 0.0, std_dev = 1.0
-    let p_value = 1.0 - normal.cdf(z_score);
-
-    Ok(p_value)
+    // The one-tailed probability, as Phi(-z) rather than 1 - Phi(z): the latter cancels the
+    // result away entirely once z is large enough for the tail to matter.
+    Ok(std_normal_cdf(-z_score))
 }
 
 #[cfg(test)]
