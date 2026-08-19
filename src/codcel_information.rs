@@ -8,6 +8,7 @@ use crate::area::{process_area_value_to_bool, process_area_value_to_float};
 use crate::information::codcel_error_type::codcel_error_type;
 use crate::information::codcel_is_blank::codcel_is_blank;
 use crate::information::codcel_is_even::codcel_is_even;
+use crate::information::codcel_is_logical::codcel_is_logical;
 use crate::information::codcel_is_non_text::codcel_is_non_text;
 use crate::information::codcel_is_number::codcel_is_number;
 use crate::information::codcel_is_odd::codcel_is_odd;
@@ -56,6 +57,19 @@ pub fn is_number(
         strict_type_conversion,
         value_format,
         codcel_is_number,
+    )
+}
+
+pub fn is_logical(
+    value: Value,
+    strict_type_conversion: bool,
+    value_format: &ValueFormat,
+) -> Result<Value, Box<dyn Error + Send + Sync>> {
+    process_area_value_to_bool(
+        value,
+        strict_type_conversion,
+        value_format,
+        codcel_is_logical,
     )
 }
 

@@ -317,6 +317,10 @@ impl Value {
         matches!(&self, Value::String(_) | Value::OptionString(Some(_)))
     }
 
+    pub fn is_excel_single_bool(&self) -> bool {
+        matches!(&self, Value::Bool(_) | Value::OptionBool(Some(_)))
+    }
+
     pub fn is_same_type(&self, other: &Value) -> bool {
         matches!(
             (self, other),

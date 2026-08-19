@@ -56,6 +56,7 @@ pub mod codcel_multinomial;
 pub mod codcel_multiply;
 pub mod codcel_negative;
 pub mod codcel_odd;
+pub mod codcel_percentof;
 pub mod codcel_pi;
 pub mod codcel_power;
 pub mod codcel_product;

@@ -60,6 +60,7 @@ use crate::maths::codcel_multinomial::codcel_multinomial;
 use crate::maths::codcel_multiply::codcel_multiply;
 use crate::maths::codcel_negative::codcel_negative;
 use crate::maths::codcel_odd::codcel_odd;
+use crate::maths::codcel_percentof::codcel_percentof;
 use crate::maths::codcel_pi::codcel_pi;
 use crate::maths::codcel_power::codcel_power_vec;
 use crate::maths::codcel_quotient::codcel_quotient;
@@ -3374,6 +3375,29 @@ pub fn sum_x2my2(
     let x2 = flatten_value_to_vec_f64(x2, value_format)?;
     let y2 = flatten_value_to_vec_f64(y2, value_format)?;
     Ok(Value::F64(codcel_sum_x2my2(x2, y2)?))
+}
+
+/// Excel-compatible `PERCENTOF` function.
+/// Calculates what fraction of a whole a subset represents: SUM(subset) / SUM(all).
+///
+/// # Parameters
+/// - `subset`: The values making up the part. May be a scalar or a range.
+/// - `all`: The values making up the whole. May be a scalar or a range.
+/// - `value_format`: Format settings for locale-specific number parsing.
+///
+/// # Returns
+/// Returns a `Value::F64` containing the fraction as a decimal (0.2, not 20%).
+///
+/// # Errors
+/// Returns `#DIV/0!` when the whole sums to zero, or an error if conversion fails.
+pub fn percentof(
+    subset: Value,
+    all: Value,
+    value_format: &ValueFormat,
+) -> Result<Value, Box<dyn Error + Send + Sync>> {
+    let subset = flatten_value_to_vec_f64(subset, value_format)?;
+    let all = flatten_value_to_vec_f64(all, value_format)?;
+    Ok(Value::F64(codcel_percentof(subset, all)?))
 }
 
 /// Excel-compatible `SUMX2PY2` function.

@@ -8,6 +8,7 @@ pub mod codcel_cell;
 pub mod codcel_error_type;
 pub mod codcel_is_blank;
 pub mod codcel_is_even;
+pub mod codcel_is_logical;
 pub mod codcel_is_non_text;
 pub mod codcel_is_number;
 pub mod codcel_is_odd;
