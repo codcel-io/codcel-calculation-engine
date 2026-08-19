@@ -4,6 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
+use crate::compensated_sum::CompensatedSum;
 use std::error::Error;
 
 /// Excel-compatible `MULTINOMIAL` that returns the multinomial of a set of numbers.
@@ -26,22 +27,22 @@ pub fn codcel_multinomial(numbers: Vec<i32>) -> Result<i32, Box<dyn Error + Send
 
     // Use a floating-point approach to avoid integer overflow
     // Log of factorial: log(n!) = log(1) + log(2) + ... + log(n)
-    let mut log_result: f64 = 0.0;
+    let mut log_result = CompensatedSum::new();
 
     // Add log of numerator (sum!)
     for i in 1..=sum {
-        log_result += crate::portable_math::ln(i as f64);
+        log_result.add(crate::portable_math::ln(i as f64));
     }
 
     // Subtract log of denominator (n1! * n2! * ... * nk!)
     for &n in &numbers {
         for i in 1..=n {
-            log_result -= crate::portable_math::ln(i as f64);
+            log_result.add(-crate::portable_math::ln(i as f64));
         }
     }
 
     // Convert back from logarithm
-    let result = crate::portable_math::exp(log_result).round() as i64;
+    let result = crate::portable_math::exp(log_result.total()).round() as i64;
 
     // Check if the result fits in i32
     if result > i32::MAX as i64 {

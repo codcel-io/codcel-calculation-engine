@@ -4,6 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
+use crate::compensated_sum::CompensatedSumExt;
 use std::cmp::Ordering;
 use std::error::Error;
 
@@ -81,7 +82,7 @@ pub fn codcel_aggregate(
             if filtered_values.is_empty() {
                 return Err("AGGREGATE: No values for AVERAGE.".into());
             }
-            Ok(filtered_values.iter().sum::<f64>() / filtered_values.len() as f64)
+            Ok(filtered_values.iter().compensated_sum() / filtered_values.len() as f64)
         }
         2 => Ok(filtered_values.len() as f64), // COUNT
         3 => Ok(filtered_values.len() as f64), // COUNTA (treating all numeric values as valid)
@@ -110,11 +111,11 @@ pub fn codcel_aggregate(
             if filtered_values.len() < 2 {
                 return Err("AGGREGATE: At least two values are required for STDEV.S.".into());
             }
-            let mean = filtered_values.iter().sum::<f64>() / filtered_values.len() as f64;
+            let mean = filtered_values.iter().compensated_sum() / filtered_values.len() as f64;
             let variance = filtered_values
                 .iter()
                 .map(|&x| (x - mean).powi(2))
-                .sum::<f64>()
+                .compensated_sum()
                 / (filtered_values.len() as f64 - 1.0);
             Ok(crate::portable_math::sqrt(variance))
         }
@@ -124,25 +125,25 @@ pub fn codcel_aggregate(
                 return Err("AGGREGATE: No values for STDEV.P.".into());
             }
             let n = filtered_values.len() as f64;
-            let mean = filtered_values.iter().sum::<f64>() / n;
+            let mean = filtered_values.iter().compensated_sum() / n;
             let variance = filtered_values
                 .iter()
                 .map(|&x| (x - mean).powi(2))
-                .sum::<f64>()
+                .compensated_sum()
                 / n;
             Ok(crate::portable_math::sqrt(variance))
         }
-        9 => Ok(filtered_values.iter().sum()), // SUM
+        9 => Ok(filtered_values.iter().compensated_sum()), // SUM
         10 => {
             // VAR.S (sample variance)
             if filtered_values.len() < 2 {
                 return Err("AGGREGATE: At least two values are required for VAR.S.".into());
             }
-            let mean = filtered_values.iter().sum::<f64>() / filtered_values.len() as f64;
+            let mean = filtered_values.iter().compensated_sum() / filtered_values.len() as f64;
             Ok(filtered_values
                 .iter()
                 .map(|&x| (x - mean).powi(2))
-                .sum::<f64>()
+                .compensated_sum()
                 / (filtered_values.len() - 1) as f64)
         }
         11 => {
@@ -151,11 +152,11 @@ pub fn codcel_aggregate(
                 return Err("AGGREGATE: No values for VAR.P.".into());
             }
             let n = filtered_values.len() as f64;
-            let mean = filtered_values.iter().sum::<f64>() / n;
+            let mean = filtered_values.iter().compensated_sum() / n;
             Ok(filtered_values
                 .iter()
                 .map(|&x| (x - mean).powi(2))
-                .sum::<f64>()
+                .compensated_sum()
                 / n)
         }
         12 => {

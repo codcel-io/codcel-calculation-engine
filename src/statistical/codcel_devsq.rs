@@ -4,6 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
+use crate::compensated_sum::CompensatedSumExt;
 use std::error::Error;
 
 /// Excel-compatible `DEVSQ` that returns the sum of squares of deviations from the mean.
@@ -18,10 +19,13 @@ pub fn codcel_devsq(data: Vec<f64>) -> Result<f64, Box<dyn Error + Send + Sync>>
     }
 
     // Calculate the mean
-    let mean = data.iter().sum::<f64>() / data.len() as f64;
+    let mean = data.iter().compensated_sum() / data.len() as f64;
 
     // Calculate the sum of squared deviations
-    let devsq = data.iter().map(|&value| (value - mean).powi(2)).sum();
+    let devsq = data
+        .iter()
+        .map(|&value| (value - mean).powi(2))
+        .compensated_sum();
 
     Ok(devsq)
 }

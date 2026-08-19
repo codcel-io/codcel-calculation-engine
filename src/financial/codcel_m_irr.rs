@@ -4,6 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
+use crate::compensated_sum::CompensatedSumExt;
 use std::error::Error;
 
 /// Calculates the modified internal rate of return for a series of cash flows.
@@ -43,7 +44,7 @@ pub fn codcel_m_irr(
         .iter()
         .enumerate()
         .map(|(i, &flow)| flow / (1.0 + finance_rate).powi(i as i32))
-        .sum::<f64>();
+        .compensated_sum();
 
     if npv_negative == 0.0 {
         return Err("MIRR: No negative cash flows found".into());
@@ -54,7 +55,7 @@ pub fn codcel_m_irr(
         .iter()
         .enumerate()
         .map(|(i, &flow)| flow * (1.0 + reinvest_rate).powi((cash_flows.len() - 1 - i) as i32))
-        .sum::<f64>();
+        .compensated_sum();
 
     if fv_positive == 0.0 {
         return Err("MIRR: No positive cash flows found".into());

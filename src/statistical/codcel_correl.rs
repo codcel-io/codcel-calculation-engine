@@ -4,6 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
+use crate::compensated_sum::{CompensatedSum, CompensatedSumExt};
 use std::error::Error;
 
 /// Excel-compatible `CORREL` that returns the correlation coefficient between two data sets.
@@ -22,29 +23,30 @@ pub fn codcel_correl(x: Vec<f64>, y: Vec<f64>) -> Result<f64, Box<dyn Error + Se
     }
 
     // Calculate means
-    let x_mean = x.iter().sum::<f64>() / x.len() as f64;
-    let y_mean = y.iter().sum::<f64>() / y.len() as f64;
+    let x_mean = x.iter().compensated_sum() / x.len() as f64;
+    let y_mean = y.iter().compensated_sum() / y.len() as f64;
 
     // Calculate the correlation components
-    let mut numerator = 0.0;
-    let mut x_denominator = 0.0;
-    let mut y_denominator = 0.0;
+    let mut numerator = CompensatedSum::new();
+    let mut x_denominator = CompensatedSum::new();
+    let mut y_denominator = CompensatedSum::new();
 
     for (&x_val, &y_val) in x.iter().zip(y.iter()) {
         let x_diff = x_val - x_mean;
         let y_diff = y_val - y_mean;
-        numerator += x_diff * y_diff;
-        x_denominator += x_diff.powi(2);
-        y_denominator += y_diff.powi(2);
+        numerator.add(x_diff * y_diff);
+        x_denominator.add(x_diff.powi(2));
+        y_denominator.add(y_diff.powi(2));
     }
 
-    if x_denominator == 0.0 || y_denominator == 0.0 {
+    if x_denominator.total() == 0.0 || y_denominator.total() == 0.0 {
         return Err("CORREL: Division by zero.".into());
     }
 
     // Calculate and return the correlation coefficient
-    Ok(numerator
-        / (crate::portable_math::sqrt(x_denominator) * crate::portable_math::sqrt(y_denominator)))
+    Ok(numerator.total()
+        / (crate::portable_math::sqrt(x_denominator.total())
+            * crate::portable_math::sqrt(y_denominator.total())))
 }
 
 #[cfg(test)]

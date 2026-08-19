@@ -4,6 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
+use crate::compensated_sum::CompensatedSum;
 use chrono::{DateTime, Datelike, TimeZone, Utc};
 use std::error::Error;
 
@@ -120,15 +121,15 @@ fn odd_f_price_short(
     let term2 = coupon * (dfc / e) / crate::portable_math::powf(1.0 + yld, dsc_e);
 
     // Term 3: PV of regular coupons (k=2 to N)
-    let mut term3 = 0.0;
+    let mut term3 = CompensatedSum::new();
     for k in 2..=n {
-        term3 += coupon / crate::portable_math::powf(1.0 + yld, (k - 1) as f64 + dsc_e);
+        term3.add(coupon / crate::portable_math::powf(1.0 + yld, (k - 1) as f64 + dsc_e));
     }
 
     // Term 4: Accrued interest
     let term4 = coupon * (a / e);
 
-    Ok(term1 + term2 + term3 - term4)
+    Ok(term1 + term2 + term3.total() - term4)
 }
 
 /// ODDFPRICE for long first coupon period.
@@ -173,8 +174,8 @@ fn odd_f_price_long(
     // quasi_dates[0] is the earliest (at or before issue), quasi_dates[nc] = first_coupon
 
     // Compute DC_i, NL_i, A_i for each quasi-coupon period
-    let mut dc_nl_sum = 0.0; // sum of DC_i / NL_i (for the odd coupon fraction)
-    let mut a_nl_sum = 0.0; // sum of A_i / NL_i (for accrued interest)
+    let mut dc_nl_sum = CompensatedSum::new(); // sum of DC_i / NL_i (for the odd coupon fraction)
+    let mut a_nl_sum = CompensatedSum::new(); // sum of A_i / NL_i (for accrued interest)
 
     for i in 0..nc {
         let period_start = quasi_dates[i];
@@ -191,7 +192,7 @@ fn odd_f_price_long(
             nl_i
         };
 
-        dc_nl_sum += dc_i / nl_i;
+        dc_nl_sum.add(dc_i / nl_i);
 
         // A_i: accrued interest fraction
         // For periods entirely before settlement: A_i = DC_i (full accrued)
@@ -214,7 +215,7 @@ fn odd_f_price_long(
             0.0
         };
 
-        a_nl_sum += a_i / nl_i;
+        a_nl_sum.add(a_i / nl_i);
     }
 
     // Find the next quasi-coupon date after settlement (NQD)
@@ -257,18 +258,21 @@ fn odd_f_price_long(
         redemption / crate::portable_math::powf(1.0 + yld, (n - 1) as f64 + nq as f64 + dsc_e);
 
     // Term 2: PV of the odd (long) first coupon
-    let term2 = coupon * dc_nl_sum / crate::portable_math::powf(1.0 + yld, nq as f64 + dsc_e);
+    let term2 =
+        coupon * dc_nl_sum.total() / crate::portable_math::powf(1.0 + yld, nq as f64 + dsc_e);
 
     // Term 3: PV of regular coupons (k=2 to N)
-    let mut term3 = 0.0;
+    let mut term3 = CompensatedSum::new();
     for k in 2..=n {
-        term3 += coupon / crate::portable_math::powf(1.0 + yld, (k - 1) as f64 + nq as f64 + dsc_e);
+        term3.add(
+            coupon / crate::portable_math::powf(1.0 + yld, (k - 1) as f64 + nq as f64 + dsc_e),
+        );
     }
 
     // Term 4: Accrued interest
-    let term4 = coupon * a_nl_sum;
+    let term4 = coupon * a_nl_sum.total();
 
-    Ok(term1 + term2 + term3 - term4)
+    Ok(term1 + term2 + term3.total() - term4)
 }
 
 /// Count coupon periods from `start` to `maturity` (inclusive of both endpoints).

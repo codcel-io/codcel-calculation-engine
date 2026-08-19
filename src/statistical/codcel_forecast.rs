@@ -4,6 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
+use crate::compensated_sum::CompensatedSumExt;
 use std::error::Error;
 
 /// Excel-compatible `FORECAST` that predicts a value based on linear regression.
@@ -25,19 +26,19 @@ pub fn codcel_forecast(
         return Err("FORECAST: known_ys and known_xs must not be empty.".into());
     }
 
-    let mean_x = known_xs.iter().sum::<f64>() / known_xs.len() as f64;
-    let mean_y = known_ys.iter().sum::<f64>() / known_ys.len() as f64;
+    let mean_x = known_xs.iter().compensated_sum() / known_xs.len() as f64;
+    let mean_y = known_ys.iter().compensated_sum() / known_ys.len() as f64;
 
     let covariance = known_xs
         .iter()
         .zip(&known_ys)
         .map(|(&xi, &yi)| (xi - mean_x) * (yi - mean_y))
-        .sum::<f64>();
+        .compensated_sum();
 
     let variance_x = known_xs
         .iter()
         .map(|&xi| (xi - mean_x).powi(2))
-        .sum::<f64>();
+        .compensated_sum();
 
     if variance_x == 0.0 {
         return Err("FORECAST: Division by zero due to zero variance in known_xs.".into());

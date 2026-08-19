@@ -4,6 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
+use crate::compensated_sum::CompensatedSum;
 use std::error::Error;
 
 /// Calculates the internal rate of return (IRR) for a series of cash flows.
@@ -36,7 +37,7 @@ pub fn codcel_irr(
     let tolerance = 1e-6; // Tolerance for result accuracy
 
     for _ in 0..max_iterations {
-        let mut npv = 0.0;
+        let mut npv = CompensatedSum::new();
         let mut d_npv = 0.0; // Derivative of NPV
 
         for (i, &cf) in cash_flows.iter().enumerate() {
@@ -44,7 +45,7 @@ pub fn codcel_irr(
             if discount_factor == 0.0 {
                 return Err("IRR: Division by zero encountered".into());
             }
-            npv += cf / discount_factor;
+            npv.add(cf / discount_factor);
             d_npv -= i as f64 * cf / discount_factor.powi(2);
         }
 
@@ -53,7 +54,7 @@ pub fn codcel_irr(
             return Err("IRR: Derivative too small for Newton-Raphson method".into());
         }
 
-        let new_rate = rate - npv / d_npv;
+        let new_rate = rate - npv.total() / d_npv;
 
         if (new_rate - rate).abs() < tolerance {
             return Ok(new_rate);

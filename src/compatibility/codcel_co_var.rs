@@ -4,6 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
+use crate::compensated_sum::{CompensatedSum, CompensatedSumExt};
 use std::error::Error;
 
 /// Excel-compatible `COVAR`/`COVARIANCE.P` function.
@@ -26,18 +27,16 @@ pub fn codcel_co_var(
         return Err("COVAR: Arrays cannot be empty".into());
     }
 
-    let mean1: f64 = array1.iter().sum::<f64>() / array1.len() as f64;
-    let mean2: f64 = array2.iter().sum::<f64>() / array2.len() as f64;
+    let mean1: f64 = array1.iter().compensated_sum() / array1.len() as f64;
+    let mean2: f64 = array2.iter().compensated_sum() / array2.len() as f64;
 
-    let mut covariance = 0.0;
+    let mut covariance = CompensatedSum::new();
 
     for (x1, x2) in array1.iter().zip(array2.iter()) {
-        covariance += (x1 - mean1) * (x2 - mean2);
+        covariance.add((x1 - mean1) * (x2 - mean2));
     }
 
-    covariance /= array1.len() as f64;
-
-    Ok(covariance)
+    Ok(covariance.total() / array1.len() as f64)
 }
 
 #[cfg(test)]

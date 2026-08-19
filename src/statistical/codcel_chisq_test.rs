@@ -4,6 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
+use crate::compensated_sum::CompensatedSum;
 use statrs::distribution::ContinuousCDF;
 use std::error::Error;
 
@@ -53,14 +54,14 @@ pub fn codcel_chisq_test(
     }
 
     // Compute the chi-squared statistic
-    let mut chi_squared_statistic = 0.0;
+    let mut chi_squared_statistic = CompensatedSum::new();
 
     for (obs_row, exp_row) in observed.iter().zip(expected.iter()) {
         for (&obs_value, &exp_value) in obs_row.iter().zip(exp_row.iter()) {
             if exp_value <= 0.0 {
                 return Err("CHISQ.TEST: Expected values must be greater than 0.".into());
             }
-            chi_squared_statistic += (obs_value - exp_value).powi(2) / exp_value;
+            chi_squared_statistic.add((obs_value - exp_value).powi(2) / exp_value);
         }
     }
 
@@ -83,7 +84,7 @@ pub fn codcel_chisq_test(
 
     // Compute the p-value using the chi-squared cumulative distribution function
     match statrs::distribution::ChiSquared::new(degrees_of_freedom as f64) {
-        Ok(dist) => Ok(1.0 - dist.cdf(chi_squared_statistic)),
+        Ok(dist) => Ok(1.0 - dist.cdf(chi_squared_statistic.total())),
         Err(_) => Err("CHISQ.TEST: Error creating chi-squared distribution.".into()),
     }
 }

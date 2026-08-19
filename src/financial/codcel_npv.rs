@@ -4,6 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
+use crate::compensated_sum::CompensatedSumExt;
 use std::error::Error;
 
 /// Calculates the net present value of an investment based on a series of cash flows and a discount rate.
@@ -23,7 +24,7 @@ pub fn codcel_npv(rate: f64, cash_flows: Vec<f64>) -> Result<f64, Box<dyn Error 
         .iter()
         .enumerate()
         .map(|(i, &cf)| cf / (1.0 + rate).powi(i as i32 + 1))
-        .sum();
+        .compensated_sum();
 
     Ok(npv)
 }

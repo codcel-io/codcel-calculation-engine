@@ -5,6 +5,7 @@
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
 use crate::compatibility::binomial_probability::binomial_probability;
+use crate::compensated_sum::CompensatedSum;
 use std::error::Error;
 
 /// Excel-compatible `BINOMDIST`/`BINOM.DIST` function.
@@ -34,11 +35,11 @@ pub fn codcel_binom_dist(
 
     // Calculate the binomial distribution value
     if cumulative {
-        let mut result = 0.0;
+        let mut result = CompensatedSum::new();
         for k in 0..=successes {
-            result += binomial_probability(trials as u32, k as u32, probability)?;
+            result.add(binomial_probability(trials as u32, k as u32, probability)?);
         }
-        Ok(result)
+        Ok(result.total())
     } else {
         binomial_probability(trials as u32, successes as u32, probability)
     }

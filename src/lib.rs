@@ -26,6 +26,7 @@ pub mod codcel_information;
 pub mod comparison;
 pub mod compatibility;
 pub mod compatibility_base;
+pub mod compensated_sum;
 mod condition;
 pub mod condition_base;
 pub mod convert;

@@ -4,6 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
+use crate::compensated_sum::CompensatedSumExt;
 use crate::statistical::codcel_f_dist_rt::codcel_f_dist_rt;
 use std::error::Error;
 
@@ -24,13 +25,19 @@ pub fn codcel_f_dot_test(
         return Err("F.TEST: array2 must not be empty.".into());
     }
 
-    let mean1 = array1.iter().sum::<f64>() / array1.len() as f64;
-    let mean2 = array2.iter().sum::<f64>() / array2.len() as f64;
+    let mean1 = array1.iter().compensated_sum() / array1.len() as f64;
+    let mean2 = array2.iter().compensated_sum() / array2.len() as f64;
 
-    let variance1 =
-        array1.iter().map(|&x| (x - mean1).powi(2)).sum::<f64>() / (array1.len() - 1) as f64;
-    let variance2 =
-        array2.iter().map(|&x| (x - mean2).powi(2)).sum::<f64>() / (array2.len() - 1) as f64;
+    let variance1 = array1
+        .iter()
+        .map(|&x| (x - mean1).powi(2))
+        .compensated_sum()
+        / (array1.len() - 1) as f64;
+    let variance2 = array2
+        .iter()
+        .map(|&x| (x - mean2).powi(2))
+        .compensated_sum()
+        / (array2.len() - 1) as f64;
 
     let (larger_variance, smaller_variance) = if variance1 > variance2 {
         (variance1, variance2)

@@ -4,6 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
+use crate::compensated_sum::CompensatedSum;
 use statrs::distribution::Discrete;
 use std::error::Error;
 
@@ -34,12 +35,12 @@ pub fn codcel_crit_binom(
     let binomial = statrs::distribution::Binomial::new(probability, trials as u64)
         .map_err(|_| "CRITBINOM: Unable to create binomial distribution")?;
 
-    let mut cumulative = 0.0;
+    let mut cumulative = CompensatedSum::new();
 
     for x in 0..=trials {
-        cumulative += binomial.pmf(x as u64);
+        cumulative.add(binomial.pmf(x as u64));
 
-        if cumulative >= alpha {
+        if cumulative.total() >= alpha {
             return Ok(x);
         }
     }

@@ -4,6 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
+use crate::compensated_sum::CompensatedSumExt;
 use std::error::Error;
 
 /// Excel-compatible `STDEV`/`STDEV.S` function.
@@ -21,12 +22,12 @@ pub fn codcel_st_dev(array: Vec<f64>) -> Result<f64, Box<dyn Error + Send + Sync
         return Err("STDEV: At least two data points are required.".into());
     }
 
-    let mean = array.iter().sum::<f64>() / len as f64;
+    let mean = array.iter().compensated_sum() / len as f64;
 
     let variance = array
         .iter()
         .map(|value| (value - mean).powi(2))
-        .sum::<f64>()
+        .compensated_sum()
         / (len as f64 - 1.0);
 
     Ok(crate::portable_math::sqrt(variance))

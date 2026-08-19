@@ -4,6 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
+use crate::compensated_sum::CompensatedSumExt;
 use std::error::Error;
 
 /// Excel-compatible `SUM` that adds all the numbers in a range.
@@ -15,7 +16,7 @@ pub fn codcel_sum(values: Vec<f64>) -> Result<f64, Box<dyn Error + Send + Sync>>
         return Ok(0.0);
     }
 
-    Ok(values.iter().sum())
+    Ok(values.iter().compensated_sum())
 }
 
 #[cfg(test)]
@@ -76,6 +77,33 @@ mod tests {
         // =SUM(1000000;2000000) in German format
         let result = codcel_sum(vec![1000000.0, 2000000.0]).unwrap();
         assert_eq!(result, 3000000.0);
+    }
+
+    #[test]
+    fn test_sum_recovers_value_lost_to_cancellation() {
+        // =SUM(1E+16,1,-1E+16) in US format
+        // =SUM(1E+16;1;-1E+16) in German format
+        // A left-to-right fold rounds the 1 away entirely and returns 0.
+        let values = vec![1e16, 1.0, -1e16];
+        assert_eq!(values.iter().sum::<f64>(), 0.0);
+        assert_eq!(codcel_sum(values).unwrap(), 1.0);
+    }
+
+    #[test]
+    fn test_sum_no_drift_over_long_range() {
+        // =SUM(A1:A10000) where every cell is 0.1, in US format
+        // =SUM(A1:A10000) where every cell is 0,1, in German format
+        let values = vec![0.1; 10_000];
+        assert!((values.iter().sum::<f64>() - 1000.0).abs() > 0.0);
+        assert_eq!(codcel_sum(values).unwrap(), 1000.0);
+    }
+
+    #[test]
+    fn test_sum_preserves_infinity() {
+        // =SUM(1,1E+308*10) in US format — Excel surfaces an error from an overflowing sum
+        // =SUM(1;1E+308*10) in German format
+        let result = codcel_sum(vec![1.0, f64::INFINITY]).unwrap();
+        assert!(result.is_infinite() && result.is_sign_positive());
     }
 
     #[test]

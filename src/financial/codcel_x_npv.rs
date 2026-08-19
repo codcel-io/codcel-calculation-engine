@@ -4,6 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
+use crate::compensated_sum::CompensatedSum;
 use chrono::{DateTime, Utc};
 use std::error::Error;
 
@@ -40,13 +41,13 @@ pub fn codcel_x_npv(
         |start: &DateTime<Utc>, end: &DateTime<Utc>| (*end - *start).num_days() as f64;
 
     // NPV calculation
-    let mut xnpv = 0.0;
+    let mut xnpv = CompensatedSum::new();
     for (date, cash) in dates.iter().zip(cash_flows.iter()) {
         let days = days_between(&first_date, date) / 365.0; // Convert to fractional years
-        xnpv += cash / crate::portable_math::powf(1.0 + rate, days);
+        xnpv.add(cash / crate::portable_math::powf(1.0 + rate, days));
     }
 
-    Ok(xnpv)
+    Ok(xnpv.total())
 }
 
 #[cfg(test)]

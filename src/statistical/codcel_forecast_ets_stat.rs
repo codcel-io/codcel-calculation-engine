@@ -5,6 +5,7 @@
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
 use super::forecast::*;
+use crate::compensated_sum::CompensatedSum;
 use std::error::Error;
 
 /// Excel-compatible `FORECAST.ETS.STAT` — returns a statistical value for the ETS model.
@@ -132,32 +133,32 @@ pub fn codcel_forecast_ets_stat(
             // (index 0 excluded since forecast[0] = values[0])
             let count = (model.n - 1) as f64;
 
-            let mut sum_abs_err = 0.0;
-            let mut sum_sq_err = 0.0;
-            let mut sum_smape = 0.0;
+            let mut sum_abs_err = CompensatedSum::new();
+            let mut sum_sq_err = CompensatedSum::new();
+            let mut sum_smape = CompensatedSum::new();
 
             for i in 1..model.n {
                 let err = model.forecast[i] - model.values[i];
                 let abs_err = err.abs();
-                sum_abs_err += abs_err;
-                sum_sq_err += err * err;
+                sum_abs_err.add(abs_err);
+                sum_sq_err.add(err * err);
 
                 let denom = (model.values[i].abs() + model.forecast[i].abs()) / 2.0;
                 if denom > 0.0 {
-                    sum_smape += abs_err / denom;
+                    sum_smape.add(abs_err / denom);
                 }
             }
 
-            let mae = sum_abs_err / count;
+            let mae = sum_abs_err.total() / count;
 
             match stat_type {
                 4 => {
                     // MASE = MAE / mean(|Y[i] - Y[i-1]|)
-                    let mut sum_naive = 0.0;
+                    let mut sum_naive = CompensatedSum::new();
                     for i in 1..model.n {
-                        sum_naive += (model.values[i] - model.values[i - 1]).abs();
+                        sum_naive.add((model.values[i] - model.values[i - 1]).abs());
                     }
-                    let mean_naive = sum_naive / count;
+                    let mean_naive = sum_naive.total() / count;
                     if mean_naive > 0.0 {
                         Ok(mae / mean_naive)
                     } else {
@@ -166,7 +167,7 @@ pub fn codcel_forecast_ets_stat(
                 }
                 5 => {
                     // SMAPE
-                    Ok(sum_smape / count)
+                    Ok(sum_smape.total() / count)
                 }
                 6 => {
                     // MAE
@@ -174,7 +175,7 @@ pub fn codcel_forecast_ets_stat(
                 }
                 7 => {
                     // RMSE = sqrt(MSE) where MSE = SSE/(n-1)
-                    Ok(crate::portable_math::sqrt(sum_sq_err / count))
+                    Ok(crate::portable_math::sqrt(sum_sq_err.total() / count))
                 }
                 _ => unreachable!(),
             }

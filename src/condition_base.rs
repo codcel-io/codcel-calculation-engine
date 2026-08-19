@@ -4,6 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
+use crate::compensated_sum::{CompensatedSum, CompensatedSumExt};
 use crate::condition::{parse_condition, Condition};
 use crate::logical::codcel_and::codcel_and;
 use crate::logical::codcel_or::codcel_or;
@@ -209,7 +210,7 @@ pub fn average_if(
     }
 
     // Sum the values of cells in the average_area matching the condition in values_area
-    let mut sum = 0.0;
+    let mut sum = CompensatedSum::new();
     let mut count = 0;
 
     for (values_row, average_row) in values_area.iter().zip(average_area.iter()) {
@@ -227,7 +228,7 @@ pub fn average_if(
             {
                 // Extract the numeric value of the average_cell
                 if let Ok(avg_value) = average_cell.f64(value_format) {
-                    sum += avg_value;
+                    sum.add(avg_value);
                     count += 1;
                 }
             }
@@ -235,7 +236,7 @@ pub fn average_if(
     }
 
     if count > 0 {
-        Ok(Value::F64(sum / count as f64))
+        Ok(Value::F64(sum.total() / count as f64))
     } else {
         // Return a default Value, e.g., 0.0, if no matching cells are found
         Ok(Value::F64(0.0))
@@ -278,15 +279,13 @@ pub fn sum_ifs(
             })
     };
 
-    // Sum values at matching indexes
-    let sum = common_indexes.iter().try_fold(
-        0.0,
-        |acc, &idx| -> Result<f64, Box<dyn Error + Send + Sync>> {
-            Ok(acc + sum_range_values[idx].f64(value_format)?)
-        },
-    )?;
+    // Sum values at matching indexes, with compensation so long ranges do not drift
+    let mut sum = CompensatedSum::new();
+    for &idx in &common_indexes {
+        sum.add(sum_range_values[idx].f64(value_format)?);
+    }
 
-    Ok(Value::F64(sum))
+    Ok(Value::F64(sum.total()))
 }
 
 /// Helper function to process criteria and return matching indexes
@@ -363,14 +362,13 @@ pub fn average_ifs(
     if common_indexes.is_empty() {
         Ok(Value::F64(0.0)) // Return 0.0 if no matching cells are found
     } else {
-        let (sum, count) = common_indexes.iter().try_fold(
-            (0.0, 0),
-            |(acc_sum, acc_count), &idx| -> Result<(f64, usize), Box<dyn Error + Send + Sync>> {
-                let avg_value = average_range_values[idx].f64(value_format)?;
-                Ok((acc_sum + avg_value, acc_count + 1))
-            },
-        )?;
-        Ok(Value::F64(sum / count as f64))
+        let mut sum = CompensatedSum::new();
+        let mut count: usize = 0;
+        for &idx in &common_indexes {
+            sum.add(average_range_values[idx].f64(value_format)?);
+            count += 1;
+        }
+        Ok(Value::F64(sum.total() / count as f64))
     }
 }
 
@@ -535,7 +533,163 @@ pub fn sum_if(
                 None
             }
         })
-        .sum::<f64>();
+        .compensated_sum();
 
     Ok(Value::F64(sum))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::value::{area_f64 as value_area_f64, str as value_str};
+    use crate::value_format::ValueFormat;
+
+    fn create_value_format() -> ValueFormat {
+        ValueFormat {
+            decimal_separator: ".".to_string(),
+            currency_symbol: "$".to_string(),
+            thousands_separator: ",".to_string(),
+            use_excel_rounding: true,
+            language: "en".to_string(),
+            allow_lotus_1_2_3_1900_date_bug: true,
+        }
+    }
+
+    /// A column of `count` cells each holding 0.1, as a range.
+    fn tenths_column(count: usize) -> Value {
+        value_area_f64((0..count).map(|_| vec![0.1]).collect())
+    }
+
+    /// A column of `count` cells each holding 1, as a range.
+    fn ones_column(count: usize) -> Value {
+        value_area_f64((0..count).map(|_| vec![1.0]).collect())
+    }
+
+    #[test]
+    fn test_sum_if_matches_all_cells() {
+        let value_format = create_value_format();
+
+        // =SUMIF(A1:A3,">0",B1:B3) in US format
+        // =SUMIF(A1:A3;">0";B1:B3) in German format
+        let result = sum_if(
+            value_area_f64(vec![vec![1.0], vec![2.0], vec![3.0]]),
+            value_str(">0"),
+            value_area_f64(vec![vec![10.0], vec![20.0], vec![30.0]]),
+            &value_format,
+        )
+        .unwrap();
+        assert_eq!(result.f64(&value_format).unwrap(), 60.0);
+    }
+
+    #[test]
+    fn test_sum_if_excludes_non_matching_cells() {
+        let value_format = create_value_format();
+
+        // =SUMIF(A1:A3,">1",B1:B3) in US format
+        // =SUMIF(A1:A3;">1";B1:B3) in German format
+        let result = sum_if(
+            value_area_f64(vec![vec![1.0], vec![2.0], vec![3.0]]),
+            value_str(">1"),
+            value_area_f64(vec![vec![10.0], vec![20.0], vec![30.0]]),
+            &value_format,
+        )
+        .unwrap();
+        assert_eq!(result.f64(&value_format).unwrap(), 50.0);
+    }
+
+    #[test]
+    fn test_sum_if_has_no_drift_over_long_range() {
+        let value_format = create_value_format();
+
+        // =SUMIF(A1:A10000,">0",B1:B10000) in US format
+        // =SUMIF(A1:A10000;">0";B1:B10000) in German format
+        let result = sum_if(
+            ones_column(10_000),
+            value_str(">0"),
+            tenths_column(10_000),
+            &value_format,
+        )
+        .unwrap();
+        assert_eq!(result.f64(&value_format).unwrap(), 1000.0);
+    }
+
+    #[test]
+    fn test_average_if_matches_all_cells() {
+        let value_format = create_value_format();
+
+        // =AVERAGEIF(A1:A3,">0",B1:B3) in US format
+        // =AVERAGEIF(A1:A3;">0";B1:B3) in German format
+        let result = average_if(
+            value_area_f64(vec![vec![1.0], vec![2.0], vec![3.0]]),
+            value_str(">0"),
+            value_area_f64(vec![vec![10.0], vec![20.0], vec![30.0]]),
+            &value_format,
+        )
+        .unwrap();
+        assert_eq!(result.f64(&value_format).unwrap(), 20.0);
+    }
+
+    #[test]
+    fn test_average_if_has_no_drift_over_long_range() {
+        let value_format = create_value_format();
+
+        // =AVERAGEIF(A1:A10000,">0",B1:B10000) in US format
+        // =AVERAGEIF(A1:A10000;">0";B1:B10000) in German format
+        let result = average_if(
+            ones_column(10_000),
+            value_str(">0"),
+            tenths_column(10_000),
+            &value_format,
+        )
+        .unwrap();
+        assert_eq!(result.f64(&value_format).unwrap(), 0.1);
+    }
+
+    #[test]
+    fn test_sum_ifs_matches_all_cells() {
+        let value_format = create_value_format();
+
+        // =SUMIFS(B1:B3,A1:A3,">0") in US format
+        // =SUMIFS(B1:B3;A1:A3;">0") in German format
+        let result = sum_ifs(
+            value_area_f64(vec![vec![10.0], vec![20.0], vec![30.0]]),
+            Value::VecValue(vec![
+                value_area_f64(vec![vec![1.0], vec![2.0], vec![3.0]]),
+                value_str(">0"),
+            ]),
+            &value_format,
+        )
+        .unwrap();
+        assert_eq!(result.f64(&value_format).unwrap(), 60.0);
+    }
+
+    #[test]
+    fn test_sum_ifs_has_no_drift_over_long_range() {
+        let value_format = create_value_format();
+
+        // =SUMIFS(B1:B10000,A1:A10000,">0") in US format
+        // =SUMIFS(B1:B10000;A1:A10000;">0") in German format
+        let result = sum_ifs(
+            tenths_column(10_000),
+            Value::VecValue(vec![ones_column(10_000), value_str(">0")]),
+            &value_format,
+        )
+        .unwrap();
+        assert_eq!(result.f64(&value_format).unwrap(), 1000.0);
+    }
+
+    #[test]
+    fn test_average_ifs_has_no_drift_over_long_range() {
+        let value_format = create_value_format();
+
+        // =AVERAGEIFS(B1:B10000,A1:A10000,">0") in US format
+        // =AVERAGEIFS(B1:B10000;A1:A10000;">0") in German format
+        let result = average_ifs(
+            tenths_column(10_000),
+            Value::VecValue(vec![ones_column(10_000), value_str(">0")]),
+            &value_format,
+        )
+        .unwrap();
+        assert_eq!(result.f64(&value_format).unwrap(), 0.1);
+    }
 }

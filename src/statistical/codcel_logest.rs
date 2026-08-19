@@ -4,6 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
+use crate::compensated_sum::CompensatedSumExt;
 use std::error::Error;
 
 /// Excel-compatible `LOGEST` that returns statistics for an exponential regression curve.
@@ -59,14 +60,14 @@ pub fn codcel_logest(
         .collect();
 
     // Calculate means
-    let mean_x = known_xs.iter().sum::<f64>() / known_xs.len() as f64;
-    let mean_ln_y = ln_ys.iter().sum::<f64>() / ln_ys.len() as f64;
+    let mean_x = known_xs.iter().compensated_sum() / known_xs.len() as f64;
+    let mean_ln_y = ln_ys.iter().compensated_sum() / ln_ys.len() as f64;
 
     // Calculate variance_x (needed for both cases and for statistics)
     let variance_x = known_xs
         .iter()
         .map(|&xi| (xi - mean_x).powi(2))
-        .sum::<f64>();
+        .compensated_sum();
 
     if variance_x == 0.0 {
         return Err("LOGEST: Division by zero due to zero variance in known_xs.".into());
@@ -79,7 +80,7 @@ pub fn codcel_logest(
             .iter()
             .zip(&ln_ys)
             .map(|(&xi, &ln_yi)| (xi - mean_x) * (ln_yi - mean_ln_y))
-            .sum::<f64>();
+            .compensated_sum();
 
         let slope = covariance / variance_x;
         let intercept = mean_ln_y - slope * mean_x;
@@ -91,8 +92,8 @@ pub fn codcel_logest(
             .iter()
             .zip(&ln_ys)
             .map(|(&xi, &ln_yi)| xi * ln_yi)
-            .sum::<f64>();
-        let sum_x_squared = known_xs.iter().map(|&xi| xi.powi(2)).sum::<f64>();
+            .compensated_sum();
+        let sum_x_squared = known_xs.iter().map(|&xi| xi.powi(2)).compensated_sum();
 
         if sum_x_squared == 0.0 {
             return Err("LOGEST: Division by zero due to zero sum of squares in known_xs.".into());
@@ -150,13 +151,16 @@ pub fn codcel_logest(
         .collect();
 
     // Sum of squared residuals
-    let sse = residuals.iter().map(|&r| r.powi(2)).sum::<f64>();
+    let sse = residuals.iter().map(|&r| r.powi(2)).compensated_sum();
 
     // Total sum of squares
     let sst = if constant {
-        ln_ys.iter().map(|&y| (y - mean_ln_y).powi(2)).sum::<f64>()
+        ln_ys
+            .iter()
+            .map(|&y| (y - mean_ln_y).powi(2))
+            .compensated_sum()
     } else {
-        ln_ys.iter().map(|&y| y.powi(2)).sum::<f64>()
+        ln_ys.iter().map(|&y| y.powi(2)).compensated_sum()
     };
 
     // R-squared

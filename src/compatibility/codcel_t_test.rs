@@ -4,6 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
+use crate::compensated_sum::CompensatedSumExt;
 use statrs::distribution::ContinuousCDF;
 use std::error::Error;
 
@@ -33,13 +34,19 @@ pub fn codcel_t_test(
         return Err("TTEST: Type must be 1 (paired), 2 (two-sample equal variance), or 3 (two-sample unequal variance).".into());
     }
 
-    let mean1 = array1.iter().sum::<f64>() / array1.len() as f64;
-    let mean2 = array2.iter().sum::<f64>() / array2.len() as f64;
+    let mean1 = array1.iter().compensated_sum() / array1.len() as f64;
+    let mean2 = array2.iter().compensated_sum() / array2.len() as f64;
 
-    let variance1 =
-        array1.iter().map(|&x| (x - mean1).powi(2)).sum::<f64>() / (array1.len() - 1) as f64;
-    let variance2 =
-        array2.iter().map(|&x| (x - mean2).powi(2)).sum::<f64>() / (array2.len() - 1) as f64;
+    let variance1 = array1
+        .iter()
+        .map(|&x| (x - mean1).powi(2))
+        .compensated_sum()
+        / (array1.len() - 1) as f64;
+    let variance2 = array2
+        .iter()
+        .map(|&x| (x - mean2).powi(2))
+        .compensated_sum()
+        / (array2.len() - 1) as f64;
 
     let (t_stat, degrees_freedom) = match t_type {
         1 => {
@@ -54,11 +61,11 @@ pub fn codcel_t_test(
                 .zip(array2.iter())
                 .map(|(&a, &b)| a - b)
                 .collect();
-            let mean_diff = differences.iter().sum::<f64>() / differences.len() as f64;
+            let mean_diff = differences.iter().compensated_sum() / differences.len() as f64;
             let variance_diff = differences
                 .iter()
                 .map(|&x| (x - mean_diff).powi(2))
-                .sum::<f64>()
+                .compensated_sum()
                 / (differences.len() - 1) as f64;
 
             let t_stat = mean_diff

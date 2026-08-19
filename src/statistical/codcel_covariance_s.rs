@@ -4,6 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
+use crate::compensated_sum::{CompensatedSum, CompensatedSumExt};
 use std::error::Error;
 
 /// Excel-compatible `COVARIANCE.S` that returns the sample covariance of two data sets.
@@ -22,17 +23,17 @@ pub fn codcel_covariance_s(x: Vec<f64>, y: Vec<f64>) -> Result<f64, Box<dyn Erro
     }
 
     // Calculate means
-    let x_mean = x.iter().sum::<f64>() / x.len() as f64;
-    let y_mean = y.iter().sum::<f64>() / y.len() as f64;
+    let x_mean = x.iter().compensated_sum() / x.len() as f64;
+    let y_mean = y.iter().compensated_sum() / y.len() as f64;
 
     // Calculate covariance
-    let mut covariance = 0.0;
+    let mut covariance = CompensatedSum::new();
 
     for (&x_val, &y_val) in x.iter().zip(y.iter()) {
-        covariance += (x_val - x_mean) * (y_val - y_mean);
+        covariance.add((x_val - x_mean) * (y_val - y_mean));
     }
 
-    Ok(covariance / (x.len() - 1) as f64)
+    Ok(covariance.total() / (x.len() - 1) as f64)
 }
 
 #[cfg(test)]

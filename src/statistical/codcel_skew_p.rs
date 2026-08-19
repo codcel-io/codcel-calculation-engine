@@ -4,6 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
+use crate::compensated_sum::CompensatedSumExt;
 use std::error::Error;
 
 /// Excel-compatible `SKEW.P` that returns the skewness of a distribution (population-based).
@@ -19,10 +20,10 @@ pub fn codcel_skew_p(values: Vec<f64>) -> Result<f64, Box<dyn Error + Send + Syn
 
     // Calculate mean
     let n = values.len() as f64;
-    let mean = values.iter().sum::<f64>() / n;
+    let mean = values.iter().compensated_sum() / n;
 
     // Calculate standard deviation
-    let variance = values.iter().map(|x| (x - mean).powi(2)).sum::<f64>() / n; // Population variance
+    let variance = values.iter().map(|x| (x - mean).powi(2)).compensated_sum() / n; // Population variance
     let std_dev = crate::portable_math::sqrt(variance);
 
     if std_dev == 0.0 {
@@ -33,7 +34,7 @@ pub fn codcel_skew_p(values: Vec<f64>) -> Result<f64, Box<dyn Error + Send + Syn
     let skewness = values
         .iter()
         .map(|x| ((x - mean) / std_dev).powi(3))
-        .sum::<f64>()
+        .compensated_sum()
         / n;
 
     Ok(skewness)

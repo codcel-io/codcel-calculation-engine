@@ -4,6 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
+use crate::compensated_sum::CompensatedSumExt;
 use std::error::Error;
 
 /// Excel-compatible `AVEDEV` that calculates the average of absolute deviations from the mean.
@@ -16,8 +17,8 @@ pub fn codcel_ave_dev(values: Vec<f64>) -> Result<f64, Box<dyn Error + Send + Sy
         return Ok(0.0);
     }
 
-    let mean = values.iter().sum::<f64>() / values.len() as f64;
-    let avedev = values.iter().map(|&x| (x - mean).abs()).sum::<f64>() / values.len() as f64;
+    let mean = values.iter().compensated_sum() / values.len() as f64;
+    let avedev = values.iter().map(|&x| (x - mean).abs()).compensated_sum() / values.len() as f64;
 
     Ok(avedev)
 }

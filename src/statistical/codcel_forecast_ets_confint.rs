@@ -5,6 +5,7 @@
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
 use super::forecast::*;
+use crate::compensated_sum::CompensatedSum;
 use crate::statistical::codcel_norm_dot_s_dot_inv::codcel_norm_dot_s_dot_inv;
 use std::error::Error;
 
@@ -175,12 +176,12 @@ fn get_confidence_interval(
             if alpha_innov + beta_innov > 1.0 {
                 // Nonstationary regime: use MSSD/2 = Σ(y[i+1]-y[i])² / (2n)
                 // with random walk step factor sqrt(h)
-                let mut sum_d_sq = 0.0;
+                let mut sum_d_sq = CompensatedSum::new();
                 for i in 0..model.n - 1 {
                     let d = model.values[i + 1] - model.values[i];
-                    sum_d_sq += d * d;
+                    sum_d_sq.add(d * d);
                 }
-                let mssd_half = sum_d_sq / (2.0 * model.n as f64);
+                let mssd_half = sum_d_sq.total() / (2.0 * model.n as f64);
                 (mssd_half, Box::new(|h: usize| h as f64))
             } else if (alpha_innov + beta_innov).abs() < 1e-8 {
                 // Degenerate (0,0): MLE variance with sqrt(h) step factors
@@ -192,12 +193,13 @@ fn get_confidence_interval(
                 (
                     model.mse,
                     Box::new(move |h: usize| -> f64 {
-                        let mut sum = 1.0;
+                        let mut sum = CompensatedSum::new();
+                        sum.add(1.0);
                         for j in 1..h {
                             let c_j = a + (j as f64) * b;
-                            sum += c_j * c_j;
+                            sum.add(c_j * c_j);
                         }
-                        sum
+                        sum.total()
                     }),
                 )
             };

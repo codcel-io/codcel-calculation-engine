@@ -4,6 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
+use crate::compensated_sum::CompensatedSum;
 use crate::financial::helpers::ppmt_cum_princ;
 use std::error::Error;
 
@@ -52,10 +53,10 @@ pub fn codcel_cum_princ(
         );
     }
 
-    let mut total_principal = 0.0;
+    let mut total_principal = CompensatedSum::new();
     for period in start_period..=end_period {
-        total_principal += ppmt_cum_princ(rate, period, nper, pv, payment_type);
+        total_principal.add(ppmt_cum_princ(rate, period, nper, pv, payment_type));
     }
 
-    Ok(total_principal)
+    Ok(total_principal.total())
 }

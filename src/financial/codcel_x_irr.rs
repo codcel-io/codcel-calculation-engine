@@ -4,6 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
+use crate::compensated_sum::CompensatedSum;
 use chrono::{DateTime, Utc};
 use std::error::Error;
 
@@ -47,24 +48,24 @@ pub fn codcel_x_irr(
 
     for _ in 0..MAX_ITERATIONS {
         // Calculate the function (NPV) and its derivative (dNPV/dRate) at the current rate guess
-        let mut npv = 0.0;
-        let mut npv_derivative = 0.0;
+        let mut npv = CompensatedSum::new();
+        let mut npv_derivative = CompensatedSum::new();
 
         for (date, cash) in dates.iter().zip(cash_flows.iter()) {
             let days = days_between(&first_date, date) / 365.0;
             let factor = crate::portable_math::powf(1.0 + rate, days);
 
-            npv += cash / factor;
-            npv_derivative += -days * cash / factor / (1.0 + rate);
+            npv.add(cash / factor);
+            npv_derivative.add(-days * cash / factor / (1.0 + rate));
         }
 
         // Check if the NPV is close enough to zero
-        if npv.abs() < TOLERANCE {
+        if npv.total().abs() < TOLERANCE {
             return Ok(rate);
         }
 
         // Update the rate using Newton's method
-        let new_rate = rate - (npv / npv_derivative);
+        let new_rate = rate - (npv.total() / npv_derivative.total());
 
         // Check if the rate has converged
         if (new_rate - rate).abs() < TOLERANCE {

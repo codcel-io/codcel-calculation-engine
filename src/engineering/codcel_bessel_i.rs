@@ -4,6 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
+use crate::compensated_sum::CompensatedSum;
 use crate::engineering::factorial::factorial;
 use std::error::Error;
 
@@ -26,7 +27,7 @@ pub fn codcel_bessel_i(x: f64, n: i32) -> Result<f64, Box<dyn Error + Send + Syn
     let n_abs = n.abs();
 
     // Initialize variables for series calculation
-    let mut sum: f64 = 0.0;
+    let mut sum = CompensatedSum::new();
     let mut term: f64 = 1.0;
     let mut k: u32 = 0;
     let mut factorial_k: f64 = 1.0;
@@ -44,20 +45,20 @@ pub fn codcel_bessel_i(x: f64, n: i32) -> Result<f64, Box<dyn Error + Send + Syn
 
         term = x_half_pow_n * (x_half * x_half).powi(k as i32) / (factorial_k * factorial_n_plus_k);
 
-        sum += term;
+        sum.add(term);
         k += 1;
 
         // Check for overflow
-        if sum.is_infinite() {
+        if sum.total().is_infinite() {
             return Err("BESSELI: Computation overflow".into());
         }
     }
 
-    if sum.is_nan() {
+    if sum.total().is_nan() {
         return Err("BESSELI: Computation resulted in NaN".into());
     }
 
-    Ok(sum)
+    Ok(sum.total())
 }
 
 #[cfg(test)]

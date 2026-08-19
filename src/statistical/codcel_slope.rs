@@ -4,6 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
+use crate::compensated_sum::{CompensatedSum, CompensatedSumExt};
 use std::error::Error;
 
 /// Excel-compatible `SLOPE` that returns the slope of a linear regression line.
@@ -27,27 +28,27 @@ pub fn codcel_slope(
     let n = known_ys.len() as f64;
 
     // Compute means
-    let mean_y = known_ys.iter().sum::<f64>() / n;
-    let mean_x = known_xs.iter().sum::<f64>() / n;
+    let mean_y = known_ys.iter().compensated_sum() / n;
+    let mean_x = known_xs.iter().compensated_sum() / n;
 
     // Compute sums for covariance and variance
-    let mut sum_covariance = 0.0;
-    let mut sum_variance_x = 0.0;
+    let mut sum_covariance = CompensatedSum::new();
+    let mut sum_variance_x = CompensatedSum::new();
 
     for (&y, &x) in known_ys.iter().zip(&known_xs) {
         let dev_y = y - mean_y;
         let dev_x = x - mean_x;
 
-        sum_covariance += dev_x * dev_y;
-        sum_variance_x += dev_x * dev_x;
+        sum_covariance.add(dev_x * dev_y);
+        sum_variance_x.add(dev_x * dev_x);
     }
 
-    if sum_variance_x == 0.0 {
+    if sum_variance_x.total() == 0.0 {
         return Err("SLOPE: Variance of x is zero, slope cannot be computed.".into());
     }
 
     // Calculate slope
-    let slope = sum_covariance / sum_variance_x;
+    let slope = sum_covariance.total() / sum_variance_x.total();
 
     Ok(slope)
 }

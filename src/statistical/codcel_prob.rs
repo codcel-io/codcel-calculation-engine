@@ -4,6 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
+use crate::compensated_sum::{CompensatedSum, CompensatedSumExt};
 use std::error::Error;
 
 /// Excel-compatible `PROB` that returns the probability that values are between two limits.
@@ -26,18 +27,18 @@ pub fn codcel_prob(
     }
 
     // Ensure probabilities sum to 1
-    let prob_sum: f64 = probabilities.iter().sum();
+    let prob_sum: f64 = probabilities.iter().compensated_sum();
     if (prob_sum - 1.0).abs() > f64::EPSILON {
         return Err("PROB: Probabilities must sum to 1.".into());
     }
 
     // Calculate the probability within the range
-    let mut total_probability = 0.0;
+    let mut total_probability = CompensatedSum::new();
     for (value, &probability) in values.iter().zip(probabilities.iter()) {
         if upper_limit.is_none() {
             // If upper_limit is None, only consider values exactly equal to lower_limit
             if *value == lower_limit {
-                total_probability += probability;
+                total_probability.add(probability);
             }
         } else {
             // Otherwise, consider values within the range [lower_limit, upper_limit]
@@ -47,12 +48,12 @@ pub fn codcel_prob(
                         continue;
                     }
                 }
-                total_probability += probability;
+                total_probability.add(probability);
             }
         }
     }
 
-    Ok(total_probability)
+    Ok(total_probability.total())
 }
 
 #[cfg(test)]

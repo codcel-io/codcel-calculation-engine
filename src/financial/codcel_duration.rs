@@ -4,6 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
+use crate::compensated_sum::CompensatedSum;
 use chrono::{DateTime, Datelike, TimeZone, Utc};
 use std::error::Error;
 
@@ -85,8 +86,8 @@ pub fn codcel_duration(
         return Ok(dsc_over_e / frequency as f64);
     }
 
-    let mut weighted = 0.0;
-    let mut dirty_price = 0.0;
+    let mut weighted = CompensatedSum::new();
+    let mut dirty_price = CompensatedSum::new();
 
     for k in 1..=n {
         let exponent = (k - 1) as f64 + dsc_over_e;
@@ -94,15 +95,15 @@ pub fn codcel_duration(
         let disc = 1.0 / crate::portable_math::powf(1.0 + yld, exponent);
 
         if k < n {
-            weighted += t * cpn * disc;
-            dirty_price += cpn * disc;
+            weighted.add(t * cpn * disc);
+            dirty_price.add(cpn * disc);
         } else {
-            weighted += t * (cpn + 100.0) * disc;
-            dirty_price += (cpn + 100.0) * disc;
+            weighted.add(t * (cpn + 100.0) * disc);
+            dirty_price.add((cpn + 100.0) * disc);
         }
     }
 
-    Ok(weighted / dirty_price)
+    Ok(weighted.total() / dirty_price.total())
 }
 
 fn count_coupon_periods(start_date: DateTime<Utc>, maturity: DateTime<Utc>, frequency: i32) -> i32 {

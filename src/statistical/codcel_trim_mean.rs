@@ -4,6 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
+use crate::compensated_sum::CompensatedSumExt;
 use std::error::Error;
 
 /// Excel-compatible `TRIMMEAN` that returns the mean of the interior of a data set.
@@ -32,7 +33,7 @@ pub fn codcel_trim_mean(data: Vec<f64>, percent: f64) -> Result<f64, Box<dyn Err
     }
 
     let trimmed_data = &sorted_data[remove_count..(total_count - remove_count)];
-    let trimmed_mean = trimmed_data.iter().sum::<f64>() / trimmed_data.len() as f64;
+    let trimmed_mean = trimmed_data.iter().compensated_sum() / trimmed_data.len() as f64;
 
     Ok(trimmed_mean)
 }

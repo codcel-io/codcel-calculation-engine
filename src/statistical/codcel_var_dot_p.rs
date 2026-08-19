@@ -4,6 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
+use crate::compensated_sum::CompensatedSumExt;
 use std::error::Error;
 
 /// Excel-compatible `VAR.P` that returns the variance based on an entire population.
@@ -16,9 +17,9 @@ pub fn codcel_var_dot_p(data: Vec<f64>) -> Result<f64, Box<dyn Error + Send + Sy
         return Err("VAR.P: Data set cannot be empty.".into());
     }
 
-    let mean = data.iter().sum::<f64>() / data.len() as f64;
+    let mean = data.iter().compensated_sum() / data.len() as f64;
 
-    let variance = data.iter().map(|&x| (x - mean).powi(2)).sum::<f64>() / data.len() as f64;
+    let variance = data.iter().map(|&x| (x - mean).powi(2)).compensated_sum() / data.len() as f64;
 
     Ok(variance)
 }

@@ -5,6 +5,7 @@
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
 use crate::compatibility::binomial_probability::binomial_probability;
+use crate::compensated_sum::CompensatedSum;
 use std::error::Error;
 
 /// Excel-compatible `BINOM.INV` that returns the smallest value for which the cumulative binomial distribution is > alpha.
@@ -37,14 +38,14 @@ pub fn codcel_binom_inv(
         return Ok(0);
     }
 
-    let mut cumulative_probability = 0.0;
+    let mut cumulative_probability = CompensatedSum::new();
 
     for k in 0..=trials {
-        cumulative_probability += binomial_probability(trials as u32, k as u32, probability)?;
+        cumulative_probability.add(binomial_probability(trials as u32, k as u32, probability)?);
         // Excel uses strictly greater than (>) despite documentation saying >=.
         // Verified empirically: BINOM.INV(1, 0.5, 0.5) returns 1 in Excel,
         // meaning it skips k=0 where CDF(0)=0.5 exactly equals alpha=0.5.
-        if cumulative_probability > alpha {
+        if cumulative_probability.total() > alpha {
             return Ok(k);
         }
     }

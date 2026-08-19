@@ -4,6 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
+use crate::compensated_sum::CompensatedSum;
 use crate::engineering::complex::{format_complex, parse_complex};
 use std::error::Error;
 
@@ -27,21 +28,21 @@ pub fn codcel_im_sum(
     };
 
     // Initialize accumulators for real and imaginary parts
-    let mut real_sum = 0.0;
-    let mut imag_sum = 0.0;
+    let mut real_sum = CompensatedSum::new();
+    let mut imag_sum = CompensatedSum::new();
 
     // Sum the parts of each number
     for number in numbers {
         let number = number.replace(" ", "");
         let (real, imag) = parse_complex(&number)?;
-        real_sum += real;
-        imag_sum += imag;
+        real_sum.add(real);
+        imag_sum.add(imag);
     }
 
     // Format the result
     format_complex(
-        real_sum,
-        imag_sum,
+        real_sum.total(),
+        imag_sum.total(),
         im_symbol,
         decimal_separator,
         use_excel_rounding,

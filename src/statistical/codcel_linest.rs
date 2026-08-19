@@ -4,6 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
+use crate::compensated_sum::CompensatedSumExt;
 use nalgebra::DMatrix;
 use std::error::Error;
 
@@ -136,17 +137,17 @@ pub fn codcel_linest(
     let residuals = &y - &y_hat;
 
     // SSE (sum of squared errors)
-    let sse: f64 = residuals.iter().map(|r| r * r).sum();
+    let sse: f64 = residuals.iter().map(|r| r * r).compensated_sum();
 
     // SST (total sum of squares)
-    let mean_y = known_ys.iter().sum::<f64>() / n_f;
+    let mean_y = known_ys.iter().compensated_sum() / n_f;
     let sst = if constant {
         known_ys
             .iter()
             .map(|&yi| (yi - mean_y).powi(2))
-            .sum::<f64>()
+            .compensated_sum()
     } else {
-        known_ys.iter().map(|&yi| yi.powi(2)).sum::<f64>()
+        known_ys.iter().map(|&yi| yi.powi(2)).compensated_sum()
     };
 
     // SSR (regression sum of squares)

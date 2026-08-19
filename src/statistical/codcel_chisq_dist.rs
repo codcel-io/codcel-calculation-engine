@@ -4,6 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
+use crate::compensated_sum::CompensatedSum;
 use libm::{lgamma, tgamma};
 use std::error::Error;
 
@@ -18,17 +19,18 @@ fn regularized_gamma_lower(a: f64, x: f64) -> f64 {
 
     if x < a + 1.0 {
         // Series expansion
-        let mut sum = 1.0 / a;
-        let mut term = sum;
+        let mut sum = CompensatedSum::new();
+        sum.add(1.0 / a);
+        let mut term = 1.0 / a;
         for n in 1..MAX_ITER {
             term *= x / (a + n as f64);
-            sum += term;
-            if term.abs() < EPS * sum {
+            sum.add(term);
+            if term.abs() < EPS * sum.total() {
                 break;
             }
         }
 
-        sum * crate::portable_math::exp(-x) * crate::portable_math::powf(x, a) / tgamma(a)
+        sum.total() * crate::portable_math::exp(-x) * crate::portable_math::powf(x, a) / tgamma(a)
     } else {
         // Continued fraction
         let mut b = x + 1.0 - a;

@@ -4,6 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
+use crate::compensated_sum::CompensatedSumExt;
 use std::error::Error;
 
 /// Excel-compatible `KURT` that returns the kurtosis of a data set.
@@ -21,10 +22,10 @@ pub fn codcel_kurt(values: Vec<f64>) -> Result<f64, Box<dyn Error + Send + Sync>
     let n = values.len() as f64;
 
     // Calculate mean
-    let mean = values.iter().sum::<f64>() / n;
+    let mean = values.iter().compensated_sum() / n;
 
     // Sample variance and standard deviation
-    let variance = values.iter().map(|x| (x - mean).powi(2)).sum::<f64>() / (n - 1.0);
+    let variance = values.iter().map(|x| (x - mean).powi(2)).compensated_sum() / (n - 1.0);
 
     if variance == 0.0 {
         return Err("KURT: Division by zero: variance is 0".into());
@@ -33,7 +34,10 @@ pub fn codcel_kurt(values: Vec<f64>) -> Result<f64, Box<dyn Error + Send + Sync>
     let std_dev = crate::portable_math::sqrt(variance);
 
     // Sum of standardized values raised to 4th power: Σ((xᵢ - x̄)/s)⁴
-    let sum_z4: f64 = values.iter().map(|x| ((x - mean) / std_dev).powi(4)).sum();
+    let sum_z4: f64 = values
+        .iter()
+        .map(|x| ((x - mean) / std_dev).powi(4))
+        .compensated_sum();
 
     // Excel's KURT formula:
     // KURT = n(n+1)/((n-1)(n-2)(n-3)) × Σ((xᵢ - x̄)/s)⁴ - 3(n-1)²/((n-2)(n-3))

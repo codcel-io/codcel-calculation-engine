@@ -4,6 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
+use crate::compensated_sum::CompensatedSumExt;
 use crate::excel_error::{err_to_box, ExcelError};
 use std::error::Error;
 
@@ -18,8 +19,8 @@ pub fn codcel_percentof(
     subset: Vec<f64>,
     all: Vec<f64>,
 ) -> Result<f64, Box<dyn Error + Send + Sync>> {
-    let subset_total: f64 = subset.iter().sum();
-    let all_total: f64 = all.iter().sum();
+    let subset_total: f64 = subset.iter().compensated_sum();
+    let all_total: f64 = all.iter().compensated_sum();
 
     // Division by zero check
     if all_total == 0.0 {

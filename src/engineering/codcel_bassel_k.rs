@@ -4,6 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
+use crate::compensated_sum::CompensatedSum;
 use std::error::Error;
 use std::f64::consts::PI;
 
@@ -71,22 +72,22 @@ fn bessel_k0_series(x: f64) -> f64 {
     let x_half = x / 2.0;
     let t = x_half * x_half; // x²/4
 
-    let mut series_sum = 0.0;
+    let mut series_sum = CompensatedSum::new();
     let mut factorial = 1.0;
-    let mut h_k = 0.0; // H_k = harmonic number
+    let mut h_k = CompensatedSum::new(); // H_k = harmonic number
 
     for k in 1..50 {
         factorial *= k as f64;
-        h_k += 1.0 / k as f64;
-        let term = t.powi(k) / (factorial * factorial) * h_k;
-        series_sum += term;
+        h_k.add(1.0 / k as f64);
+        let term = t.powi(k) / (factorial * factorial) * h_k.total();
+        series_sum.add(term);
 
-        if term.abs() < 1e-16 * series_sum.abs() {
+        if term.abs() < 1e-16 * series_sum.total().abs() {
             break;
         }
     }
 
-    -(crate::portable_math::ln(x_half) + GAMMA) * i0 + series_sum
+    -(crate::portable_math::ln(x_half) + GAMMA) * i0 + series_sum.total()
 }
 
 /// K_1(x) via series expansion (derived from A&S 9.6.11 with n=1):
@@ -97,25 +98,25 @@ fn bessel_k1_series(x: f64) -> f64 {
     let x_half = x / 2.0;
     let t = x_half * x_half; // x²/4
 
-    let mut series = 0.0;
+    let mut series = CompensatedSum::new();
     let mut factor = 1.0; // (x²/4)^k / (k! * (k+1)!)
-    let mut h_k = 0.0; // H_k
+    let mut h_k = CompensatedSum::new(); // H_k
 
     for k in 0..50 {
         // ψ(k+1) + ψ(k+2) = -2γ + 2*H_k + 1/(k+1)
-        let coeff = -2.0 * GAMMA + 2.0 * h_k + 1.0 / (k as f64 + 1.0);
+        let coeff = -2.0 * GAMMA + 2.0 * h_k.total() + 1.0 / (k as f64 + 1.0);
         let term = coeff * factor;
-        series += term;
+        series.add(term);
 
-        if k > 0 && term.abs() < 1e-16 * series.abs() {
+        if k > 0 && term.abs() < 1e-16 * series.total().abs() {
             break;
         }
 
-        h_k += 1.0 / (k as f64 + 1.0);
+        h_k.add(1.0 / (k as f64 + 1.0));
         factor *= t / ((k as f64 + 1.0) * (k as f64 + 2.0));
     }
 
-    1.0 / x + crate::portable_math::ln(x_half) * i1 - (x / 4.0) * series
+    1.0 / x + crate::portable_math::ln(x_half) * i1 - (x / 4.0) * series.total()
 }
 
 /// Asymptotic expansion for K_ν(x), valid for large x:
@@ -127,7 +128,8 @@ fn bessel_k_asymptotic(x: f64, n: i32) -> f64 {
     let nu = n as f64;
     let four_nu_sq = 4.0 * nu * nu;
 
-    let mut sum: f64 = 1.0;
+    let mut sum = CompensatedSum::new();
+    sum.add(1.0);
     let mut term: f64 = 1.0;
     let mut prev_abs = f64::MAX;
 
@@ -141,34 +143,35 @@ fn bessel_k_asymptotic(x: f64, n: i32) -> f64 {
         if abs_term >= prev_abs {
             break;
         }
-        if abs_term < 1e-16 * sum.abs() {
-            sum += term;
+        if abs_term < 1e-16 * sum.total().abs() {
+            sum.add(term);
             break;
         }
-        sum += term;
+        sum.add(term);
         prev_abs = abs_term;
     }
 
-    pi_factor * exp_factor * sum
+    pi_factor * exp_factor * sum.total()
 }
 
 /// Modified Bessel function I_0(x) via series:
 /// I_0(x) = Σ_{k=0}^∞ (x²/4)^k / (k!)²
 fn bessel_i0(x: f64) -> f64 {
-    let mut sum = 1.0;
+    let mut sum = CompensatedSum::new();
+    sum.add(1.0);
     let mut term = 1.0;
     let x_half = x / 2.0;
 
     for k in 1..50 {
         term *= (x_half * x_half) / (k as f64 * k as f64);
-        sum += term;
+        sum.add(term);
 
-        if term.abs() < 1e-16 * sum.abs() {
+        if term.abs() < 1e-16 * sum.total().abs() {
             break;
         }
     }
 
-    sum
+    sum.total()
 }
 
 /// Modified Bessel function I_1(x) via series:
@@ -176,19 +179,20 @@ fn bessel_i0(x: f64) -> f64 {
 fn bessel_i1(x: f64) -> f64 {
     let x_half = x / 2.0;
     let t = x_half * x_half;
-    let mut sum = 1.0;
+    let mut sum = CompensatedSum::new();
+    sum.add(1.0);
     let mut term = 1.0;
 
     for k in 1..50 {
         term *= t / (k as f64 * (k as f64 + 1.0));
-        sum += term;
+        sum.add(term);
 
-        if term.abs() < 1e-16 * sum.abs() {
+        if term.abs() < 1e-16 * sum.total().abs() {
             break;
         }
     }
 
-    x_half * sum
+    x_half * sum.total()
 }
 
 #[cfg(test)]

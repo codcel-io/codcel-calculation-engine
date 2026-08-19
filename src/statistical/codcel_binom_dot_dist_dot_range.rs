@@ -4,6 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
+use crate::compensated_sum::CompensatedSum;
 use crate::statistical::binomial_pmf::binomial_pmf;
 use std::error::Error;
 
@@ -44,12 +45,12 @@ pub fn codcel_binom_dot_dist_dot_range(
     }
 
     // Calculate the sum of probabilities for all successes in the range
-    let mut result = 0.0;
+    let mut result = CompensatedSum::new();
     for successes in number_s..=upper_bound {
-        result += binomial_pmf(successes, trials, probability)?;
+        result.add(binomial_pmf(successes, trials, probability)?);
     }
 
-    Ok(result)
+    Ok(result.total())
 }
 
 #[cfg(test)]

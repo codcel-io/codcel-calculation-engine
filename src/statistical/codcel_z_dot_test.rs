@@ -4,6 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
+use crate::compensated_sum::CompensatedSumExt;
 use statrs::distribution::{ContinuousCDF, Normal};
 use std::error::Error;
 
@@ -24,13 +25,13 @@ pub fn codcel_z_dot_test(
         return Err("Z.TEST: Data vector cannot be empty".into());
     }
 
-    let mean = data.iter().sum::<f64>() / n as f64;
+    let mean = data.iter().compensated_sum() / n as f64;
 
     let std_dev = if let Some(sigma) = sigma {
         sigma
     } else {
         // Compute sample standard deviation (unbiased)
-        let variance = data.iter().map(|&x| (x - mean).powi(2)).sum::<f64>() / (n - 1) as f64;
+        let variance = data.iter().map(|&x| (x - mean).powi(2)).compensated_sum() / (n - 1) as f64;
         crate::portable_math::sqrt(variance)
     };
 

@@ -4,6 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
+use crate::compensated_sum::CompensatedSum;
 use crate::statistical::factorial::factorial;
 use std::error::Error;
 
@@ -29,11 +30,11 @@ pub fn codcel_poisson(
 
     if cumulative {
         // Calculate cumulative probability: P(X <= x)
-        let mut cumulative_prob = 0.0;
+        let mut cumulative_prob = CompensatedSum::new();
         for i in 0..=x {
-            cumulative_prob += crate::portable_math::exp(-mean) * mean.powi(i) / factorial(i);
+            cumulative_prob.add(crate::portable_math::exp(-mean) * mean.powi(i) / factorial(i));
         }
-        Ok(cumulative_prob)
+        Ok(cumulative_prob.total())
     } else {
         // Calculate probability mass function: P(X = x)
         let prob = crate::portable_math::exp(-mean) * mean.powi(x) / factorial(x);

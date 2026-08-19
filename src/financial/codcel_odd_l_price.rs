@@ -4,6 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
+use crate::compensated_sum::{CompensatedSum, CompensatedSumExt};
 use chrono::{DateTime, Datelike, TimeZone, Utc};
 use std::error::Error;
 
@@ -145,7 +146,7 @@ pub fn codcel_odd_l_price(
         };
         dc_per_period.push(day_count_dc(start_date, end_date, basis) / e);
     }
-    let dc_nl_sum: f64 = dc_per_period.iter().sum();
+    let dc_nl_sum: f64 = dc_per_period.iter().compensated_sum();
 
     let mut a_per_period = vec![0.0; nc];
     for i in 0..=sp {
@@ -167,7 +168,7 @@ pub fn codcel_odd_l_price(
         };
         a_per_period[i] = a_days / e;
     }
-    let a_nl_sum: f64 = a_per_period.iter().sum();
+    let a_nl_sum: f64 = a_per_period.iter().compensated_sum();
 
     // DSC: discount fraction from settlement to maturity.
     //
@@ -184,7 +185,7 @@ pub fn codcel_odd_l_price(
     //
     // For non-settle periods, YEARFRAC-ordered day counts are used (same as DC)
     // to correctly handle periods crossing February (e.g., Feb28→May31 = 90, not 91).
-    let mut dsc_nl_sum = 0.0;
+    let mut dsc_nl_sum = CompensatedSum::new();
     for i in sp..nc {
         let e = nl(quasi_dates[i], quasi_dates[i + 1]);
         let end_date = if i == nc - 1 {
@@ -204,10 +205,10 @@ pub fn codcel_odd_l_price(
             let use_derived = basis == 0 && ps.day() != 31 && !pe_is_feb_eom;
             if use_derived {
                 // Derived DSC: preserves full-period day count consistency
-                dsc_nl_sum += dc_per_period[i] - a_per_period[i];
+                dsc_nl_sum.add(dc_per_period[i] - a_per_period[i]);
             } else {
                 // Independent DSC
-                dsc_nl_sum += day_count_adsc(settlement, end_date, basis) / e;
+                dsc_nl_sum.add(day_count_adsc(settlement, end_date, basis) / e);
             }
         } else {
             // Non-settle periods: for basis 0, use YEARFRAC-ordered day count
@@ -219,14 +220,14 @@ pub fn codcel_odd_l_price(
             } else {
                 day_count_adsc(quasi_dates[i], end_date, basis)
             };
-            dsc_nl_sum += dsc_days / e;
+            dsc_nl_sum.add(dsc_days / e);
         }
     }
 
     // Apply the ODDLPRICE formula:
     // PRICE = (redemption + dc_nl_sum * coupon) / (1 + dsc_nl_sum * yld) - a_nl_sum * coupon
     let numerator = redemption + dc_nl_sum * coupon;
-    let denominator = 1.0 + dsc_nl_sum * yld;
+    let denominator = 1.0 + dsc_nl_sum.total() * yld;
     let price = numerator / denominator - a_nl_sum * coupon;
 
     Ok(price)

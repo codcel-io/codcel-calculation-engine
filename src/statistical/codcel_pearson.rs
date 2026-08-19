@@ -4,6 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
+use crate::compensated_sum::{CompensatedSum, CompensatedSumExt};
 use std::error::Error;
 
 /// Excel-compatible `PEARSON` that returns the Pearson product-moment correlation coefficient.
@@ -26,30 +27,31 @@ pub fn codcel_pearson(
     let len = array1.len() as f64;
 
     // Calculate means
-    let mean1 = array1.iter().sum::<f64>() / len;
-    let mean2 = array2.iter().sum::<f64>() / len;
+    let mean1 = array1.iter().compensated_sum() / len;
+    let mean2 = array2.iter().compensated_sum() / len;
 
     // Compute covariance and standard deviations
-    let mut covariance = 0.0;
-    let mut variance1 = 0.0;
-    let mut variance2 = 0.0;
+    let mut covariance = CompensatedSum::new();
+    let mut variance1 = CompensatedSum::new();
+    let mut variance2 = CompensatedSum::new();
 
     for i in 0..array1.len() {
         let diff1 = array1[i] - mean1;
         let diff2 = array2[i] - mean2;
-        covariance += diff1 * diff2;
-        variance1 += diff1 * diff1;
-        variance2 += diff2 * diff2;
+        covariance.add(diff1 * diff2);
+        variance1.add(diff1 * diff1);
+        variance2.add(diff2 * diff2);
     }
 
     // Handle edge cases for zero variance
-    if variance1 == 0.0 || variance2 == 0.0 {
+    if variance1.total() == 0.0 || variance2.total() == 0.0 {
         return Err("PEARSON: One of the inputs has zero variance.".into());
     }
 
     // Pearson correlation coefficient
-    let result = covariance
-        / (crate::portable_math::sqrt(variance1) * crate::portable_math::sqrt(variance2));
+    let result = covariance.total()
+        / (crate::portable_math::sqrt(variance1.total())
+            * crate::portable_math::sqrt(variance2.total()));
 
     Ok(result)
 }

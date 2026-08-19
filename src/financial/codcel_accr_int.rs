@@ -4,6 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
+use crate::compensated_sum::CompensatedSum;
 use crate::date_time_base::{actual_actual_days, thirty_360_days, thirty_e_360_days};
 use chrono::{DateTime, Datelike, TimeZone, Utc};
 use std::error::Error;
@@ -168,7 +169,7 @@ pub fn codcel_accr_int(
     }
 
     // Sum Ai/NLi across all quasi-coupon periods that overlap [start_date, settlement_date]
-    let mut sum = 0.0;
+    let mut sum = CompensatedSum::new();
     for i in 0..quasi_dates.len() - 1 {
         let period_start = quasi_dates[i];
         let period_end = quasi_dates[i + 1];
@@ -185,7 +186,7 @@ pub fn codcel_accr_int(
 
         if is_full {
             // Full quasi-coupon periods contribute exactly 1.0.
-            sum += 1.0;
+            sum.add(1.0);
         } else {
             // Partial period: clamp to [start_date, settlement_date]
             let accrual_start = if period_start < start_date {
@@ -219,12 +220,12 @@ pub fn codcel_accr_int(
             };
 
             if nl > 0.0 {
-                sum += a / nl;
+                sum.add(a / nl);
             }
         }
     }
 
-    let result = par * (rate / frequency as f64) * sum;
+    let result = par * (rate / frequency as f64) * sum.total();
 
     Ok(result)
 }

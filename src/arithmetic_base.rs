@@ -9,6 +9,7 @@ use crate::area::{
     process_area_float_to_float, process_area_float_to_integer, process_area_int_multi_to_int,
     process_area_int_op_int_to_string, process_area_string_to_float,
 };
+use crate::compensated_sum::{CompensatedSum, CompensatedSumExt};
 use crate::information::codcel_is_blank::{codcel_is_blank, codcel_is_blank_or_empty_string};
 use crate::information::codcel_na::codcel_na;
 use crate::logical::codcel_not::codcel_not;
@@ -1934,38 +1935,36 @@ pub fn sum(
         return Ok(Value::F64(0.0));
     }
 
-    let result = values.iter().try_fold(
-        0.0,
-        |acc, value| -> Result<f64, Box<dyn Error + Send + Sync>> {
-            if value.is_array() || value.is_area() {
-                // Excel SUM ignores non-numeric cells in ranges/arrays
-                let area = value.area_of_value()?;
-                let mut local_sum = 0.0;
-                for row in &area {
-                    for cell in row {
-                        if let Ok(val) = cell.f64(value_format) {
-                            local_sum += val;
-                        }
-                    }
-                }
-                Ok(acc + local_sum)
-            } else {
-                // Try to add the value to the accumulator, stop if error occurs and strict_type_conversion is true
-                match value.f64(value_format) {
-                    Ok(val) => Ok(acc + val),
-                    Err(_) => {
-                        if strict_type_conversion {
-                            Err("SUM: Input values are not numbers".into()) // Propagate error if strict
-                        } else {
-                            Ok(acc) // Ignore error and continue with the sum if not strict
-                        }
+    // Accumulate with compensation so long ranges do not drift, and so values of
+    // widely differing magnitude are not lost to rounding.
+    let mut result = CompensatedSum::new();
+
+    for value in &values {
+        if value.is_array() || value.is_area() {
+            // Excel SUM ignores non-numeric cells in ranges/arrays
+            let area = value.area_of_value()?;
+            for row in &area {
+                for cell in row {
+                    if let Ok(val) = cell.f64(value_format) {
+                        result.add(val);
                     }
                 }
             }
-        },
-    )?;
+        } else {
+            // Try to add the value to the accumulator, stop if error occurs and strict_type_conversion is true
+            match value.f64(value_format) {
+                Ok(val) => result.add(val),
+                Err(_) => {
+                    if strict_type_conversion {
+                        return Err("SUM: Input values are not numbers".into()); // Propagate error if strict
+                    }
+                    // Ignore error and continue with the sum if not strict
+                }
+            }
+        }
+    }
 
-    Ok(Value::F64(result))
+    Ok(Value::F64(result.total()))
 }
 
 /// Excel-compatible `DEVSQ` function.
@@ -2020,10 +2019,13 @@ pub fn devsq(
     }
 
     // Calculate the mean
-    let mean = flat_values.iter().sum::<f64>() / flat_values.len() as f64;
+    let mean = flat_values.iter().compensated_sum() / flat_values.len() as f64;
 
     // Calculate the sum of squared deviations
-    let devsq = flat_values.iter().map(|&x| (x - mean).powi(2)).sum::<f64>();
+    let devsq = flat_values
+        .iter()
+        .map(|&x| (x - mean).powi(2))
+        .compensated_sum();
 
     Ok(Value::F64(devsq))
 }
@@ -3809,6 +3811,64 @@ mod tests {
         .unwrap();
         println!("{result:?}");
         assert_eq!(result.f64(&value_format).unwrap(), 6.0);
+    }
+
+    #[test]
+    fn test_sum_recovers_value_lost_to_cancellation() {
+        let value_format = create_value_format();
+
+        // =SUM(1E+16,1,-1E+16) in US format
+        // =SUM(1E+16;1;-1E+16) in German format
+        // A left-to-right fold rounds the 1 away and returns 0.
+        let result = sum(
+            vec![value_f64(1e16), value_f64(1.0), value_f64(-1e16)],
+            true,
+            &value_format,
+        )
+        .unwrap();
+        assert_eq!(result.f64(&value_format).unwrap(), 1.0);
+    }
+
+    #[test]
+    fn test_sum_over_range_has_no_drift() {
+        let value_format = create_value_format();
+
+        // =SUM(A1:A10000) where every cell holds 0.1, in US format
+        // =SUM(A1:A10000) where every cell holds 0,1, in German format
+        let area: Vec<Vec<f64>> = (0..10_000).map(|_| vec![0.1]).collect();
+        let result = sum(vec![value_area_f64(area)], true, &value_format).unwrap();
+        assert_eq!(result.f64(&value_format).unwrap(), 1000.0);
+    }
+
+    #[test]
+    fn test_sum_over_array_has_no_drift() {
+        let value_format = create_value_format();
+
+        // =SUM({0.1;0.1;...}) in US format
+        // =SUM({0,1.0,1...}) in German format
+        let result = sum(vec![value_vec_f64(vec![0.1; 10_000])], true, &value_format).unwrap();
+        assert_eq!(result.f64(&value_format).unwrap(), 1000.0);
+    }
+
+    #[test]
+    fn test_sum_mixes_range_and_scalar_without_drift() {
+        let value_format = create_value_format();
+
+        // =SUM(1E+16,A1:A2,-1E+16) in US format
+        // =SUM(1E+16;A1:A2;-1E+16) in German format
+        // The correction must survive across the range boundary, not be discarded
+        // when the range subtotal is folded into the running total.
+        let result = sum(
+            vec![
+                value_f64(1e16),
+                value_area_f64(vec![vec![1.0], vec![2.0]]),
+                value_f64(-1e16),
+            ],
+            true,
+            &value_format,
+        )
+        .unwrap();
+        assert_eq!(result.f64(&value_format).unwrap(), 3.0);
     }
 
     #[test]

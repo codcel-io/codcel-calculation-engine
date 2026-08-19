@@ -4,6 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
+use crate::compensated_sum::CompensatedSumExt;
 use std::error::Error;
 
 /// Excel-compatible `SUBTOTAL` that returns a subtotal using a specified function.
@@ -38,7 +39,7 @@ pub fn codcel_sub_total(
 
     match actual_code {
         1 => {
-            let sum: f64 = filtered_values.iter().sum();
+            let sum: f64 = filtered_values.iter().compensated_sum();
             let count = filtered_values.len() as f64;
             if count == 0.0 {
                 Err("SUBTOTAL: Cannot compute average of zero elements.".into())
@@ -69,26 +70,26 @@ pub fn codcel_sub_total(
                 return Err("SUBTOTAL: At least two values are required for STDEV.S.".into());
             }
             let n = filtered_values.len() as f64;
-            let mean = filtered_values.iter().sum::<f64>() / n;
+            let mean = filtered_values.iter().compensated_sum() / n;
             let variance = filtered_values
                 .iter()
                 .map(|&x| (x - mean).powi(2))
-                .sum::<f64>()
+                .compensated_sum()
                 / (n - 1.0);
             Ok(crate::portable_math::sqrt(variance))
         }
         8 => {
             // STDEV.P (population standard deviation)
             let n = filtered_values.len() as f64;
-            let mean = filtered_values.iter().sum::<f64>() / n;
+            let mean = filtered_values.iter().compensated_sum() / n;
             let variance = filtered_values
                 .iter()
                 .map(|&x| (x - mean).powi(2))
-                .sum::<f64>()
+                .compensated_sum()
                 / n;
             Ok(crate::portable_math::sqrt(variance))
         }
-        9 => Ok(filtered_values.iter().sum()), // SUM (same as function_code 1 in Excel)
+        9 => Ok(filtered_values.iter().compensated_sum()), // SUM (same as function_code 1 in Excel)
         10 => {
             // VAR.S (sample variance)
             if filtered_values.len() < 2 {
@@ -97,21 +98,21 @@ pub fn codcel_sub_total(
                 );
             }
             let n = filtered_values.len() as f64;
-            let mean = filtered_values.iter().sum::<f64>() / n;
+            let mean = filtered_values.iter().compensated_sum() / n;
             Ok(filtered_values
                 .iter()
                 .map(|&x| (x - mean).powi(2))
-                .sum::<f64>()
+                .compensated_sum()
                 / (n - 1.0))
         }
         11 => {
             // VAR.P (population variance)
             let n = filtered_values.len() as f64;
-            let mean = filtered_values.iter().sum::<f64>() / n;
+            let mean = filtered_values.iter().compensated_sum() / n;
             Ok(filtered_values
                 .iter()
                 .map(|&x| (x - mean).powi(2))
-                .sum::<f64>()
+                .compensated_sum()
                 / n)
         }
         _ => Err("SUBTOTAL: Unimplemented function code.".into()),

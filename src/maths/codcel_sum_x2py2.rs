@@ -4,6 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
+use crate::compensated_sum::CompensatedSumExt;
 use std::error::Error;
 
 /// Excel-compatible `SUMX2PY2` that returns the sum of the sum of squares.
@@ -26,7 +27,7 @@ pub fn codcel_sum_x2py2(x: Vec<f64>, y: Vec<f64>) -> Result<f64, Box<dyn Error +
         .iter()
         .zip(y.iter())
         .map(|(x_val, y_val)| x_val.powi(2) + y_val.powi(2))
-        .sum();
+        .compensated_sum();
 
     Ok(result)
 }

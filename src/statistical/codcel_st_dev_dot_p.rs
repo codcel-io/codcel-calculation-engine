@@ -4,6 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
+use crate::compensated_sum::CompensatedSumExt;
 use std::error::Error;
 
 /// Excel-compatible `STDEV.P` that returns the standard deviation based on an entire population.
@@ -21,10 +22,10 @@ pub fn codcel_st_dev_dot_p(values: Vec<f64>) -> Result<f64, Box<dyn Error + Send
 
     // Calculate mean
     let n = values.len() as f64;
-    let mean = values.iter().sum::<f64>() / n;
+    let mean = values.iter().compensated_sum() / n;
 
     // Calculate variance
-    let variance = values.iter().map(|x| (x - mean).powi(2)).sum::<f64>() / n;
+    let variance = values.iter().map(|x| (x - mean).powi(2)).compensated_sum() / n;
 
     // Return standard deviation
     Ok(crate::portable_math::sqrt(variance))

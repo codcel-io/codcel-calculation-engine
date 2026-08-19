@@ -4,6 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
+use crate::compensated_sum::CompensatedSum;
 use std::error::Error;
 
 pub(crate) fn binomial_coefficient(n: u32, k: u32) -> Result<f64, Box<dyn Error + Send + Sync>> {
@@ -16,12 +17,12 @@ pub(crate) fn binomial_coefficient(n: u32, k: u32) -> Result<f64, Box<dyn Error 
         return Ok(1.0);
     }
     // Log-space computation to avoid integer overflow for large n
-    let mut ln_result = 0.0;
+    let mut ln_result = CompensatedSum::new();
     for i in (n - k + 1)..=n {
-        ln_result += crate::portable_math::ln(i as f64);
+        ln_result.add(crate::portable_math::ln(i as f64));
     }
     for i in 2..=k {
-        ln_result -= crate::portable_math::ln(i as f64);
+        ln_result.add(-crate::portable_math::ln(i as f64));
     }
-    Ok(crate::portable_math::exp(ln_result))
+    Ok(crate::portable_math::exp(ln_result.total()))
 }

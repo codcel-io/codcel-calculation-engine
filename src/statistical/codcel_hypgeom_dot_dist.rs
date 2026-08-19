@@ -4,6 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
+use crate::compensated_sum::CompensatedSum;
 use crate::statistical::hypergeom_prob::hypergeom_prob;
 use std::error::Error;
 
@@ -61,11 +62,11 @@ pub fn codcel_hypgeom_dot_dist(
 
     if cumulative {
         let min_x = lower_bound as u64;
-        let mut cumulative_prob = 0.0;
+        let mut cumulative_prob = CompensatedSum::new();
         for i in min_x..=x_int {
-            cumulative_prob += hypergeom_prob(i, k_int, m_int, n_int)?;
+            cumulative_prob.add(hypergeom_prob(i, k_int, m_int, n_int)?);
         }
-        Ok(cumulative_prob)
+        Ok(cumulative_prob.total())
     } else {
         hypergeom_prob(x_int, k_int, m_int, n_int)
     }

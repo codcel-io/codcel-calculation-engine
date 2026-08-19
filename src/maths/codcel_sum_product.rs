@@ -4,6 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
+use crate::compensated_sum::CompensatedSum;
 use std::error::Error;
 
 /// Excel-compatible `SUMPRODUCT` that multiplies corresponding components and returns their sum.
@@ -38,7 +39,7 @@ pub fn codcel_sum_product(values: Vec<Vec<f64>>) -> Result<f64, Box<dyn Error + 
     }
 
     // Calculate the sum of products
-    let mut sum = 0.0;
+    let mut sum = CompensatedSum::new();
 
     for i in 0..expected_length {
         let mut product = 1.0;
@@ -47,10 +48,10 @@ pub fn codcel_sum_product(values: Vec<Vec<f64>>) -> Result<f64, Box<dyn Error + 
             product *= array[i];
         }
 
-        sum += product;
+        sum.add(product);
     }
 
-    Ok(sum)
+    Ok(sum.total())
 }
 
 #[cfg(test)]

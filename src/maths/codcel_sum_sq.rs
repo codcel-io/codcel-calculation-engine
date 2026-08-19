@@ -4,6 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
+use crate::compensated_sum::CompensatedSumExt;
 use std::error::Error;
 
 /// Excel-compatible `SUMSQ` that returns the sum of squares of the arguments.
@@ -15,7 +16,7 @@ pub fn codcel_sum_sq(values: Vec<f64>) -> Result<f64, Box<dyn Error + Send + Syn
         return Ok(0.0);
     }
 
-    let sum_sq = values.iter().map(|&x| x * x).sum();
+    let sum_sq = values.iter().map(|&x| x * x).compensated_sum();
     Ok(sum_sq)
 }
 

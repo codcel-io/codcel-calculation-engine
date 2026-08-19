@@ -6,6 +6,8 @@
 
 use chrono::{DateTime, Datelike, TimeZone, Utc};
 
+use crate::compensated_sum::CompensatedSum;
+
 /// Calculates the price per $100 face value for a security that pays periodic interest.
 ///
 /// This mirrors Excel's `PRICE` function, discounting each coupon payment and the
@@ -120,19 +122,23 @@ pub fn codcel_price(
         Ok(price)
     } else {
         // N>1: compound discounting
-        let mut price = 0.0;
+        let mut price = CompensatedSum::new();
 
         // Present value of coupon payments
         for k in 1..=n {
-            price += coupon
-                / crate::portable_math::powf(1.0 + yld_per_period, (k - 1) as f64 + dsc_over_e);
+            price.add(
+                coupon
+                    / crate::portable_math::powf(1.0 + yld_per_period, (k - 1) as f64 + dsc_over_e),
+            );
         }
 
         // Present value of redemption
-        price += redemption
-            / crate::portable_math::powf(1.0 + yld_per_period, (n - 1) as f64 + dsc_over_e);
+        price.add(
+            redemption
+                / crate::portable_math::powf(1.0 + yld_per_period, (n - 1) as f64 + dsc_over_e),
+        );
 
-        Ok(price - accrued_interest)
+        Ok(price.total() - accrued_interest)
     }
 }
 

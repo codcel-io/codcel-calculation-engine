@@ -4,6 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
+use crate::compensated_sum::CompensatedSumExt;
 use std::error::Error;
 
 /// Excel-compatible `TREND` that returns values along a linear trend.
@@ -42,16 +43,19 @@ pub fn codcel_trend(
         return Err("TREND: new_x cannot be empty.".into());
     }
 
-    let mean_x = known_x.iter().sum::<f64>() / known_x.len() as f64;
-    let mean_y = known_y.iter().sum::<f64>() / known_y.len() as f64;
+    let mean_x = known_x.iter().compensated_sum() / known_x.len() as f64;
+    let mean_y = known_y.iter().compensated_sum() / known_y.len() as f64;
 
     let covariance = known_x
         .iter()
         .zip(known_y.iter())
         .map(|(&x, &y)| (x - mean_x) * (y - mean_y))
-        .sum::<f64>();
+        .compensated_sum();
 
-    let variance_x = known_x.iter().map(|&x| (x - mean_x).powi(2)).sum::<f64>();
+    let variance_x = known_x
+        .iter()
+        .map(|&x| (x - mean_x).powi(2))
+        .compensated_sum();
 
     if variance_x == 0.0 {
         return Err("TREND: Variance of x is zero. Cannot compute trend.".into());

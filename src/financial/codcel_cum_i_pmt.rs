@@ -4,6 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
+use crate::compensated_sum::CompensatedSum;
 use crate::financial::helpers::ipmt;
 use std::error::Error;
 
@@ -51,12 +52,12 @@ pub fn codcel_cum_i_pmt(
         );
     }
 
-    let mut cumulative_interest = 0.0;
+    let mut cumulative_interest = CompensatedSum::new();
 
     for period in start_period..=end_period {
         let ipmt = ipmt(rate, period, nper, pv, 0.0, payment_type)?;
-        cumulative_interest += ipmt;
+        cumulative_interest.add(ipmt);
     }
 
-    Ok(cumulative_interest)
+    Ok(cumulative_interest.total())
 }

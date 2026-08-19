@@ -4,6 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
+use crate::compensated_sum::CompensatedSumExt;
 use std::error::Error;
 
 /// Excel-compatible `AVERAGEA` that calculates the average of values, including text and logical values.
@@ -16,7 +17,7 @@ pub fn codcel_average_a(values: Vec<f64>) -> Result<f64, Box<dyn Error + Send + 
     }
 
     let count = values.len() as f64;
-    let sum: f64 = values.iter().sum();
+    let sum: f64 = values.iter().compensated_sum();
 
     Ok(sum / count)
 }

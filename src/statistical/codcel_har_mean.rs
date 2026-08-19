@@ -4,6 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
+use crate::compensated_sum::CompensatedSumExt;
 use std::error::Error;
 
 /// Excel-compatible `HARMEAN` that returns the harmonic mean of a set of positive values.
@@ -19,7 +20,7 @@ pub fn codcel_har_mean(values: Vec<f64>) -> Result<f64, Box<dyn Error + Send + S
         return Err("HARMEAN: All input values must be greater than 0.".into());
     }
 
-    let reciprocal_sum: f64 = values.iter().map(|&x| 1.0 / x).sum();
+    let reciprocal_sum: f64 = values.iter().map(|&x| 1.0 / x).compensated_sum();
     let n: f64 = values.len() as f64;
 
     Ok(n / reciprocal_sum)

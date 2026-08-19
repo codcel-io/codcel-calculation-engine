@@ -4,6 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
+use crate::compensated_sum::CompensatedSum;
 use crate::statistical::poisson_probability::poisson_probability;
 use std::error::Error;
 
@@ -29,11 +30,11 @@ pub fn codcel_poisson_dist(
 
     if cumulative {
         // Calculate the cumulative probability: P(X <= x)
-        let mut cumulative_prob = 0.0;
+        let mut cumulative_prob = CompensatedSum::new();
         for i in 0..=x {
-            cumulative_prob += poisson_probability(i, mean);
+            cumulative_prob.add(poisson_probability(i, mean));
         }
-        Ok(cumulative_prob)
+        Ok(cumulative_prob.total())
     } else {
         // Calculate the probability mass function: P(X = x)
         Ok(poisson_probability(x, mean))

@@ -4,6 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
+use crate::compensated_sum::CompensatedSum;
 use std::error::Error;
 
 /// Excel-compatible `SERIESSUM` that returns the sum of a power series.
@@ -24,15 +25,15 @@ pub fn codcel_series_sum(
     }
 
     // Calculate the sum of the series
-    let mut result = 0.0;
+    let mut result = CompensatedSum::new();
     let mut current_power = n;
 
     for &coefficient in &coefficients {
-        result += coefficient * crate::portable_math::powf(x, current_power);
+        result.add(coefficient * crate::portable_math::powf(x, current_power));
         current_power += m;
     }
 
-    Ok(result)
+    Ok(result.total())
 }
 
 #[cfg(test)]

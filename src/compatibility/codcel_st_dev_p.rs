@@ -4,6 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
+use crate::compensated_sum::CompensatedSumExt;
 /// Excel-compatible `STDEVP`/`STDEV.P` function.
 /// Returns the population standard deviation (uses `n` in the denominator).
 /// - `array`: array of numeric values (must not be empty).
@@ -14,8 +15,8 @@ pub fn codcel_st_dev_p(array: Vec<f64>) -> Result<f64, Box<dyn std::error::Error
         return Err("STDEVP: Array cannot be empty".into());
     }
 
-    let mean = array.iter().sum::<f64>() / array.len() as f64;
-    let variance = array.iter().map(|&x| (x - mean).powi(2)).sum::<f64>() / array.len() as f64;
+    let mean = array.iter().compensated_sum() / array.len() as f64;
+    let variance = array.iter().map(|&x| (x - mean).powi(2)).compensated_sum() / array.len() as f64;
 
     Ok(crate::portable_math::sqrt(variance))
 }

@@ -5,6 +5,7 @@
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
 use crate::compatibility::codcel_chi_dist::codcel_chi_dist;
+use crate::compensated_sum::CompensatedSum;
 use std::error::Error;
 
 /// Excel-compatible `CHITEST`/`CHI.TEST` function.
@@ -29,13 +30,13 @@ pub fn codcel_chi_test(
         return Err("CHITEST: Observed and expected arrays cannot be empty".into());
     }
 
-    let mut chi_squared = 0.0;
+    let mut chi_squared = CompensatedSum::new();
 
     for (o, e) in observed.iter().zip(expected.iter()) {
         if *e <= 0.0 {
             return Err("CHITEST: Expected values must be greater than 0".into());
         }
-        chi_squared += (*o - *e).powi(2) / *e;
+        chi_squared.add((*o - *e).powi(2) / *e);
     }
 
     // For 2D contingency tables (both dims > 1): df = (rows-1) * (cols-1)
@@ -46,7 +47,7 @@ pub fn codcel_chi_test(
         (observed.len() - 1) as f64
     };
 
-    codcel_chi_dist(chi_squared, df)
+    codcel_chi_dist(chi_squared.total(), df)
 }
 
 #[cfg(test)]

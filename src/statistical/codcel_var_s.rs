@@ -4,6 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
+use crate::compensated_sum::CompensatedSumExt;
 use std::error::Error;
 
 /// Excel-compatible `VAR.S` that returns the variance based on a sample.
@@ -16,10 +17,10 @@ pub fn codcel_var_s(data: Vec<f64>) -> Result<f64, Box<dyn Error + Send + Sync>>
         return Err("VAR.S: Data set must contain at least two elements.".into());
     }
 
-    let mean = data.iter().sum::<f64>() / data.len() as f64;
+    let mean = data.iter().compensated_sum() / data.len() as f64;
 
     let variance =
-        data.iter().map(|&x| (x - mean).powi(2)).sum::<f64>() / (data.len() as f64 - 1.0);
+        data.iter().map(|&x| (x - mean).powi(2)).compensated_sum() / (data.len() as f64 - 1.0);
 
     Ok(variance)
 }

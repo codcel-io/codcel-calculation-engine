@@ -4,6 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
+use crate::compensated_sum::CompensatedSum;
 use crate::statistical::neg_binom_pmf::neg_binom_pmf;
 use std::error::Error;
 
@@ -28,11 +29,11 @@ pub fn codcel_neg_binom_dot_dist(
 
     if cumulative {
         // Cumulative mode: sum probabilities from 0 to `failures`
-        let mut cumulative_probability = 0.0;
+        let mut cumulative_probability = CompensatedSum::new();
         for k in 0..=failures {
-            cumulative_probability += neg_binom_pmf(k as u32, successes as u32, probability)?;
+            cumulative_probability.add(neg_binom_pmf(k as u32, successes as u32, probability)?);
         }
-        Ok(cumulative_probability)
+        Ok(cumulative_probability.total())
     } else {
         // Probability mass function for the exact number of failures
         neg_binom_pmf(failures as u32, successes as u32, probability)

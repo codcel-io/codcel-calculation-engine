@@ -4,6 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
+use crate::compensated_sum::CompensatedSum;
 use std::error::Error;
 
 /// Calculates the natural logarithm of the binomial coefficient C(n,k).
@@ -18,17 +19,17 @@ pub(crate) fn ln_binomial_coefficient(n: i32, k: i32) -> Result<f64, Box<dyn Err
 
     // ln(C(n,k)) = ln(n!) - ln(k!) - ln((n-k)!)
     // To avoid overflow with large numbers, calculate log factorials
-    let mut ln_result = 0.0;
+    let mut ln_result = CompensatedSum::new();
 
     // Calculate ln(n! / (n-k)!) = ln(n) + ln(n-1) + ... + ln(n-k+1)
     for i in (n - k + 1)..=n {
-        ln_result += crate::portable_math::ln(i as f64);
+        ln_result.add(crate::portable_math::ln(i as f64));
     }
 
     // Subtract ln(k!)
     for i in 2..=k {
-        ln_result -= crate::portable_math::ln(i as f64);
+        ln_result.add(-crate::portable_math::ln(i as f64));
     }
 
-    Ok(ln_result)
+    Ok(ln_result.total())
 }

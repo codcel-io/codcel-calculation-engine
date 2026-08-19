@@ -4,6 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
+use crate::compensated_sum::CompensatedSum;
 use std::error::Error;
 
 /// Calculates the variable declining balance depreciation for an asset.
@@ -49,7 +50,7 @@ pub fn codcel_vdb(
     }
 
     // Initialize variables
-    let mut depreciation = 0.0;
+    let mut depreciation = CompensatedSum::new();
     let mut current_value = cost;
     let mut period = 1.0; // Start at the first period
 
@@ -68,18 +69,18 @@ pub fn codcel_vdb(
                     // Switch to straight-line for this and all remaining periods
                     while period <= end_period {
                         if period > start_period {
-                            depreciation += sl_depreciation;
+                            depreciation.add(sl_depreciation);
                         }
                         period += 1.0;
                     }
-                    return Ok(depreciation);
+                    return Ok(depreciation.total());
                 }
             }
         }
 
         // Apply declining balance depreciation
         if period > start_period {
-            depreciation += db_depreciation;
+            depreciation.add(db_depreciation);
         }
 
         // Update current value of the asset
@@ -88,7 +89,7 @@ pub fn codcel_vdb(
         period += 1.0;
     }
 
-    Ok(depreciation)
+    Ok(depreciation.total())
 }
 
 #[cfg(test)]

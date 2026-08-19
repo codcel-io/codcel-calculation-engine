@@ -13,6 +13,7 @@ use crate::area::{
     process_area_int_float_bool_to_float, process_area_int_float_float_to_int,
     process_area_int_float_int_opt_int, process_area_int_int_float_bool_to_float,
 };
+use crate::compensated_sum::CompensatedSum;
 use crate::statistical::codcel_beta_dist::codcel_beta_dist;
 use crate::statistical::codcel_beta_dot_inv::codcel_beta_dot_inv;
 use crate::statistical::codcel_binom_dot_dist::codcel_binom_dot_dist;
@@ -1328,41 +1329,38 @@ pub fn average(
         return Ok(Value::F64(0.0));
     }
 
-    let (sum, count) = values.iter().fold((0.0, 0), |(acc_sum, acc_count), value| {
+    // Accumulate with compensation so the mean is not skewed by rounding drift
+    // over long ranges.
+    let mut sum = CompensatedSum::new();
+    let mut count: usize = 0;
+
+    for value in &values {
         if value.is_array() || value.is_area() {
             // Excel AVERAGE ignores non-numeric cells in ranges/arrays
-            match value.area_of_value() {
-                Ok(area) => {
-                    let mut local_sum = 0.0;
-                    let mut local_count = 0;
-                    for row in &area {
-                        for cell in row {
-                            if let Ok(val) = cell.f64(value_format) {
-                                local_sum += val;
-                                local_count += 1;
-                            }
+            if let Ok(area) = value.area_of_value() {
+                for row in &area {
+                    for cell in row {
+                        if let Ok(val) = cell.f64(value_format) {
+                            sum.add(val);
+                            count += 1;
                         }
                     }
-                    (acc_sum + local_sum, acc_count + local_count)
                 }
-                Err(_) => (acc_sum, acc_count),
             }
         } else if is_non_numeric_cell(value) {
             // The transpiler expands ranges into individual values.
             // Excel AVERAGE ignores text, booleans, and empty cells in ranges.
-            (acc_sum, acc_count)
-        } else {
-            match value.f64(value_format) {
-                Ok(val) => (acc_sum + val, acc_count + 1),
-                Err(_) => (acc_sum, acc_count),
-            }
+            continue;
+        } else if let Ok(val) = value.f64(value_format) {
+            sum.add(val);
+            count += 1;
         }
-    });
+    }
 
     if count == 0 {
         return Ok(Value::F64(0.0));
     }
-    Ok(Value::F64(sum / count as f64))
+    Ok(Value::F64(sum.total() / count as f64))
 }
 
 /// Returns true for values that Excel range-aware functions (AVERAGE, AVEDEV, etc.)
@@ -1391,43 +1389,49 @@ pub fn average_a(
         return Ok(Value::F64(0.0));
     }
 
-    let (sum, count) = values.iter().fold((0.0, 0), |(acc_sum, acc_count), value| {
+    // A single compensated accumulator is threaded through every branch, so that
+    // per-array subtotals do not each round independently before being combined.
+    let mut sum = CompensatedSum::new();
+    let mut count: usize = 0;
+
+    for value in &values {
         if value.is_array() {
             match value {
                 Value::VecValue(vec) => {
-                    let (s, c) = average_a_fold_values(vec.iter(), value_format);
-                    (acc_sum + s, acc_count + c)
+                    average_a_fold_values(vec.iter(), value_format, &mut sum, &mut count)
                 }
                 Value::OptionVecValue(Some(vec)) => {
-                    let (s, c) = average_a_fold_values(vec.iter(), value_format);
-                    (acc_sum + s, acc_count + c)
+                    average_a_fold_values(vec.iter(), value_format, &mut sum, &mut count)
                 }
-                _ => (acc_sum, acc_count),
+                _ => {}
             }
         } else if value.is_area() {
             match value {
-                Value::AreaValue(area) => {
-                    let (s, c) =
-                        average_a_fold_values(area.iter().flat_map(|row| row.iter()), value_format);
-                    (acc_sum + s, acc_count + c)
-                }
-                Value::OptionAreaValue(Some(area)) => {
-                    let (s, c) =
-                        average_a_fold_values(area.iter().flat_map(|row| row.iter()), value_format);
-                    (acc_sum + s, acc_count + c)
-                }
-                _ => (acc_sum, acc_count),
+                Value::AreaValue(area) => average_a_fold_values(
+                    area.iter().flat_map(|row| row.iter()),
+                    value_format,
+                    &mut sum,
+                    &mut count,
+                ),
+                Value::OptionAreaValue(Some(area)) => average_a_fold_values(
+                    area.iter().flat_map(|row| row.iter()),
+                    value_format,
+                    &mut sum,
+                    &mut count,
+                ),
+                _ => {}
             }
         } else {
             let (s, c) = average_a_value(value, value_format);
-            (acc_sum + s, acc_count + c)
+            sum.add(s);
+            count += c;
         }
-    });
+    }
 
     if count == 0 {
         return Ok(Value::F64(0.0));
     }
-    Ok(Value::F64(sum / count as f64))
+    Ok(Value::F64(sum.total() / count as f64))
 }
 
 /// Converts a single value using AVERAGEA semantics:
@@ -1456,15 +1460,19 @@ fn average_a_value(value: &Value, value_format: &ValueFormat) -> (f64, usize) {
     }
 }
 
-/// Folds an iterator of values using AVERAGEA semantics.
+/// Folds an iterator of values using AVERAGEA semantics into a shared
+/// compensated accumulator and counter.
 fn average_a_fold_values<'a>(
     values: impl Iterator<Item = &'a Value>,
     value_format: &ValueFormat,
-) -> (f64, usize) {
-    values.fold((0.0, 0), |(acc_sum, acc_count), val| {
+    sum: &mut CompensatedSum,
+    count: &mut usize,
+) {
+    for val in values {
         let (s, c) = average_a_value(val, value_format);
-        (acc_sum + s, acc_count + c)
-    })
+        sum.add(s);
+        *count += c;
+    }
 }
 
 /// Excel-compatible `MAXA` function.
@@ -1575,75 +1583,66 @@ pub fn ave_dev(
         return Ok(Value::F64(0.0));
     }
 
-    // First pass: compute sum and count, skipping non-numeric values
-    let (sum, count) = values.iter().fold((0.0, 0), |(acc_sum, acc_count), value| {
+    // First pass: compute sum and count, skipping non-numeric values. Both passes
+    // use a single compensated accumulator rather than combining per-value
+    // subtotals, so no correction is discarded between values.
+    let mut sum = CompensatedSum::new();
+    let mut count: usize = 0;
+
+    for value in &values {
         if value.is_array() {
-            match value.vec_f64(value_format) {
-                Ok(array_values) => {
-                    let array_sum: f64 = array_values.iter().sum();
-                    let array_count = array_values.len();
-                    (acc_sum + array_sum, acc_count + array_count)
+            if let Ok(array_values) = value.vec_f64(value_format) {
+                for val in &array_values {
+                    sum.add(*val);
                 }
-                Err(_) => (acc_sum, acc_count),
+                count += array_values.len();
             }
         } else if value.is_area() {
-            match value.area_f64(value_format) {
-                Ok(area_values) => {
-                    let area_sum: f64 = area_values.iter().flat_map(|row| row.iter()).sum();
-                    let area_count: usize = area_values.iter().map(|row| row.len()).sum();
-                    (acc_sum + area_sum, acc_count + area_count)
+            if let Ok(area_values) = value.area_f64(value_format) {
+                for val in area_values.iter().flat_map(|row| row.iter()) {
+                    sum.add(*val);
                 }
-                Err(_) => (acc_sum, acc_count),
+                count += area_values.iter().map(|row| row.len()).sum::<usize>();
             }
         } else if is_non_numeric_cell(value) {
             // Skip text, booleans, empty strings from expanded ranges
-            (acc_sum, acc_count)
-        } else {
-            match value.f64(value_format) {
-                Ok(val) => (acc_sum + val, acc_count + 1),
-                Err(_) => (acc_sum, acc_count),
-            }
+            continue;
+        } else if let Ok(val) = value.f64(value_format) {
+            sum.add(val);
+            count += 1;
         }
-    });
+    }
 
     if count == 0 {
         return Ok(Value::F64(0.0));
     }
 
-    let mean = sum / count as f64;
+    let mean = sum.total() / count as f64;
 
     // Second pass: compute deviation sum, skipping non-numeric values
-    let deviation_sum = values.iter().fold(0.0, |acc_dev_sum, value| {
+    let mut deviation_sum = CompensatedSum::new();
+
+    for value in &values {
         if value.is_array() {
-            match value.vec_f64(value_format) {
-                Ok(array_values) => {
-                    acc_dev_sum + array_values.iter().map(|v| (v - mean).abs()).sum::<f64>()
+            if let Ok(array_values) = value.vec_f64(value_format) {
+                for val in &array_values {
+                    deviation_sum.add((val - mean).abs());
                 }
-                Err(_) => acc_dev_sum,
             }
         } else if value.is_area() {
-            match value.area_f64(value_format) {
-                Ok(area_values) => {
-                    acc_dev_sum
-                        + area_values
-                            .iter()
-                            .flat_map(|row| row.iter())
-                            .map(|v| (v - mean).abs())
-                            .sum::<f64>()
+            if let Ok(area_values) = value.area_f64(value_format) {
+                for val in area_values.iter().flat_map(|row| row.iter()) {
+                    deviation_sum.add((val - mean).abs());
                 }
-                Err(_) => acc_dev_sum,
             }
         } else if is_non_numeric_cell(value) {
-            acc_dev_sum
-        } else {
-            match value.f64(value_format) {
-                Ok(val) => acc_dev_sum + (val - mean).abs(),
-                Err(_) => acc_dev_sum,
-            }
+            continue;
+        } else if let Ok(val) = value.f64(value_format) {
+            deviation_sum.add((val - mean).abs());
         }
-    });
+    }
 
-    Ok(Value::F64(deviation_sum / count as f64))
+    Ok(Value::F64(deviation_sum.total() / count as f64))
 }
 
 /// Excel-compatible `CONFIDENCE.NORM` function.
@@ -1721,7 +1720,7 @@ pub fn chisq_test(
     };
 
     // Compute chi-squared statistic, skipping non-numeric cells
-    let mut chi_squared_statistic = 0.0;
+    let mut chi_squared_statistic = CompensatedSum::new();
     for (obs_row, exp_row) in actual_area.iter().zip(expected_area.iter()) {
         for (obs_cell, exp_cell) in obs_row.iter().zip(exp_row.iter()) {
             let obs_val = match obs_cell.f64(value_format) {
@@ -1735,7 +1734,7 @@ pub fn chisq_test(
             if exp_val <= 0.0 {
                 return Err("CHISQ.TEST: Expected values must be greater than 0.".into());
             }
-            chi_squared_statistic += (obs_val - exp_val).powi(2) / exp_val;
+            chi_squared_statistic.add((obs_val - exp_val).powi(2) / exp_val);
         }
     }
 
@@ -1752,7 +1751,7 @@ pub fn chisq_test(
 
     use statrs::distribution::ContinuousCDF;
     match statrs::distribution::ChiSquared::new(degrees_of_freedom as f64) {
-        Ok(dist) => Ok(Value::F64(1.0 - dist.cdf(chi_squared_statistic))),
+        Ok(dist) => Ok(Value::F64(1.0 - dist.cdf(chi_squared_statistic.total()))),
         Err(_) => Err("CHISQ.TEST: Error creating chi-squared distribution.".into()),
     }
 }
@@ -2594,4 +2593,109 @@ pub fn z_dot_test(
     let sigma = sigma.option_f64(value_format)?;
 
     Ok(Value::F64(codcel_z_dot_test(data, hyp_mean, sigma)?))
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::value::{area_f64 as value_area_f64, f64 as value_f64};
+    use crate::value_format::ValueFormat;
+
+    fn create_value_format() -> ValueFormat {
+        ValueFormat {
+            decimal_separator: ".".to_string(),
+            currency_symbol: "$".to_string(),
+            thousands_separator: ",".to_string(),
+            use_excel_rounding: true,
+            language: "en".to_string(),
+            allow_lotus_1_2_3_1900_date_bug: true,
+        }
+    }
+
+    /// A column of `count` cells each holding 0.1, as a range.
+    fn tenths_column(count: usize) -> Value {
+        value_area_f64((0..count).map(|_| vec![0.1]).collect())
+    }
+
+    #[test]
+    fn test_average_of_scalars() {
+        let value_format = create_value_format();
+
+        // =AVERAGE(1,2,3) in US format
+        // =AVERAGE(1;2;3) in German format
+        let result = average(
+            vec![value_f64(1.0), value_f64(2.0), value_f64(3.0)],
+            true,
+            &value_format,
+        )
+        .unwrap();
+        assert_eq!(result.f64(&value_format).unwrap(), 2.0);
+    }
+
+    #[test]
+    fn test_average_over_range_has_no_drift() {
+        let value_format = create_value_format();
+
+        // =AVERAGE(A1:A10000) where every cell holds 0.1, in US format
+        // =AVERAGE(A1:A10000) where every cell holds 0,1, in German format
+        let result = average(vec![tenths_column(10_000)], true, &value_format).unwrap();
+        assert_eq!(result.f64(&value_format).unwrap(), 0.1);
+    }
+
+    #[test]
+    fn test_average_keeps_correction_across_range_boundary() {
+        let value_format = create_value_format();
+
+        // =AVERAGE(1E+16,A1:A2,-1E+16) in US format
+        // =AVERAGE(1E+16;A1:A2;-1E+16) in German format
+        // A naive fold loses the range entirely and averages to 0.
+        let result = average(
+            vec![
+                value_f64(1e16),
+                value_area_f64(vec![vec![1.0], vec![2.0]]),
+                value_f64(-1e16),
+            ],
+            true,
+            &value_format,
+        )
+        .unwrap();
+        assert_eq!(result.f64(&value_format).unwrap(), 0.75);
+    }
+
+    #[test]
+    fn test_average_a_over_range_has_no_drift() {
+        let value_format = create_value_format();
+
+        // =AVERAGEA(A1:A10000) where every cell holds 0.1, in US format
+        // =AVERAGEA(A1:A10000) where every cell holds 0,1, in German format
+        let result = average_a(vec![tenths_column(10_000)], true, &value_format).unwrap();
+        assert_eq!(result.f64(&value_format).unwrap(), 0.1);
+    }
+
+    #[test]
+    fn test_ave_dev_of_scalars() {
+        let value_format = create_value_format();
+
+        // =AVEDEV(2,4,6) in US format
+        // =AVEDEV(2;4;6) in German format
+        let result = ave_dev(
+            vec![value_f64(2.0), value_f64(4.0), value_f64(6.0)],
+            true,
+            &value_format,
+        )
+        .unwrap();
+        // mean 4, deviations 2/0/2, average deviation 4/3
+        assert!((result.f64(&value_format).unwrap() - 4.0 / 3.0).abs() < 1e-12);
+    }
+
+    #[test]
+    fn test_ave_dev_over_uniform_range_is_zero() {
+        let value_format = create_value_format();
+
+        // =AVEDEV(A1:A10000) where every cell holds 0.1, in US format
+        // =AVEDEV(A1:A10000) where every cell holds 0,1, in German format
+        // Every value equals the mean exactly once the mean is computed without drift.
+        let result = ave_dev(vec![tenths_column(10_000)], true, &value_format).unwrap();
+        assert_eq!(result.f64(&value_format).unwrap(), 0.0);
+    }
 }
