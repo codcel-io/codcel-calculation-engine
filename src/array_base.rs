@@ -14,6 +14,7 @@ use crate::lookup_and_reference::codcel_column::codcel_column;
 use crate::lookup_and_reference::codcel_columns::codcel_columns;
 use crate::lookup_and_reference::codcel_drop::codcel_drop;
 use crate::lookup_and_reference::codcel_expand::codcel_expand;
+use crate::lookup_and_reference::codcel_h_stack::codcel_h_stack;
 use crate::lookup_and_reference::codcel_offset::codcel_offset;
 use crate::lookup_and_reference::codcel_row::codcel_row;
 use crate::lookup_and_reference::codcel_rows::codcel_rows;
@@ -22,6 +23,7 @@ use crate::lookup_and_reference::codcel_tocol::codcel_tocol;
 use crate::lookup_and_reference::codcel_torow::codcel_torow;
 use crate::lookup_and_reference::codcel_transpose::codcel_transpose;
 use crate::lookup_and_reference::codcel_trimrange::codcel_trimrange;
+use crate::lookup_and_reference::codcel_v_stack::codcel_v_stack;
 use crate::lookup_and_reference::codcel_wrapcols::codcel_wrapcols;
 use crate::lookup_and_reference::codcel_wraprows::codcel_wraprows;
 use crate::text::dbcs_utils::dbcs_byte_len;
@@ -469,6 +471,68 @@ pub fn trimrange(
     codcel_trimrange(array, trim_rows, trim_columns)
 }
 
+/// Unpacks the `Value::VecValue` envelope the transpiler emits for a
+/// `MultipleArea` parameter into one normalised 2-D area per argument.
+///
+/// Deliberately matches on `VecValue` rather than calling `Value::vec_value()`:
+/// that helper flattens an `AreaValue` into a single flat `Vec<Value>` of cells,
+/// which would silently destroy the 2-D shape if a bare area were ever passed
+/// instead of the envelope.
+fn stack_arguments(values: Value) -> Result<Vec<Vec<Vec<Value>>>, Box<dyn Error + Send + Sync>> {
+    let arguments = match values {
+        Value::VecValue(arguments) => arguments,
+        Value::OptionVecValue(Some(arguments)) => arguments,
+        other => vec![other],
+    };
+
+    arguments
+        .into_iter()
+        .map(|argument| argument.area_of_value())
+        .collect()
+}
+
+/// Excel-compatible `HSTACK` function.
+/// Stacks arrays horizontally (side by side) into a single array.
+///
+/// # Parameters
+/// - `values`: the `Value::VecValue` envelope holding one entry per argument.
+/// - `_value_format`: format settings (unused; cells are copied verbatim).
+///
+/// # Returns
+/// Returns a `Value::AreaValue` containing the combined array.
+///
+/// # Errors
+/// Returns an error when no arrays are supplied, when any array is empty, or
+/// when the arrays do not all have the same number of rows. Note that Excel
+/// pads ragged input with `#N/A`; Codcel returns an error instead.
+pub fn h_stack(
+    values: Value,
+    _value_format: &ValueFormat,
+) -> Result<Value, Box<dyn Error + Send + Sync>> {
+    codcel_h_stack(stack_arguments(values)?)
+}
+
+/// Excel-compatible `VSTACK` function.
+/// Stacks arrays vertically (one on top of another) into a single array.
+///
+/// # Parameters
+/// - `values`: the `Value::VecValue` envelope holding one entry per argument.
+/// - `_value_format`: format settings (unused; cells are copied verbatim).
+///
+/// # Returns
+/// Returns a `Value::AreaValue` containing the combined array.
+///
+/// # Errors
+/// Returns an error when no arrays are supplied, when any array is empty, or
+/// when the arrays do not all have the same number of columns. Note that Excel
+/// pads ragged input with `#N/A`; Codcel returns an error instead.
+pub fn v_stack(
+    values: Value,
+    _value_format: &ValueFormat,
+) -> Result<Value, Box<dyn Error + Send + Sync>> {
+    codcel_v_stack(stack_arguments(values)?)
+}
+
 /*pub fn left(area: Value, num_chars: Value, value_format: &ValueFormat) -> Result<Value, Box<dyn Error + Send + Sync>> {
     let values = area.area_of_value()?;
 
@@ -673,5 +737,133 @@ mod tests {
         let val2 = Value::String("2".to_string());
         let row1 = vec![vec![val1], vec![val2]];
         assert!(!does_column_contain_any_pure_strings(&row1, 0));
+    }
+
+    fn create_value_format() -> ValueFormat {
+        ValueFormat {
+            decimal_separator: ".".to_string(),
+            currency_symbol: "$".to_string(),
+            thousands_separator: ",".to_string(),
+            use_excel_rounding: true,
+            language: "en".to_string(),
+            allow_lotus_1_2_3_1900_date_bug: true,
+        }
+    }
+
+    fn area(v: Value) -> Vec<Vec<Value>> {
+        match v {
+            Value::AreaValue(a) => a,
+            _ => panic!("expected AreaValue"),
+        }
+    }
+
+    fn i(v: &Value) -> i32 {
+        match v {
+            Value::I32(n) => *n,
+            _ => panic!("expected I32"),
+        }
+    }
+
+    fn column_area(values: &[i32]) -> Value {
+        Value::AreaValue(values.iter().map(|n| vec![Value::I32(*n)]).collect())
+    }
+
+    #[test]
+    fn h_stack_unpacks_vec_value_envelope() {
+        let envelope = Value::VecValue(vec![column_area(&[1, 2, 3]), column_area(&[4, 5, 6])]);
+        let result = area(h_stack(envelope, &create_value_format()).unwrap());
+        assert_eq!(result.len(), 3);
+        assert_eq!(result[0].len(), 2);
+        assert_eq!(i(&result[0][1]), 4);
+        assert_eq!(i(&result[2][0]), 3);
+    }
+
+    #[test]
+    fn h_stack_accepts_vec_value_row_argument() {
+        // A 1-D range argument arrives as VecValue and normalises to one row.
+        let envelope = Value::VecValue(vec![
+            Value::VecValue(vec![Value::I32(1), Value::I32(2)]),
+            Value::VecValue(vec![Value::I32(3), Value::I32(4)]),
+        ]);
+        let result = area(h_stack(envelope, &create_value_format()).unwrap());
+        assert_eq!(result.len(), 1);
+        assert_eq!(result[0].len(), 4);
+        assert_eq!(i(&result[0][3]), 4);
+    }
+
+    #[test]
+    fn h_stack_accepts_scalar_arguments() {
+        // =HSTACK(1, 2) -- two 1x1 areas.
+        let envelope = Value::VecValue(vec![Value::I32(1), Value::I32(2)]);
+        let result = area(h_stack(envelope, &create_value_format()).unwrap());
+        assert_eq!(result.len(), 1);
+        assert_eq!(result[0].len(), 2);
+        assert_eq!(i(&result[0][0]), 1);
+        assert_eq!(i(&result[0][1]), 2);
+    }
+
+    #[test]
+    fn h_stack_bare_area_keeps_its_shape() {
+        // Defensive path: a bare AreaValue must not be flattened to one row.
+        let result = area(h_stack(column_area(&[1, 2, 3]), &create_value_format()).unwrap());
+        assert_eq!(result.len(), 3);
+        assert_eq!(result[0].len(), 1);
+    }
+
+    #[test]
+    fn h_stack_ragged_envelope_errors() {
+        let envelope = Value::VecValue(vec![column_area(&[1, 2, 3]), column_area(&[4, 5])]);
+        let err = h_stack(envelope, &create_value_format()).unwrap_err();
+        assert!(err.to_string().contains("same number of rows"));
+    }
+
+    #[test]
+    fn v_stack_unpacks_vec_value_envelope() {
+        let envelope = Value::VecValue(vec![
+            Value::AreaValue(vec![vec![Value::I32(1), Value::I32(2)]]),
+            Value::AreaValue(vec![vec![Value::I32(3), Value::I32(4)]]),
+        ]);
+        let result = area(v_stack(envelope, &create_value_format()).unwrap());
+        assert_eq!(result.len(), 2);
+        assert_eq!(result[0].len(), 2);
+        assert_eq!(i(&result[1][0]), 3);
+    }
+
+    #[test]
+    fn v_stack_accepts_vec_value_row_argument() {
+        let envelope = Value::VecValue(vec![
+            Value::VecValue(vec![Value::I32(1), Value::I32(2)]),
+            Value::VecValue(vec![Value::I32(3), Value::I32(4)]),
+        ]);
+        let result = area(v_stack(envelope, &create_value_format()).unwrap());
+        assert_eq!(result.len(), 2);
+        assert_eq!(result[0].len(), 2);
+        assert_eq!(i(&result[1][1]), 4);
+    }
+
+    #[test]
+    fn v_stack_accepts_scalar_arguments() {
+        let envelope = Value::VecValue(vec![Value::I32(1), Value::I32(2)]);
+        let result = area(v_stack(envelope, &create_value_format()).unwrap());
+        assert_eq!(result.len(), 2);
+        assert_eq!(result[0].len(), 1);
+        assert_eq!(i(&result[1][0]), 2);
+    }
+
+    #[test]
+    fn v_stack_bare_area_keeps_its_shape() {
+        let result = area(v_stack(column_area(&[1, 2, 3]), &create_value_format()).unwrap());
+        assert_eq!(result.len(), 3);
+        assert_eq!(result[0].len(), 1);
+    }
+
+    #[test]
+    fn v_stack_ragged_envelope_errors() {
+        let envelope = Value::VecValue(vec![
+            Value::AreaValue(vec![vec![Value::I32(1), Value::I32(2)]]),
+            Value::AreaValue(vec![vec![Value::I32(3)]]),
+        ]);
+        let err = v_stack(envelope, &create_value_format()).unwrap_err();
+        assert!(err.to_string().contains("same number of columns"));
     }
 }

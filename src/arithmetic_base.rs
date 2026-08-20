@@ -3448,52 +3448,6 @@ pub fn sum_xmy2(
     Ok(Value::F64(codcel_sum_xmy2(x, y2)?))
 }
 
-// TODO
-/* pub fn h_stack(value: Value, _value_format: &ValueFormat) -> Result<Value, Box<dyn Error + Send + Sync>> {
-    let values = value.area_of_value()?;
-    let result = codcel_h_stack(values)?;
-    Ok(Value::VecValue(result))
-}
-
-/// Excel-compatible `VSTACK` function (incomplete implementation).
-/// Intended to vertically stack arrays to create a combined array.
-///
-/// # Parameters
-/// - `inputs`: A collection of values to stack vertically.
-/// - `_value_format`: Format settings (currently unused).
-///
-/// # Returns
-/// Currently returns `Value::None` as the implementation is incomplete.
-///
-/// # Errors
-/// May return an error if value conversion fails.
-///
-/// # Note
-/// This function contains debug output and is not yet fully implemented.
-/// The commented-out code suggests it should return a `VecValue`.
-pub fn v_stack(inputs: Value, _value_format: &ValueFormat) -> Result<Value, Box<dyn Error + Send + Sync>> {
-    println!("inputs {:#?}", &inputs);
-
-    let inputs = inputs.vec_value()?;
-
-    let mut values: Vec<Vec<Vec<Value>>> = vec![];
-
-    for value in inputs {
-        let area = value.area_of_value()?;
-        values.push(area)
-    }
-
-    println!("values {:#?}", &values);
-
-
-
-    Ok(Value::None)
-
-    /*let values = value.area_of_value()?;
-    let result = codcel_v_stack(values)?;
-    Ok(Value::VecValue(result))*/
-}*/
-
 /// Wraps a computed f64 result into `Value::F64`, returning an error if the
 /// value is NaN or infinite (arithmetic overflow / invalid operation).
 #[inline]
