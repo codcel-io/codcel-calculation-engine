@@ -58,12 +58,8 @@ mod tests {
         // =DOLLAR(1234.56) in US format
         // =DOLLAR(1234,56) in German format
         let value_format = ValueFormat {
-            decimal_separator: ".".to_string(),
-            currency_symbol: "$".to_string(),
-            thousands_separator: ",".to_string(),
             use_excel_rounding: true,
-            language: "en".to_string(),
-            allow_lotus_1_2_3_1900_date_bug: true,
+            ..Default::default()
         };
 
         let result = codcel_dollar(1234.56, None, &value_format).unwrap();
@@ -76,12 +72,8 @@ mod tests {
         // =DOLLAR(-1234.56) in US format
         // =DOLLAR(-1234,56) in German format
         let value_format = ValueFormat {
-            decimal_separator: ".".to_string(),
-            currency_symbol: "$".to_string(),
-            thousands_separator: ",".to_string(),
             use_excel_rounding: true,
-            language: "en".to_string(),
-            allow_lotus_1_2_3_1900_date_bug: true,
+            ..Default::default()
         };
 
         let result = codcel_dollar(-1234.56, None, &value_format).unwrap();
@@ -94,12 +86,8 @@ mod tests {
         // =DOLLAR(1234.56, 3) in US format
         // =DOLLAR(1234,56; 3) in German format
         let value_format = ValueFormat {
-            decimal_separator: ".".to_string(),
-            currency_symbol: "$".to_string(),
-            thousands_separator: ",".to_string(),
             use_excel_rounding: true,
-            language: "en".to_string(),
-            allow_lotus_1_2_3_1900_date_bug: true,
+            ..Default::default()
         };
 
         let result = codcel_dollar(1234.56, Some(3), &value_format).unwrap();
@@ -112,12 +100,8 @@ mod tests {
         // =DOLLAR(1234.56, 0) in US format
         // =DOLLAR(1234,56; 0) in German format
         let value_format = ValueFormat {
-            decimal_separator: ".".to_string(),
-            currency_symbol: "$".to_string(),
-            thousands_separator: ",".to_string(),
             use_excel_rounding: true,
-            language: "en".to_string(),
-            allow_lotus_1_2_3_1900_date_bug: true,
+            ..Default::default()
         };
 
         let result = codcel_dollar(1234.56, Some(0), &value_format).unwrap();
@@ -130,12 +114,8 @@ mod tests {
         // =DOLLAR(1234.56, -1) in US format
         // =DOLLAR(1234,56; -1) in German format
         let value_format = ValueFormat {
-            decimal_separator: ".".to_string(),
-            currency_symbol: "$".to_string(),
-            thousands_separator: ",".to_string(),
             use_excel_rounding: true,
-            language: "en".to_string(),
-            allow_lotus_1_2_3_1900_date_bug: true,
+            ..Default::default()
         };
 
         let result = codcel_dollar(1234.56, Some(-1), &value_format).unwrap();
@@ -153,7 +133,7 @@ mod tests {
             thousands_separator: ".".to_string(),
             use_excel_rounding: true,
             language: "de".to_string(),
-            allow_lotus_1_2_3_1900_date_bug: true,
+            ..Default::default()
         };
 
         let result = codcel_dollar(1234.56, None, &value_format).unwrap();

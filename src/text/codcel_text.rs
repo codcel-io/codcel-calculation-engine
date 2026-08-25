@@ -183,6 +183,7 @@ mod tests {
     use crate::date_and_time::codcel_date::codcel_date;
 
     use super::*;
+    use crate::date_system::DateSemantics;
     use crate::date_time_base::date_time_to_excel;
 
     // Helper function to create a ValueFormat for testing
@@ -205,7 +206,7 @@ mod tests {
             },
             use_excel_rounding: true,
             language: language.to_string(),
-            allow_lotus_1_2_3_1900_date_bug: true,
+            ..Default::default()
         }
     }
 
@@ -284,7 +285,7 @@ mod tests {
         // =TEXT(DATE(2023,5,15), "yyyy-mm-dd") in US format
         // =TEXT(DATE(2023;5;15); "jjjj-mm-tt") in German format
         // May 15, 2023 is 44696 days after Dec 30, 1899
-        let days_since_base = date_time_to_excel(&codcel_date(2023, 5, 15).unwrap(), true).unwrap();
+        let days_since_base = date_time_to_excel(&codcel_date(2023, 5, 15).unwrap(), DateSemantics::EXCEL_1900).unwrap();
 
         // Test with default English locale
         let value_format = default_value_format();

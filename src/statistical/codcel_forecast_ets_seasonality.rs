@@ -4,6 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
+use crate::date_system::DateSemantics;
 use super::forecast::*;
 use std::error::Error;
 
@@ -22,6 +23,7 @@ pub fn codcel_forecast_ets_seasonality(
     timeline: Vec<f64>,
     data_completion: Option<i32>,
     aggregation: Option<i32>,
+    dates: DateSemantics,
 ) -> Result<i32, Box<dyn Error + Send + Sync>> {
     if values.len() != timeline.len() {
         return Err(
@@ -43,7 +45,7 @@ pub fn codcel_forecast_ets_seasonality(
     }
 
     let (proc_values, _proc_timeline, _month_day) =
-        preprocess_data(&values, &timeline, data_completion, aggregation)?;
+        preprocess_data(&values, &timeline, data_completion, aggregation, dates)?;
 
     if proc_values.len() < 3 {
         return Err("FORECAST.ETS.SEASONALITY: insufficient data after preprocessing.".into());
@@ -57,6 +59,24 @@ pub fn codcel_forecast_ets_seasonality(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// Every expectation here pins Excel's own serial convention, so bind it once
+    /// rather than threading `DateSemantics` through each call. Shadows the glob
+    /// import from `use super::*`.
+    fn codcel_forecast_ets_seasonality(
+        values: Vec<f64>,
+        timeline: Vec<f64>,
+        data_completion: Option<i32>,
+        aggregation: Option<i32>,
+    ) -> Result<i32, Box<dyn Error + Send + Sync>> {
+        super::codcel_forecast_ets_seasonality(
+            values,
+            timeline,
+            data_completion,
+            aggregation,
+            DateSemantics::EXCEL_1900,
+        )
+    }
 
     #[test]
     fn test_seasonality_quarterly_data() {

@@ -15,12 +15,8 @@ mod tests {
     // Helper function to create a default ValueFormat for testing
     fn default_value_format() -> ValueFormat {
         ValueFormat {
-            decimal_separator: ".".to_string(),
-            currency_symbol: "$".to_string(),
-            thousands_separator: ",".to_string(),
             use_excel_rounding: true,
-            language: "en".to_string(),
-            allow_lotus_1_2_3_1900_date_bug: true,
+            ..Default::default()
         }
     }
 

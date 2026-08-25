@@ -4,9 +4,17 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
+use crate::date_system::DateSemantics;
 use serde::{Deserialize, Serialize};
 
-#[derive(Serialize, Deserialize, Debug, Clone)]
+/// Locale and calculation settings carried alongside every value.
+///
+/// `#[serde(default)]` is applied at the container level so that a JSON payload
+/// written against an older version of this struct still deserialises: the
+/// generated FFI and JNI `*_with_format` entry points parse caller-supplied
+/// JSON straight into this type, and a newly added field must not break them.
+#[derive(Serialize, Deserialize, Debug, Clone, PartialEq)]
+#[serde(default)]
 pub struct ValueFormat {
     pub decimal_separator: String,
     pub currency_symbol: String,
@@ -14,6 +22,23 @@ pub struct ValueFormat {
     pub use_excel_rounding: bool,
     pub language: String,
     pub allow_lotus_1_2_3_1900_date_bug: bool,
+}
+
+/// Hand-written rather than derived: `#[derive(Default)]` would give
+/// `decimal_separator: ""`, which makes every formatted number unparseable.
+/// These values match the fallback that `from_language` uses for an unknown
+/// language tag.
+impl Default for ValueFormat {
+    fn default() -> Self {
+        ValueFormat {
+            decimal_separator: ".".to_string(),
+            currency_symbol: "$".to_string(),
+            thousands_separator: ",".to_string(),
+            use_excel_rounding: false,
+            language: "en".to_string(),
+            allow_lotus_1_2_3_1900_date_bug: true,
+        }
+    }
 }
 
 impl ValueFormat {
@@ -42,17 +67,7 @@ impl ValueFormat {
     /// Maps the language to locale-appropriate formatting conventions.
     /// For unknown languages, returns sensible defaults (period decimal, comma thousands, `$`).
     pub fn from_language(lang: &str) -> ValueFormat {
-        Self::from_language_internal(
-            lang,
-            &ValueFormat {
-                decimal_separator: ".".to_string(),
-                currency_symbol: "$".to_string(),
-                thousands_separator: ",".to_string(),
-                use_excel_rounding: false,
-                language: "en".to_string(),
-                allow_lotus_1_2_3_1900_date_bug: true,
-            },
-        )
+        Self::from_language_internal(lang, &ValueFormat::default())
     }
 
     /// Creates a `ValueFormat` from a language tag with `CODCEL_*` env var overrides.
@@ -217,21 +232,129 @@ impl ValueFormat {
         }
         base
     }
+
+    /// The serial-number convention this format implies.
+    ///
+    /// Always the 1900 system — [`DateSemantics`] cannot express anything else.
+    /// A workbook saved with the 1904 epoch has its serials rebased as it is
+    /// read, so by the time a value reaches a `ValueFormat` there is only one
+    /// convention left in play.
+    pub fn date_semantics(&self) -> DateSemantics {
+        DateSemantics {
+            lotus_1900_bug: self.allow_lotus_1_2_3_1900_date_bug,
+        }
+    }
+
+    /// Copy the non-locale calculation settings across from `other`.
+    ///
+    /// Deriving a `ValueFormat` from a language tag (an `Accept-Language` header,
+    /// say) resets rounding and date semantics to that language's defaults, which
+    /// is never what a caller wants — those are properties of the transpiled
+    /// workbook, not of the reader's locale. Every transport that builds a
+    /// per-request format calls this to restore them from the project's `FORMAT`.
+    pub fn with_calculation_flags_from(mut self, other: &ValueFormat) -> Self {
+        self.use_excel_rounding = other.use_excel_rounding;
+        self.allow_lotus_1_2_3_1900_date_bug = other.allow_lotus_1_2_3_1900_date_bug;
+        self
+    }
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
+    /// Pinned field by field so that swapping the hand-written impl for
+    /// `#[derive(Default)]` fails loudly: the derive would give
+    /// `decimal_separator: ""`, which makes every formatted number unparseable.
+    #[test]
+    fn default_has_usable_locale_values() {
+        let d = ValueFormat::default();
+        assert_eq!(d.decimal_separator, ".");
+        assert_eq!(d.currency_symbol, "$");
+        assert_eq!(d.thousands_separator, ",");
+        assert!(!d.use_excel_rounding);
+        assert_eq!(d.language, "en");
+        assert!(d.allow_lotus_1_2_3_1900_date_bug);
+    }
+
+    /// The generated FFI and JNI `*_with_format` entry points deserialise
+    /// caller-supplied JSON straight into this struct, so a payload missing any
+    /// field must still parse rather than breaking every existing caller on
+    /// upgrade. That is what the container-level `#[serde(default)]` buys.
+    #[test]
+    fn a_partial_json_payload_still_deserialises() {
+        let legacy = r#"{
+            "decimal_separator": ",",
+            "currency_symbol": "€",
+            "thousands_separator": ".",
+            "use_excel_rounding": true,
+            "language": "de",
+            "allow_lotus_1_2_3_1900_date_bug": true
+        }"#;
+        let vf: ValueFormat = serde_json::from_str(legacy).unwrap();
+        assert_eq!(vf.decimal_separator, ",");
+        assert_eq!(vf.language, "de");
+        assert!(
+            vf.use_excel_rounding,
+            "a field present in the payload must be honoured"
+        );
+
+        // A payload missing a field falls back to the default rather than erroring.
+        let sparse: ValueFormat = serde_json::from_str(r#"{"language": "fr"}"#).unwrap();
+        assert_eq!(sparse.language, "fr");
+        assert_eq!(sparse.decimal_separator, ValueFormat::default().decimal_separator);
+    }
+
+    #[test]
+    fn empty_json_deserialises_to_default() {
+        let vf: ValueFormat = serde_json::from_str("{}").unwrap();
+        assert_eq!(vf, ValueFormat::default());
+    }
+
+    #[test]
+    fn date_semantics_maps_the_1900_conventions() {
+        let excel = ValueFormat {
+            ..Default::default()
+        };
+        assert_eq!(excel.date_semantics(), DateSemantics::EXCEL_1900);
+
+        let astronomical = ValueFormat {
+            allow_lotus_1_2_3_1900_date_bug: false,
+            ..Default::default()
+        };
+        assert_eq!(
+            astronomical.date_semantics(),
+            DateSemantics::ASTRONOMICAL_1900
+        );
+    }
+
+    /// Deriving a format from a language tag resets the calculation flags to
+    /// that language's defaults; they are properties of the transpiled workbook,
+    /// not of the reader's locale, so every transport restores them this way.
+    #[test]
+    fn with_calculation_flags_from_restores_non_locale_settings() {
+        let project = ValueFormat {
+            use_excel_rounding: true,
+            allow_lotus_1_2_3_1900_date_bug: false,
+            ..Default::default()
+        };
+        let per_request = ValueFormat {
+            decimal_separator: ",".to_string(),
+            language: "de".to_string(),
+            ..Default::default()
+        }
+        .with_calculation_flags_from(&project);
+
+        assert_eq!(per_request.decimal_separator, ",", "locale is preserved");
+        assert_eq!(per_request.language, "de", "locale is preserved");
+        assert!(per_request.use_excel_rounding);
+        assert!(!per_request.allow_lotus_1_2_3_1900_date_bug);
+    }
+
     #[test]
     fn test_from_system_with_env_returns_valid_format() {
         let fallback = ValueFormat {
-            decimal_separator: ".".to_string(),
-            currency_symbol: "$".to_string(),
-            thousands_separator: ",".to_string(),
-            use_excel_rounding: false,
-            language: "en".to_string(),
-            allow_lotus_1_2_3_1900_date_bug: true,
+            ..Default::default()
         };
         let format = ValueFormat::from_system_with_env(fallback);
         // Should not panic and should have non-empty fields
@@ -250,12 +373,7 @@ mod tests {
         std::env::set_var("CODCEL_ALLOW_LOTUS_1_2_3_1900_DATE_BUG", "false");
 
         let fallback = ValueFormat {
-            decimal_separator: ".".to_string(),
-            currency_symbol: "$".to_string(),
-            thousands_separator: ",".to_string(),
-            use_excel_rounding: false,
-            language: "en".to_string(),
-            allow_lotus_1_2_3_1900_date_bug: true,
+            ..Default::default()
         };
         let format = ValueFormat::from_env_with_fallback(fallback);
 

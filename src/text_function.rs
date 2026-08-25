@@ -1157,11 +1157,14 @@ fn format_date_time_section(
 ) -> Result<String, Box<dyn Error + Send + Sync>> {
     // Extract date using excel_to_date_time
     // For serial < 1 (pure time), use the Excel epoch base date (Jan 0, 1900 → treat as Jan 1)
+    //
+    // Unconditional: serials always reach here in the 1900 system, because a 1904
+    // workbook is rebased as it is loaded.
     let (year, month, day, weekday) = if excel_serial < 1.0 {
         // Excel serial 0 = January 0, 1900. For display purposes, use January 1, 1900.
         (1900i32, 1u32, 0u32, chrono::Weekday::Sat)
     } else {
-        let dt = excel_to_date_time(excel_serial, value_format.allow_lotus_1_2_3_1900_date_bug)?;
+        let dt = excel_to_date_time(excel_serial, value_format.date_semantics())?;
         (dt.year(), dt.month(), dt.day(), dt.weekday())
     };
 
@@ -1321,12 +1324,8 @@ mod tests {
 
     fn vf() -> ValueFormat {
         ValueFormat {
-            decimal_separator: ".".to_string(),
-            currency_symbol: "$".to_string(),
-            thousands_separator: ",".to_string(),
             use_excel_rounding: true,
-            language: "en".to_string(),
-            allow_lotus_1_2_3_1900_date_bug: true,
+            ..Default::default()
         }
     }
 

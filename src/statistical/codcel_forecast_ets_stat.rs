@@ -4,6 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
+use crate::date_system::DateSemantics;
 use super::forecast::*;
 use crate::compensated_sum::CompensatedSum;
 use std::error::Error;
@@ -31,6 +32,7 @@ pub fn codcel_forecast_ets_stat(
     seasonality: Option<i32>,
     data_completion: Option<i32>,
     aggregation: Option<i32>,
+    dates: DateSemantics,
 ) -> Result<f64, Box<dyn Error + Send + Sync>> {
     if values.len() != timeline.len() {
         return Err("FORECAST.ETS.STAT: values and timeline must have the same length.".into());
@@ -57,7 +59,7 @@ pub fn codcel_forecast_ets_stat(
     }
 
     let (proc_values, proc_timeline, month_day) =
-        preprocess_data(&values, &timeline, data_completion, aggregation)?;
+        preprocess_data(&values, &timeline, data_completion, aggregation, dates)?;
 
     let n = proc_values.len();
     if n < 3 {
@@ -187,6 +189,28 @@ pub fn codcel_forecast_ets_stat(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// Every expectation here pins Excel's own serial convention, so bind it once
+    /// rather than threading `DateSemantics` through each call. Shadows the glob
+    /// import from `use super::*`.
+    fn codcel_forecast_ets_stat(
+        values: Vec<f64>,
+        timeline: Vec<f64>,
+        stat_type: i32,
+        seasonality: Option<i32>,
+        data_completion: Option<i32>,
+        aggregation: Option<i32>,
+    ) -> Result<f64, Box<dyn Error + Send + Sync>> {
+        super::codcel_forecast_ets_stat(
+            values,
+            timeline,
+            stat_type,
+            seasonality,
+            data_completion,
+            aggregation,
+            DateSemantics::EXCEL_1900,
+        )
+    }
 
     fn quarterly_values() -> Vec<f64> {
         vec![

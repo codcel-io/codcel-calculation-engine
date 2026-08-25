@@ -40,12 +40,8 @@ mod tests {
         // =VALUETOTEXT(123) in US format
         // =VALUETOTEXT(123) in German format
         let value_format = ValueFormat {
-            decimal_separator: ".".to_string(),
-            currency_symbol: "$".to_string(),
-            thousands_separator: ",".to_string(),
             use_excel_rounding: true,
-            language: "en".to_string(),
-            allow_lotus_1_2_3_1900_date_bug: true,
+            ..Default::default()
         };
 
         let result = codcel_value_to_text(i32(123), None, &value_format).unwrap();
@@ -58,12 +54,8 @@ mod tests {
         // =VALUETOTEXT(123.45) in US format
         // =VALUETOTEXT(123,45) in German format
         let value_format = ValueFormat {
-            decimal_separator: ".".to_string(),
-            currency_symbol: "$".to_string(),
-            thousands_separator: ",".to_string(),
             use_excel_rounding: true,
-            language: "en".to_string(),
-            allow_lotus_1_2_3_1900_date_bug: true,
+            ..Default::default()
         };
 
         let result = codcel_value_to_text(f64(123.45), None, &value_format).unwrap();
@@ -76,12 +68,8 @@ mod tests {
         // =VALUETOTEXT("Hello") in US format
         // =VALUETOTEXT("Hello") in German format
         let value_format = ValueFormat {
-            decimal_separator: ".".to_string(),
-            currency_symbol: "$".to_string(),
-            thousands_separator: ",".to_string(),
             use_excel_rounding: true,
-            language: "en".to_string(),
-            allow_lotus_1_2_3_1900_date_bug: true,
+            ..Default::default()
         };
 
         let result =
@@ -95,12 +83,8 @@ mod tests {
         // =VALUETOTEXT("Hello", TRUE) in US format
         // =VALUETOTEXT("Hello"; TRUE) in German format
         let value_format = ValueFormat {
-            decimal_separator: ".".to_string(),
-            currency_symbol: "$".to_string(),
-            thousands_separator: ",".to_string(),
             use_excel_rounding: true,
-            language: "en".to_string(),
-            allow_lotus_1_2_3_1900_date_bug: true,
+            ..Default::default()
         };
 
         let result =
@@ -114,12 +98,8 @@ mod tests {
         // =VALUETOTEXT(123, TRUE) in US format
         // =VALUETOTEXT(123; TRUE) in German format
         let value_format = ValueFormat {
-            decimal_separator: ".".to_string(),
-            currency_symbol: "$".to_string(),
-            thousands_separator: ",".to_string(),
             use_excel_rounding: true,
-            language: "en".to_string(),
-            allow_lotus_1_2_3_1900_date_bug: true,
+            ..Default::default()
         };
 
         let result = codcel_value_to_text(i32(123), Some(true), &value_format).unwrap();

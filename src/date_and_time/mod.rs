@@ -29,7 +29,6 @@ pub mod codcel_workday;
 pub mod codcel_workday_intl;
 pub mod codcel_year;
 pub mod codcel_year_frac;
-pub mod datetime_to_excel_serial;
 pub mod days_in_month;
 pub mod is_leap_year;
 pub mod parse_time_formats;

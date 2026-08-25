@@ -956,6 +956,7 @@ pub fn forecast_ets(
         seasonality,
         data_completion,
         aggregation,
+        value_format.date_semantics(),
     )?))
 }
 
@@ -995,6 +996,7 @@ pub fn forecast_ets_confint(
         seasonality,
         data_completion,
         aggregation,
+        value_format.date_semantics(),
     )?))
 }
 
@@ -1021,6 +1023,7 @@ pub fn forecast_ets_seasonality(
         timeline,
         data_completion,
         aggregation,
+        value_format.date_semantics(),
     )?))
 }
 
@@ -1055,6 +1058,7 @@ pub fn forecast_ets_stat(
         seasonality,
         data_completion,
         aggregation,
+        value_format.date_semantics(),
     )?))
 }
 
@@ -2603,12 +2607,8 @@ mod tests {
 
     fn create_value_format() -> ValueFormat {
         ValueFormat {
-            decimal_separator: ".".to_string(),
-            currency_symbol: "$".to_string(),
-            thousands_separator: ",".to_string(),
             use_excel_rounding: true,
-            language: "en".to_string(),
-            allow_lotus_1_2_3_1900_date_bug: true,
+            ..Default::default()
         }
     }
 

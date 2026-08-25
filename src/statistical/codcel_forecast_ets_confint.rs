@@ -4,6 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
+use crate::date_system::DateSemantics;
 use super::forecast::*;
 use crate::compensated_sum::CompensatedSum;
 use crate::statistical::codcel_norm_dot_s_dot_inv::codcel_norm_dot_s_dot_inv;
@@ -13,6 +14,7 @@ use std::error::Error;
 ///
 /// Returns the half-width of the prediction interval at the given confidence level.
 /// For example, if the forecast is 100 and CONFINT returns 5, the 95% CI is [95, 105].
+#[allow(clippy::too_many_arguments)]
 pub fn codcel_forecast_ets_confint(
     target_date: f64,
     values: Vec<f64>,
@@ -21,6 +23,7 @@ pub fn codcel_forecast_ets_confint(
     seasonality: Option<i32>,
     data_completion: Option<i32>,
     aggregation: Option<i32>,
+    dates: DateSemantics,
 ) -> Result<f64, Box<dyn Error + Send + Sync>> {
     if values.len() != timeline.len() {
         return Err("FORECAST.ETS.CONFINT: values and timeline must have the same length.".into());
@@ -53,7 +56,7 @@ pub fn codcel_forecast_ets_confint(
     }
 
     let (proc_values, proc_timeline, month_day) =
-        preprocess_data(&values, &timeline, data_completion, aggregation)?;
+        preprocess_data(&values, &timeline, data_completion, aggregation, dates)?;
 
     let n = proc_values.len();
     if n < 3 {
@@ -79,7 +82,7 @@ pub fn codcel_forecast_ets_confint(
 
     // Convert target_date to month space if monthly dates detected
     let effective_target = if month_day > 0 {
-        convert_x_to_months(target_date, month_day)
+        convert_x_to_months(target_date, month_day, dates)
     } else {
         target_date
     };
@@ -332,6 +335,31 @@ fn percentile(sorted: &[f64], p: f64) -> f64 {
 mod tests {
     use super::*;
 
+    /// Every expectation here pins Excel's own serial convention, so bind it once
+    /// rather than threading `DateSemantics` through each call. Shadows the glob
+    /// import from `use super::*`.
+    #[allow(clippy::too_many_arguments)]
+    fn codcel_forecast_ets_confint(
+        target_date: f64,
+        values: Vec<f64>,
+        timeline: Vec<f64>,
+        confidence_level: Option<f64>,
+        seasonality: Option<i32>,
+        data_completion: Option<i32>,
+        aggregation: Option<i32>,
+    ) -> Result<f64, Box<dyn Error + Send + Sync>> {
+        super::codcel_forecast_ets_confint(
+            target_date,
+            values,
+            timeline,
+            confidence_level,
+            seasonality,
+            data_completion,
+            aggregation,
+            DateSemantics::EXCEL_1900,
+        )
+    }
+
     #[test]
     fn test_confint_debug_quarterly_noseas() {
         let values = vec![
@@ -342,7 +370,7 @@ mod tests {
             44652.0, 44743.0, 44835.0,
         ];
         let (proc_values, proc_timeline, _month_day) =
-            preprocess_data(&values, &timeline, 1, 1).unwrap();
+            preprocess_data(&values, &timeline, 1, 1, DateSemantics::EXCEL_1900).unwrap();
         let step = compute_min_step(&proc_timeline).unwrap();
 
         let z = codcel_norm_dot_s_dot_inv(0.975).unwrap();
@@ -413,7 +441,7 @@ mod tests {
             44743.0, 44774.0, 44805.0, 44835.0, 44866.0, 44896.0,
         ];
         let (proc_values, proc_timeline, month_day) =
-            preprocess_data(&values, &timeline, 1, 1).unwrap();
+            preprocess_data(&values, &timeline, 1, 1, DateSemantics::EXCEL_1900).unwrap();
         let step = compute_min_step(&proc_timeline).unwrap();
         println!("Month day: {month_day}");
         println!("Step: {step}");
@@ -424,7 +452,7 @@ mod tests {
         // Check target date in month space
         let target = 44927.0;
         let effective_target = if month_day > 0 {
-            convert_x_to_months(target, month_day)
+            convert_x_to_months(target, month_day, DateSemantics::EXCEL_1900)
         } else {
             target
         };

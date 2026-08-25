@@ -35,6 +35,7 @@ use crate::date_and_time::{
     codcel_year::codcel_year,
     codcel_year_frac::codcel_year_frac,
 };
+use crate::date_system::DateSemantics;
 use crate::value::Value;
 use crate::value_format::ValueFormat;
 use chrono::{
@@ -45,15 +46,14 @@ use std::error::Error;
 
 pub fn excel_to_date_time(
     excel_date: f64,
-    apply_lotus_bug: bool,
+    dates: DateSemantics,
 ) -> Result<DateTime<Utc>, Box<dyn Error + Send + Sync>> {
-    // Adjust for Excel's leap year bug and offset
-    let adjusted_excel_date = if apply_lotus_bug {
-        if excel_date > 59.0 {
-            excel_date - 2.0
-        } else {
-            excel_date - 1.0
-        }
+    // Adjust for Excel's leap year bug and offset. The threshold must be
+    // `>= 60.0`: serial 59.5 is 1900-02-28 12:00, still one day before the
+    // phantom 1900-02-29. (The inverse below tests `>= 59.0` because it compares
+    // a *day count* rather than a serial — the asymmetry is deliberate.)
+    let adjusted_excel_date = if dates.lotus_1900_bug && excel_date >= 60.0 {
+        excel_date - 2.0
     } else {
         excel_date - 1.0
     };
@@ -120,7 +120,7 @@ pub fn time_to_date_time(time: NaiveTime) -> Result<DateTime<Utc>, Box<dyn Error
 
 pub fn date_time_to_excel(
     date_time: &DateTime<Utc>,
-    apply_lotus_bug: bool,
+    dates: DateSemantics,
 ) -> Result<f64, Box<dyn Error + Send + Sync>> {
     // Define the base date: 1900-01-01
     let base_date = NaiveDate::from_ymd_opt(1900, 1, 1).ok_or("Invalid base date")?;
@@ -139,18 +139,14 @@ pub fn date_time_to_excel(
     // Combine the days and fraction
     let excel_date = days + fraction_of_day;
 
-    // Adjust for Excel's leap year bug (Excel incorrectly treats 1900 as a leap year)
-    let excel_date = if apply_lotus_bug {
-        if excel_date >= 60.0 {
-            excel_date + 2.0
-        } else {
-            excel_date + 1.0
-        }
+    // Adjust for Excel's leap year bug (Excel incorrectly treats 1900 as a leap
+    // year). `excel_date` is still a day count here, not a serial, which is why
+    // the threshold is `>= 59.0` rather than the `>= 60.0` used on decode.
+    if dates.lotus_1900_bug && excel_date >= 59.0 {
+        Ok(excel_date + 2.0)
     } else {
-        excel_date + 1.0
-    };
-
-    Ok(excel_date)
+        Ok(excel_date + 1.0)
+    }
 }
 
 pub fn date_time_to_iso(date_time: &DateTime<Utc>) -> String {
@@ -187,11 +183,11 @@ pub fn time_to_iso(time: &NaiveTime) -> String {
 pub fn force_string_to_date_time(
     value: &str,
     decimal_separator: &str,
-    apply_lotus_bug: bool,
+    dates: DateSemantics,
 ) -> Result<DateTime<Utc>, Box<dyn Error + Send + Sync>> {
     match iso_to_date_time(value) {
         Ok(value) => Ok(value),
-        Err(_) => excel_to_date_time(float(value, decimal_separator)?, apply_lotus_bug),
+        Err(_) => excel_to_date_time(float(value, decimal_separator)?, dates),
     }
 }
 
@@ -433,7 +429,7 @@ pub fn date_value(
         .map(|inner| {
             inner
                 .into_iter()
-                .map(|text| codcel_date_value(text).map(Value::F64))
+                .map(|text| codcel_date_value(text, value_format.date_semantics()).map(Value::F64))
                 .collect::<Result<Vec<Value>, Box<dyn Error + Send + Sync>>>()
         })
         .collect();
@@ -878,12 +874,103 @@ mod tests {
     use super::*;
     use chrono::TimeZone;
 
+    /// Excel's own mapping, spot-checked against what Excel displays for each
+    /// serial. Serial 60 is the phantom 29 February 1900 and has no true date.
+    #[test]
+    fn excel_1900_serials_match_excel() {
+        let cases = [
+            (1.0, "1900-01-01"),
+            (59.0, "1900-02-28"),
+            (61.0, "1900-03-01"),
+            (1462.0, "1904-01-01"),
+            (45066.0, "2023-05-20"),
+        ];
+        for (serial, expected) in cases {
+            let dt = excel_to_date_time(serial, DateSemantics::EXCEL_1900).unwrap();
+            assert_eq!(dt.format("%Y-%m-%d").to_string(), expected, "serial {serial}");
+        }
+    }
+
+    /// Regression: the forward conversion used to branch on `> 59.0` while the
+    /// inverse branched on `>= 60.0`. The two agree on integers but not on
+    /// fractions, so serial 59.5 decoded to 1900-02-27 12:00 — a day early.
+    #[test]
+    fn fractional_serial_below_sixty_is_not_shifted() {
+        let dt = excel_to_date_time(59.5, DateSemantics::EXCEL_1900).unwrap();
+        assert_eq!(dt.format("%Y-%m-%d %H:%M").to_string(), "1900-02-28 12:00");
+    }
+
+    /// Regression: the inverse branched on `>= 60.0` against a *day count*
+    /// rather than a serial, so 1900-03-01 encoded to 60 instead of 61 and did
+    /// not round-trip.
+    #[test]
+    fn first_of_march_1900_round_trips() {
+        let dt = excel_to_date_time(61.0, DateSemantics::EXCEL_1900).unwrap();
+        assert_eq!(
+            date_time_to_excel(&dt, DateSemantics::EXCEL_1900).unwrap(),
+            61.0
+        );
+    }
+
+    /// Serial 59 and serial 60 both land on 1900-02-28: `chrono` cannot
+    /// represent Excel's fictitious 1900-02-29, so the phantom day aliases onto
+    /// the real one. Pinned deliberately — this is a documented limitation, not
+    /// an accident.
+    #[test]
+    fn phantom_leap_day_aliases_onto_28_february() {
+        let fifty_nine = excel_to_date_time(59.0, DateSemantics::EXCEL_1900).unwrap();
+        let sixty = excel_to_date_time(60.0, DateSemantics::EXCEL_1900).unwrap();
+        assert_eq!(fifty_nine, sixty);
+    }
+
+    /// 1904-01-01 is serial 1462 in Excel's 1900 system. This engine has no 1904
+    /// convention — the loader rebases such workbooks before their values get
+    /// here — but that 1462 relationship is what the rebase depends on, so pin it
+    /// against a real calendar date rather than against another copy of the
+    /// constant.
+    #[test]
+    fn the_1904_epoch_sits_1462_serials_into_the_1900_system() {
+        let epoch = excel_to_date_time(1462.0, DateSemantics::EXCEL_1900).unwrap();
+        assert_eq!(epoch.format("%Y-%m-%d").to_string(), "1904-01-01");
+        assert_eq!(
+            date_time_to_excel(&epoch, DateSemantics::EXCEL_1900).unwrap(),
+            1462.0
+        );
+    }
+
+    /// Turning the Lotus bug off re-bases the serial system rather than making
+    /// dates "more correct": every date from 1900-03-01 onward moves one day.
+    #[test]
+    fn astronomical_1900_shifts_dates_after_february_1900() {
+        let excel = excel_to_date_time(45066.0, DateSemantics::EXCEL_1900).unwrap();
+        let astronomical = excel_to_date_time(45066.0, DateSemantics::ASTRONOMICAL_1900).unwrap();
+        assert_eq!(excel.format("%Y-%m-%d").to_string(), "2023-05-20");
+        assert_eq!(astronomical.format("%Y-%m-%d").to_string(), "2023-05-21");
+    }
+
+    /// Every convention must be its own inverse. Serial 60 is excluded: it has
+    /// no true date, so it cannot round-trip by construction.
+    #[test]
+    fn serial_round_trips_under_every_convention() {
+        let conventions = [DateSemantics::EXCEL_1900, DateSemantics::ASTRONOMICAL_1900];
+        for dates in conventions {
+            for serial in [1.0, 59.0, 59.5, 61.0, 1462.0, 45066.0, 45066.75] {
+                let dt = excel_to_date_time(serial, dates).unwrap();
+                let back = date_time_to_excel(&dt, dates).unwrap();
+                assert!(
+                    (back - serial).abs() < 1e-9,
+                    "{dates:?} serial {serial} round-tripped to {back}"
+                );
+            }
+        }
+    }
+
     #[test]
     fn test_excel_to_date_time() {
         let excel_date = 45597.0;
         let expected_datetime = Utc.with_ymd_and_hms(2024, 11, 1, 0, 0, 0).unwrap();
 
-        match excel_to_date_time(excel_date, true) {
+        match excel_to_date_time(excel_date, DateSemantics::EXCEL_1900) {
             Ok(datetime) => assert_eq!(datetime, expected_datetime),
             Err(e) => panic!("Failed to convert Excel date to DateTime<Utc>: {e}"),
         }
@@ -898,7 +985,7 @@ mod tests {
                 .unwrap(),
             Utc,
         );
-        let excel_date = date_time_to_excel(&test_date, true).unwrap();
+        let excel_date = date_time_to_excel(&test_date, DateSemantics::EXCEL_1900).unwrap();
         assert!((45597.0 - excel_date).abs() < 1e-6);
     }
 

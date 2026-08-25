@@ -6,6 +6,7 @@
 
 //! Shared ETS model infrastructure for FORECAST.ETS and FORECAST.ETS.CONFINT.
 
+use crate::date_system::DateSemantics;
 use crate::date_time_base::excel_to_date_time;
 use chrono::Datelike;
 use std::error::Error;
@@ -1299,6 +1300,7 @@ pub(super) fn preprocess_data(
     timeline: &[f64],
     data_completion: i32,
     aggregation: i32,
+    dates: DateSemantics,
 ) -> Result<(Vec<f64>, Vec<f64>, i32), Box<dyn Error + Send + Sync>> {
     let mut pairs: Vec<(f64, f64)> = timeline
         .iter()
@@ -1314,13 +1316,13 @@ pub(super) fn preprocess_data(
     }
 
     // Detect monthly dates: all dates on the same day-of-month
-    let month_day = detect_month_day(&agg_timeline);
+    let month_day = detect_month_day(&agg_timeline, dates);
 
     // If monthly, convert timeline to month-number space
     let work_timeline = if month_day > 0 {
         agg_timeline
             .iter()
-            .map(|&x| convert_x_to_months(x, month_day))
+            .map(|&x| convert_x_to_months(x, month_day, dates))
             .collect()
     } else {
         agg_timeline
@@ -1342,14 +1344,14 @@ pub(super) fn preprocess_data(
 /// Check if all dates in the timeline share the same day-of-month.
 /// Returns the day (1-31) if monthly, or 0 if not.
 /// Uses the existing `excel_to_date_time` which correctly handles the Lotus 1900 bug.
-fn detect_month_day(timeline: &[f64]) -> i32 {
+fn detect_month_day(timeline: &[f64], dates: DateSemantics) -> i32 {
     if timeline.len() < 2 {
         return 0;
     }
 
     let mut common_day: Option<u32> = None;
     for &serial in timeline {
-        if let Ok(dt) = excel_to_date_time(serial, true) {
+        if let Ok(dt) = excel_to_date_time(serial, dates) {
             let day = dt.day();
             match common_day {
                 None => common_day = Some(day),
@@ -1365,8 +1367,8 @@ fn detect_month_day(timeline: &[f64]) -> i32 {
 
 /// Convert serial date to month-number space: year*12 + month.
 /// Uses the existing `excel_to_date_time` for correct date conversion.
-pub(super) fn convert_x_to_months(serial: f64, _month_day: i32) -> f64 {
-    if let Ok(dt) = excel_to_date_time(serial, true) {
+pub(super) fn convert_x_to_months(serial: f64, _month_day: i32, dates: DateSemantics) -> f64 {
+    if let Ok(dt) = excel_to_date_time(serial, dates) {
         (dt.year() as f64) * 12.0 + (dt.month() as f64)
     } else {
         serial // fallback

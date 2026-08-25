@@ -4,6 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
+use crate::date_system::DateSemantics;
 use super::forecast::*;
 use std::error::Error;
 
@@ -20,6 +21,7 @@ pub fn codcel_forecast_ets(
     seasonality: Option<i32>,
     data_completion: Option<i32>,
     aggregation: Option<i32>,
+    dates: DateSemantics,
 ) -> Result<f64, Box<dyn Error + Send + Sync>> {
     if values.len() != timeline.len() {
         return Err("FORECAST.ETS: values and timeline must have the same length.".into());
@@ -43,7 +45,7 @@ pub fn codcel_forecast_ets(
     }
 
     let (proc_values, proc_timeline, month_day) =
-        preprocess_data(&values, &timeline, data_completion, aggregation)?;
+        preprocess_data(&values, &timeline, data_completion, aggregation, dates)?;
 
     let n = proc_values.len();
     if n < 3 {
@@ -67,7 +69,7 @@ pub fn codcel_forecast_ets(
 
     // Convert target_date to month space if monthly dates detected
     let effective_target = if month_day > 0 {
-        convert_x_to_months(target_date, month_day)
+        convert_x_to_months(target_date, month_day, dates)
     } else {
         target_date
     };
@@ -86,6 +88,28 @@ pub fn codcel_forecast_ets(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// Every expectation here pins Excel's own serial convention, so bind it once
+    /// rather than threading `DateSemantics` through each call. Shadows the glob
+    /// import from `use super::*`.
+    fn codcel_forecast_ets(
+        target_date: f64,
+        values: Vec<f64>,
+        timeline: Vec<f64>,
+        seasonality: Option<i32>,
+        data_completion: Option<i32>,
+        aggregation: Option<i32>,
+    ) -> Result<f64, Box<dyn Error + Send + Sync>> {
+        super::codcel_forecast_ets(
+            target_date,
+            values,
+            timeline,
+            seasonality,
+            data_completion,
+            aggregation,
+            DateSemantics::EXCEL_1900,
+        )
+    }
 
     #[test]
     fn test_forecast_ets_linear_trend_no_seasonality() {
