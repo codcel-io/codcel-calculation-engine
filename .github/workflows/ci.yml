@@ -30,7 +30,7 @@ jobs:
       - name: Panic lints must not be silenced
         run: |
           if grep -rn --include='*.rs' -E 'clippy::(unwrap_used|expect_used|panic)\b' src/; then
-            echo "::error::A panic lint was silenced in src/. Fix the site instead - see IRONCALC-VS-CODCEL.md section 16.1."
+            echo "::error::A panic lint was silenced in src/."
             exit 1
           fi
 
