@@ -299,8 +299,14 @@ mod tests {
     fn test_vlookup_exact_datetime_key() {
         // =VLOOKUP(DATE(2023,1,1), A1:B2, 2, FALSE) in US format
         // =VLOOKUP(DATE(2023;1;1); A1:B2; 2; FALSE) in German format
-        let day_one = Utc.with_ymd_and_hms(2023, 1, 1, 0, 0, 0).unwrap();
-        let day_two = Utc.with_ymd_and_hms(2023, 1, 2, 0, 0, 0).unwrap();
+        let day_one = Utc
+            .with_ymd_and_hms(2023, 1, 1, 0, 0, 0)
+            .single()
+            .expect("valid test date");
+        let day_two = Utc
+            .with_ymd_and_hms(2023, 1, 2, 0, 0, 0)
+            .single()
+            .expect("valid test date");
         let table = vec![
             vec![Value::ChronoDateTime(day_one), text("Day 1")],
             vec![Value::ChronoDateTime(day_two), text("Day 2")],

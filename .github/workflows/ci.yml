@@ -24,6 +24,16 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
+      # Clippy cannot lint its own suppressions. Every panic site in src/ was fixed
+      # rather than allowed, so any mention of these three lints in source is an attempt
+      # to reopen the gate. Scoped to src/ - tests/ carries a documented exemption.
+      - name: Panic lints must not be silenced
+        run: |
+          if grep -rn --include='*.rs' -E 'clippy::(unwrap_used|expect_used|panic)\b' src/; then
+            echo "::error::A panic lint was silenced in src/. Fix the site instead - see IRONCALC-VS-CODCEL.md section 16.1."
+            exit 1
+          fi
+
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: rustfmt, clippy

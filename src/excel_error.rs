@@ -81,6 +81,15 @@ pub fn error_type(value: &Value) -> Option<ExcelError> {
     }
 }
 
+/// Maps a failed coercion of `value` onto the Excel error Excel itself would raise.
+///
+/// An in-band `Value::Error` propagates unchanged; anything else that will not coerce
+/// becomes `#VALUE!`. Use this instead of `.expect(...)` when a coercion sits somewhere
+/// `?` cannot reach, so a bad cell yields an Excel error rather than aborting the process.
+pub fn coercion_error(value: &Value) -> Box<dyn Error + Send + Sync> {
+    err_to_box(error_type(value).unwrap_or(ExcelError::Value))
+}
+
 pub fn is_error(value: &Value) -> bool {
     error_type(value).is_some()
 }

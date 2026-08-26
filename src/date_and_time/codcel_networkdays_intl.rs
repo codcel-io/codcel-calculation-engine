@@ -105,7 +105,9 @@ mod tests {
     use chrono::TimeZone;
 
     fn create_date(year: i32, month: u32, day: u32) -> DateTime<Utc> {
-        Utc.with_ymd_and_hms(year, month, day, 0, 0, 0).unwrap()
+        Utc.with_ymd_and_hms(year, month, day, 0, 0, 0)
+            .single()
+            .expect("valid test date")
     }
 
     /// Default weekend (code 1 = Sat/Sun) should match NETWORKDAYS.

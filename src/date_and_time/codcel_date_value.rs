@@ -4,11 +4,11 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
-use crate::date_system::DateSemantics;
-use crate::date_time_base::date_time_to_excel;
 use crate::date_and_time::try_parse_excel_formats::try_parse_excel_formats;
 use crate::date_and_time::try_parse_month_day_formats::try_parse_month_day_formats;
 use crate::date_and_time::try_parse_standard_formats::try_parse_standard_formats;
+use crate::date_system::DateSemantics;
+use crate::date_time_base::date_time_to_excel;
 use std::error::Error;
 
 /// Excel-compatible `DATEVALUE` that converts a date string to an Excel serial number.
@@ -47,9 +47,7 @@ mod tests {
 
     /// The existing expectations all pin Excel's own serials, so the tests read
     /// better with the convention bound once rather than repeated per call.
-    fn codcel_date_value_excel_1900(
-        date_text: &str,
-    ) -> Result<f64, Box<dyn Error + Send + Sync>> {
+    fn codcel_date_value_excel_1900(date_text: &str) -> Result<f64, Box<dyn Error + Send + Sync>> {
         codcel_date_value(date_text, DateSemantics::EXCEL_1900)
     }
 

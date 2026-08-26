@@ -39,8 +39,14 @@ mod tests {
 
     #[test]
     fn test_m_duration_basic() {
-        let settlement = Utc.with_ymd_and_hms(2022, 1, 1, 0, 0, 0).unwrap();
-        let maturity = Utc.with_ymd_and_hms(2027, 1, 1, 0, 0, 0).unwrap();
+        let settlement = Utc
+            .with_ymd_and_hms(2022, 1, 1, 0, 0, 0)
+            .single()
+            .expect("valid test date");
+        let maturity = Utc
+            .with_ymd_and_hms(2027, 1, 1, 0, 0, 0)
+            .single()
+            .expect("valid test date");
         let result = codcel_m_duration(settlement, maturity, 0.05, 0.06, 2, Some(0)).unwrap();
         assert!(result > 0.0);
     }
@@ -48,8 +54,14 @@ mod tests {
     #[test]
     fn test_m_duration_error_cases() {
         // Since m_duration relies on duration, we'll test that errors from duration are propagated
-        let settlement = Utc.with_ymd_and_hms(2022, 1, 1, 0, 0, 0).unwrap();
-        let maturity = Utc.with_ymd_and_hms(2022, 1, 1, 0, 0, 0).unwrap();
+        let settlement = Utc
+            .with_ymd_and_hms(2022, 1, 1, 0, 0, 0)
+            .single()
+            .expect("valid test date");
+        let maturity = Utc
+            .with_ymd_and_hms(2022, 1, 1, 0, 0, 0)
+            .single()
+            .expect("valid test date");
 
         // Settlement must be before maturity
         assert!(codcel_m_duration(settlement, maturity, 0.05, 0.06, 2, Some(0)).is_err());

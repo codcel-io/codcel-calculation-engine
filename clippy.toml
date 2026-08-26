@@ -1,0 +1,12 @@
+allow-unwrap-in-tests = true
+allow-expect-in-tests = true
+allow-panic-in-tests  = true
+
+# `clippy::unwrap_used` fires only on `Option` and `Result`, so an inherent `unwrap` on a
+# third-party type panics identically while staying invisible to the gate. `-D warnings`
+# already implies `-D clippy::disallowed-methods`, so no CI change is needed for this.
+# An entry whose path does not resolve in a given crate is silently ignored, which is why
+# this file can stay identical across all four engines.
+disallowed-methods = [
+    { path = "chrono::LocalResult::unwrap", reason = "panics on a nonexistent local time and is invisible to clippy::unwrap_used, which only fires on Option and Result; use .single().ok_or(..)? instead" },
+]

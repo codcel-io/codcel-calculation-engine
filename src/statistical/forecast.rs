@@ -485,7 +485,7 @@ impl EtsModel {
 
         for _iter in 0..max_iter {
             let mut order: Vec<usize> = (0..=n_params).collect();
-            order.sort_by(|&a, &b| f_values[a].partial_cmp(&f_values[b]).unwrap());
+            order.sort_by(|&a, &b| f_values[a].total_cmp(&f_values[b]));
 
             let best = order[0];
             let worst = order[n_params];
@@ -568,9 +568,8 @@ impl EtsModel {
         let best_idx = f_values
             .iter()
             .enumerate()
-            .min_by(|a, b| a.1.partial_cmp(b.1).unwrap())
-            .unwrap()
-            .0;
+            .min_by(|a, b| a.1.total_cmp(b.1))
+            .map_or(0, |(index, _)| index);
 
         let best_ab = [
             simplex[best_idx][0].clamp(0.0, 1.0),
@@ -837,7 +836,7 @@ impl EtsModel {
 
         for _iter in 0..max_iter {
             let mut order: Vec<usize> = (0..=n_params).collect();
-            order.sort_by(|&a, &b| f_values[a].partial_cmp(&f_values[b]).unwrap());
+            order.sort_by(|&a, &b| f_values[a].total_cmp(&f_values[b]));
 
             let best = order[0];
             let worst = order[n_params];
@@ -923,9 +922,8 @@ impl EtsModel {
         let best_idx = f_values
             .iter()
             .enumerate()
-            .min_by(|a, b| a.1.partial_cmp(b.1).unwrap())
-            .unwrap()
-            .0;
+            .min_by(|a, b| a.1.total_cmp(b.1))
+            .map_or(0, |(index, _)| index);
 
         let best = [
             simplex[best_idx][0].clamp(0.0, 0.99),

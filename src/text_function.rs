@@ -453,7 +453,7 @@ fn resolve_commas(tokens: &mut [FormatToken]) {
         .iter()
         .position(|t| matches!(t, FormatToken::DecimalPoint));
 
-    if first_digit_idx.is_none() {
+    let Some(first) = first_digit_idx else {
         // No digit placeholders — all commas become literals
         for token in tokens.iter_mut() {
             if matches!(token, FormatToken::ThousandsSep) {
@@ -461,9 +461,7 @@ fn resolve_commas(tokens: &mut [FormatToken]) {
             }
         }
         return;
-    }
-
-    let first = first_digit_idx.unwrap();
+    };
     let int_end = decimal_pos.unwrap_or(tokens.len());
 
     for i in 0..tokens.len() {
@@ -933,7 +931,7 @@ fn format_fraction(
         .tokens
         .iter()
         .position(|t| matches!(t, FormatToken::FractionSlash))
-        .unwrap();
+        .ok_or("Fraction format section has no '/' placeholder")?;
 
     // Count numerator placeholders (? or # or 0 immediately before the slash)
     let num_placeholders: Vec<&FormatToken> = section.tokens[..slash_pos]

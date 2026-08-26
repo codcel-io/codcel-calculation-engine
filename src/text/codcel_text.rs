@@ -285,7 +285,11 @@ mod tests {
         // =TEXT(DATE(2023,5,15), "yyyy-mm-dd") in US format
         // =TEXT(DATE(2023;5;15); "jjjj-mm-tt") in German format
         // May 15, 2023 is 44696 days after Dec 30, 1899
-        let days_since_base = date_time_to_excel(&codcel_date(2023, 5, 15).unwrap(), DateSemantics::EXCEL_1900).unwrap();
+        let days_since_base = date_time_to_excel(
+            &codcel_date(2023, 5, 15).unwrap(),
+            DateSemantics::EXCEL_1900,
+        )
+        .unwrap();
 
         // Test with default English locale
         let value_format = default_value_format();

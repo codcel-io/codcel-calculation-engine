@@ -4,7 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
-use chrono::{DateTime, NaiveDate, TimeZone, Utc};
+use chrono::{DateTime, NaiveDate, NaiveTime, TimeZone, Utc};
 use regex::Regex;
 
 /// Attempts to parse Excel-like date strings (MDY/DMY/YMD and `DD-MMM-YYYY`).
@@ -30,7 +30,7 @@ pub fn try_parse_excel_formats(date_text: &str) -> Option<DateTime<Utc>> {
 
         if (1..=12).contains(&month) && (1..=31).contains(&day) {
             if let Some(date) = NaiveDate::from_ymd_opt(year, month, day) {
-                let dt = date.and_hms_opt(0, 0, 0).unwrap();
+                let dt = date.and_time(NaiveTime::MIN);
                 return Some(Utc.from_utc_datetime(&dt));
             }
         }
@@ -48,7 +48,7 @@ pub fn try_parse_excel_formats(date_text: &str) -> Option<DateTime<Utc>> {
 
         if (1..=12).contains(&month) && (1..=31).contains(&day) {
             if let Some(date) = NaiveDate::from_ymd_opt(year, month, day) {
-                let dt = date.and_hms_opt(0, 0, 0).unwrap();
+                let dt = date.and_time(NaiveTime::MIN);
                 return Some(Utc.from_utc_datetime(&dt));
             }
         }
@@ -61,7 +61,7 @@ pub fn try_parse_excel_formats(date_text: &str) -> Option<DateTime<Utc>> {
 
         if (1..=12).contains(&month) && (1..=31).contains(&day) {
             if let Some(date) = NaiveDate::from_ymd_opt(year, month, day) {
-                let dt = date.and_hms_opt(0, 0, 0).unwrap();
+                let dt = date.and_time(NaiveTime::MIN);
                 return Some(Utc.from_utc_datetime(&dt));
             }
         }
@@ -97,7 +97,7 @@ pub fn try_parse_excel_formats(date_text: &str) -> Option<DateTime<Utc>> {
 
         if (1..=31).contains(&day) {
             if let Some(date) = NaiveDate::from_ymd_opt(year, month, day) {
-                let dt = date.and_hms_opt(0, 0, 0).unwrap();
+                let dt = date.and_time(NaiveTime::MIN);
                 return Some(Utc.from_utc_datetime(&dt));
             }
         }

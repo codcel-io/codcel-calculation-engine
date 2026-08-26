@@ -13,6 +13,7 @@ keywords = ["excel", "spreadsheet", "formulas", "finance", "statistics"]
 categories = ["mathematics", "finance", "science"]
 include = [
     "src/**/*.rs",
+    "clippy.toml",
     "README.md",
     "CONTRIBUTING.md",
     "LICENSE-MIT",
@@ -40,3 +41,8 @@ sys-locale = "0.3.2"
 # Test-only: exercises the serde back-compat guarantee on `ValueFormat`, which
 # the generated FFI/JNI `*_with_format` entry points rely on.
 serde_json = "1.0"
+
+[lints.clippy]
+unwrap_used = "deny"
+expect_used = "deny"
+panic = "deny"

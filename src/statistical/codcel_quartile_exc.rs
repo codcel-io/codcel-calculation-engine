@@ -4,6 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
+use crate::excel_error::{err_to_box, ExcelError};
 use std::error::Error;
 
 /// Excel-compatible `QUARTILE.EXC` that returns the quartile of a data set (exclusive method).
@@ -27,7 +28,12 @@ pub fn codcel_quartile_exc(
     }
 
     // Sort the values in ascending order
-    values.sort_by(|a, b| a.partial_cmp(b).unwrap());
+    // A NaN in the range is the legacy in-band representation of an Excel error;
+    // Excel propagates it rather than sorting around it.
+    if values.iter().any(|v| v.is_nan()) {
+        return Err(err_to_box(ExcelError::Na));
+    }
+    values.sort_by(f64::total_cmp);
 
     let n = values.len() as f64;
 

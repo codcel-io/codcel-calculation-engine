@@ -4,7 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
-use chrono::{DateTime, NaiveDate, NaiveDateTime, TimeZone, Utc};
+use chrono::{DateTime, NaiveDate, NaiveDateTime, NaiveTime, TimeZone, Utc};
 
 /// Attempts to parse common full-date formats (ISO, slash/dash-separated, and named months).
 ///
@@ -34,7 +34,7 @@ pub fn try_parse_standard_formats(date_text: &str) -> Option<DateTime<Utc>> {
         }
 
         if let Ok(date) = NaiveDate::parse_from_str(date_text, format) {
-            let dt = date.and_hms_opt(0, 0, 0).unwrap();
+            let dt = date.and_time(NaiveTime::MIN);
             return Some(Utc.from_utc_datetime(&dt));
         }
     }

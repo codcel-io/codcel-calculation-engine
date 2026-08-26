@@ -91,7 +91,10 @@ mod tests {
     /// Excel serial to date, so schedules can be copied straight out of a spreadsheet.
     /// The epoch is 1899-12-30, accounting for the Lotus 1-2-3 1900 leap year bug.
     fn excel_serial_to_date(serial: i64) -> DateTime<Utc> {
-        Utc.with_ymd_and_hms(1899, 12, 30, 0, 0, 0).unwrap() + Duration::days(serial)
+        Utc.with_ymd_and_hms(1899, 12, 30, 0, 0, 0)
+            .single()
+            .expect("valid test date")
+            + Duration::days(serial)
     }
 
     // Expected values below are Excel's own cached results, taken from
@@ -559,14 +562,23 @@ mod tests {
 
     #[test]
     fn test_yield_error_cases() {
-        let settlement = Utc.with_ymd_and_hms(2022, 1, 1, 0, 0, 0).unwrap();
-        let maturity = Utc.with_ymd_and_hms(2022, 1, 1, 0, 0, 0).unwrap();
+        let settlement = Utc
+            .with_ymd_and_hms(2022, 1, 1, 0, 0, 0)
+            .single()
+            .expect("valid test date");
+        let maturity = Utc
+            .with_ymd_and_hms(2022, 1, 1, 0, 0, 0)
+            .single()
+            .expect("valid test date");
 
         // Maturity date must be after settlement date
         assert!(codcel_yield(settlement, maturity, 0.05, 95.0, 100.0, 2, Some(0)).is_err());
 
         // Frequency must be 1, 2, or 4
-        let maturity = Utc.with_ymd_and_hms(2027, 1, 1, 0, 0, 0).unwrap();
+        let maturity = Utc
+            .with_ymd_and_hms(2027, 1, 1, 0, 0, 0)
+            .single()
+            .expect("valid test date");
         assert!(codcel_yield(settlement, maturity, 0.05, 95.0, 100.0, 3, Some(0)).is_err());
 
         // Basis must be between 0 and 4

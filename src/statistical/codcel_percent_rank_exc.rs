@@ -4,6 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
+use crate::excel_error::{err_to_box, ExcelError};
 use std::error::Error;
 
 /// Excel-compatible `PERCENTRANK.EXC` that returns the rank of a value as a percentage (exclusive).
@@ -29,7 +30,12 @@ pub fn codcel_percent_rank_exc(
     }
 
     let mut sorted_array = array.clone();
-    sorted_array.sort_by(|a, b| a.partial_cmp(b).unwrap());
+    // A NaN in the range is the legacy in-band representation of an Excel error;
+    // Excel propagates it rather than sorting around it.
+    if sorted_array.iter().any(|v| v.is_nan()) {
+        return Err(err_to_box(ExcelError::Na));
+    }
+    sorted_array.sort_by(f64::total_cmp);
 
     if value < sorted_array[0] || value > sorted_array[sorted_array.len() - 1] {
         return Err("PERCENTRANK.EXC: Value is out of the range of the array.".into());

@@ -113,7 +113,10 @@ mod tests {
     fn test_n_date() {
         // =N(DATE(2023,1,1)) in Excel
         // January 1, 2023 has serial number 44927 in Excel
-        let date = Utc.with_ymd_and_hms(2023, 1, 1, 0, 0, 0).unwrap();
+        let date = Utc
+            .with_ymd_and_hms(2023, 1, 1, 0, 0, 0)
+            .single()
+            .expect("valid test date");
         let value = Value::ChronoDateTime(date);
         let format = default_value_format();
         let result = codcel_n(&value, &format).unwrap();

@@ -4,6 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
+use crate::excel_error::ExcelError;
 use crate::value::*;
 use crate::value_format::ValueFormat;
 use chrono::{NaiveTime, TimeZone, Utc};
@@ -18,6 +19,53 @@ mod tests {
             use_excel_rounding: true,
             ..Default::default()
         }
+    }
+
+    /// A cell that will not coerce must surface as `#VALUE!`, and an in-band error must
+    /// propagate unchanged. Both paths used to be `.expect(...)`, i.e. a process abort.
+    #[test]
+    fn test_area_coercion_failure_yields_excel_errors() {
+        let format = default_value_format();
+
+        let with_text = Value::AreaValue(vec![vec![
+            Value::F64(1.0),
+            Value::String("not a number".to_string()),
+        ]]);
+        let error = with_text
+            .area_f64(&format)
+            .expect_err("text in a numeric area must not coerce");
+        assert!(
+            error.to_string().contains("#VALUE!"),
+            "expected #VALUE!, got {error}"
+        );
+
+        let with_ref_error =
+            Value::AreaValue(vec![vec![Value::F64(1.0), Value::Error(ExcelError::Ref)]]);
+        let error = with_ref_error
+            .area_f64(&format)
+            .expect_err("an in-band error must not coerce");
+        assert!(
+            error.to_string().contains("#REF!"),
+            "expected #REF! to propagate unchanged, got {error}"
+        );
+
+        // Blank cells are still Excel's zero, not an error.
+        let with_blank = Value::AreaValue(vec![vec![Value::F64(1.0), Value::None]]);
+        assert_eq!(with_blank.area_f64(&format).unwrap(), vec![vec![1.0, 0.0]]);
+    }
+
+    /// The flat-list accessors carry the same contract as the area accessors.
+    #[test]
+    fn test_vec_coercion_failure_yields_excel_errors() {
+        let format = default_value_format();
+        let values = Value::VecValue(vec![Value::F64(1.0), Value::String("nope".to_string())]);
+        let error = values
+            .vec_f64(&format)
+            .expect_err("text in a numeric list must not coerce");
+        assert!(
+            error.to_string().contains("#VALUE!"),
+            "expected #VALUE!, got {error}"
+        );
     }
 
     #[test]
@@ -206,7 +254,10 @@ mod tests {
         let value_format = default_value_format();
 
         // Create a DateTime value
-        let dt = Utc.with_ymd_and_hms(2023, 1, 1, 12, 0, 0).unwrap();
+        let dt = Utc
+            .with_ymd_and_hms(2023, 1, 1, 12, 0, 0)
+            .single()
+            .expect("valid test date");
         let dt_value = date_time(dt);
         let string_value = string("2023-01-01T12:00:00Z".to_string());
 
@@ -340,7 +391,10 @@ mod tests {
         let string_value = string("test".to_string());
         let vec_value = vec_f64(vec![1.0, 2.0, 3.0]);
         let area_value = area_f64(vec![vec![1.0, 2.0], vec![3.0, 4.0]]);
-        let dt = Utc.with_ymd_and_hms(2023, 1, 1, 12, 0, 0).unwrap();
+        let dt = Utc
+            .with_ymd_and_hms(2023, 1, 1, 12, 0, 0)
+            .single()
+            .expect("valid test date");
         let dt_value = date_time(dt);
         let test_time = NaiveTime::from_hms_opt(12, 0, 0).unwrap();
         let time_value = time(test_time);

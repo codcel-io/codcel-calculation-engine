@@ -108,12 +108,14 @@ pub fn excel_to_time(fraction: f64) -> Result<NaiveTime, Box<dyn Error + Send + 
     let hours = whole_seconds / 3600;
     let minutes = (whole_seconds % 3600) / 60;
     let seconds = whole_seconds % 60;
-    Ok(NaiveTime::from_hms_nano_opt(hours, minutes, seconds, nanos).expect("Invalid time"))
+    NaiveTime::from_hms_nano_opt(hours, minutes, seconds, nanos)
+        .ok_or_else(|| "Value is out of range for a time of day".into())
 }
 
 pub fn time_to_date_time(time: NaiveTime) -> Result<DateTime<Utc>, Box<dyn Error + Send + Sync>> {
     // Use a default date: January 1, 0001
-    let default_date = NaiveDate::from_ymd_opt(1, 1, 1).expect("Invalid date");
+    let default_date =
+        NaiveDate::from_ymd_opt(1, 1, 1).ok_or("Could not construct the epoch date 0001-01-01")?;
     let naive_datetime = default_date.and_time(time); // Combine the default date with the given time
     Ok(Utc.from_utc_datetime(&naive_datetime)) // Convert to DateTime<Utc>
 }
@@ -887,7 +889,11 @@ mod tests {
         ];
         for (serial, expected) in cases {
             let dt = excel_to_date_time(serial, DateSemantics::EXCEL_1900).unwrap();
-            assert_eq!(dt.format("%Y-%m-%d").to_string(), expected, "serial {serial}");
+            assert_eq!(
+                dt.format("%Y-%m-%d").to_string(),
+                expected,
+                "serial {serial}"
+            );
         }
     }
 
@@ -968,7 +974,10 @@ mod tests {
     #[test]
     fn test_excel_to_date_time() {
         let excel_date = 45597.0;
-        let expected_datetime = Utc.with_ymd_and_hms(2024, 11, 1, 0, 0, 0).unwrap();
+        let expected_datetime = Utc
+            .with_ymd_and_hms(2024, 11, 1, 0, 0, 0)
+            .single()
+            .expect("valid test date");
 
         match excel_to_date_time(excel_date, DateSemantics::EXCEL_1900) {
             Ok(datetime) => assert_eq!(datetime, expected_datetime),

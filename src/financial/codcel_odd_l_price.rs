@@ -5,7 +5,7 @@
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
 use crate::compensated_sum::{CompensatedSum, CompensatedSumExt};
-use chrono::{DateTime, Datelike, TimeZone, Utc};
+use chrono::{DateTime, Datelike, NaiveDate, NaiveTime, TimeZone, Utc};
 use std::error::Error;
 
 /// Calculates the price of a security with an odd last coupon period.
@@ -94,7 +94,7 @@ pub fn codcel_odd_l_price(
         let mut n: i32 = 1;
         loop {
             let total_months = n * months_per_period;
-            let d = add_months_from_base(last_interest, total_months, use_eom_mult);
+            let d = add_months_from_base(last_interest, total_months, use_eom_mult)?;
             quasi_dates.push(d);
             if d >= maturity {
                 break;
@@ -104,7 +104,7 @@ pub fn codcel_odd_l_price(
     } else {
         let mut d = last_interest;
         while d < maturity {
-            d = add_months_eom(d, months_per_period, false);
+            d = add_months_eom(d, months_per_period, false)?;
             quasi_dates.push(d);
         }
     }
@@ -413,7 +413,11 @@ fn days_30_360_eu_feb(start: DateTime<Utc>, end: DateTime<Utc>) -> f64 {
 /// result will be the last day of the target month. This is required for correct
 /// quasi-coupon date generation with 30/360 day count bases (0 and 4), where
 /// end-of-month coupon dates must remain end-of-month through February transitions.
-fn add_months_eom(date: DateTime<Utc>, months: i32, eom: bool) -> DateTime<Utc> {
+fn add_months_eom(
+    date: DateTime<Utc>,
+    months: i32,
+    eom: bool,
+) -> Result<DateTime<Utc>, Box<dyn Error + Send + Sync>> {
     let mut year = date.year();
     let mut month = date.month() as i32 + months;
 
@@ -439,8 +443,11 @@ fn add_months_eom(date: DateTime<Utc>, months: i32, eom: bool) -> DateTime<Utc> 
         original_day.min(max_day)
     };
 
-    Utc.with_ymd_and_hms(year, month as u32, day, 0, 0, 0)
-        .unwrap()
+    NaiveDate::from_ymd_opt(year, month as u32, day)
+        .map(|shifted| Utc.from_utc_datetime(&shifted.and_time(NaiveTime::MIN)))
+        .ok_or_else(|| {
+            format!("Date {year}-{month:02}-{day:02} is outside the usable range").into()
+        })
 }
 
 /// Add a total number of months from a base date, with optional EOM snapping.
@@ -450,7 +457,11 @@ fn add_months_eom(date: DateTime<Utc>, months: i32, eom: bool) -> DateTime<Utc> 
 /// original day. When `eom` is true, the result is always the last day of
 /// the target month — the EOM status is determined once by the caller and
 /// preserved across all offsets (e.g., base=Nov 30 → +3=Feb 28, +6=May 31).
-fn add_months_from_base(base: DateTime<Utc>, total_months: i32, eom: bool) -> DateTime<Utc> {
+fn add_months_from_base(
+    base: DateTime<Utc>,
+    total_months: i32,
+    eom: bool,
+) -> Result<DateTime<Utc>, Box<dyn Error + Send + Sync>> {
     let mut year = base.year();
     let mut month = base.month() as i32 + total_months;
 
@@ -470,8 +481,11 @@ fn add_months_from_base(base: DateTime<Utc>, total_months: i32, eom: bool) -> Da
         base.day().min(max_day)
     };
 
-    Utc.with_ymd_and_hms(year, month as u32, day, 0, 0, 0)
-        .unwrap()
+    NaiveDate::from_ymd_opt(year, month as u32, day)
+        .map(|shifted| Utc.from_utc_datetime(&shifted.and_time(NaiveTime::MIN)))
+        .ok_or_else(|| {
+            format!("Date {year}-{month:02}-{day:02} is outside the usable range").into()
+        })
 }
 
 fn days_in_month(year: i32, month: u32) -> u32 {
@@ -493,13 +507,18 @@ mod tests {
     use chrono::TimeZone;
 
     fn dt(y: i32, m: u32, d: u32) -> DateTime<Utc> {
-        Utc.with_ymd_and_hms(y, m, d, 0, 0, 0).unwrap()
+        Utc.with_ymd_and_hms(y, m, d, 0, 0, 0)
+            .single()
+            .expect("valid test date")
     }
 
     /// Helper to convert Excel serial date to DateTime<Utc>
     fn excel_date(serial: f64) -> DateTime<Utc> {
         // Excel epoch is 1899-12-30 (accounting for the 1900 leap year bug)
-        let base = Utc.with_ymd_and_hms(1899, 12, 30, 0, 0, 0).unwrap();
+        let base = Utc
+            .with_ymd_and_hms(1899, 12, 30, 0, 0, 0)
+            .single()
+            .expect("valid test date");
         base + chrono::Duration::days(serial as i64)
     }
 

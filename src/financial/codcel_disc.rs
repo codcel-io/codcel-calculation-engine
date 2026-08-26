@@ -62,8 +62,14 @@ mod tests {
 
     #[test]
     fn test_disc_basic() {
-        let settlement = Utc.with_ymd_and_hms(2023, 1, 1, 0, 0, 0).unwrap();
-        let maturity = Utc.with_ymd_and_hms(2024, 1, 1, 0, 0, 0).unwrap();
+        let settlement = Utc
+            .with_ymd_and_hms(2023, 1, 1, 0, 0, 0)
+            .single()
+            .expect("valid test date");
+        let maturity = Utc
+            .with_ymd_and_hms(2024, 1, 1, 0, 0, 0)
+            .single()
+            .expect("valid test date");
         let result = codcel_disc(settlement, maturity, 95.0, 100.0, None).unwrap();
         assert!((result - 0.05).abs() < 0.0001);
     }
@@ -71,8 +77,14 @@ mod tests {
     #[test]
     fn test_disc_basis_1_within_leap_year() {
         // 2024-01-01 to 2024-07-01, basis=1, YEARFRAC uses 366
-        let settlement = Utc.with_ymd_and_hms(2024, 1, 1, 0, 0, 0).unwrap();
-        let maturity = Utc.with_ymd_and_hms(2024, 7, 1, 0, 0, 0).unwrap();
+        let settlement = Utc
+            .with_ymd_and_hms(2024, 1, 1, 0, 0, 0)
+            .single()
+            .expect("valid test date");
+        let maturity = Utc
+            .with_ymd_and_hms(2024, 7, 1, 0, 0, 0)
+            .single()
+            .expect("valid test date");
         let result = codcel_disc(settlement, maturity, 97.975, 100.0, Some(1)).unwrap();
         assert!((result - 0.04072252747252768).abs() < 1e-12);
     }
@@ -80,8 +92,14 @@ mod tests {
     #[test]
     fn test_disc_basis_1_no_feb29_in_range() {
         // 2023-01-01 to 2024-01-01, basis=1, period doesn't include Feb 29
-        let settlement = Utc.with_ymd_and_hms(2023, 1, 1, 0, 0, 0).unwrap();
-        let maturity = Utc.with_ymd_and_hms(2024, 1, 1, 0, 0, 0).unwrap();
+        let settlement = Utc
+            .with_ymd_and_hms(2023, 1, 1, 0, 0, 0)
+            .single()
+            .expect("valid test date");
+        let maturity = Utc
+            .with_ymd_and_hms(2024, 1, 1, 0, 0, 0)
+            .single()
+            .expect("valid test date");
         let result = codcel_disc(settlement, maturity, 97.0, 100.0, Some(1)).unwrap();
         assert!((result - 0.030000000000000027).abs() < 1e-12);
     }
@@ -89,8 +107,14 @@ mod tests {
     #[test]
     fn test_disc_basis_1_crossing_leap_year_with_feb29() {
         // 2023-06-10 to 2024-06-10, basis=1, includes Feb 29 2024
-        let settlement = Utc.with_ymd_and_hms(2023, 6, 10, 0, 0, 0).unwrap();
-        let maturity = Utc.with_ymd_and_hms(2024, 6, 10, 0, 0, 0).unwrap();
+        let settlement = Utc
+            .with_ymd_and_hms(2023, 6, 10, 0, 0, 0)
+            .single()
+            .expect("valid test date");
+        let maturity = Utc
+            .with_ymd_and_hms(2024, 6, 10, 0, 0, 0)
+            .single()
+            .expect("valid test date");
         let result = codcel_disc(settlement, maturity, 98.5, 105.0, Some(1)).unwrap();
         assert!((result - 0.06190476190476191).abs() < 1e-12);
     }
@@ -98,8 +122,14 @@ mod tests {
     #[test]
     fn test_disc_basis_1_multi_year() {
         // 2024-01-01 to 2030-01-01, basis=1, 6-year span uses average year length
-        let settlement = Utc.with_ymd_and_hms(2024, 1, 1, 0, 0, 0).unwrap();
-        let maturity = Utc.with_ymd_and_hms(2030, 1, 1, 0, 0, 0).unwrap();
+        let settlement = Utc
+            .with_ymd_and_hms(2024, 1, 1, 0, 0, 0)
+            .single()
+            .expect("valid test date");
+        let maturity = Utc
+            .with_ymd_and_hms(2030, 1, 1, 0, 0, 0)
+            .single()
+            .expect("valid test date");
         let result = codcel_disc(settlement, maturity, 90.0, 100.0, Some(1)).unwrap();
         assert!((result - 0.016664494264859223).abs() < 1e-12);
     }
@@ -107,8 +137,14 @@ mod tests {
     #[test]
     fn test_disc_basis_0_feb29_settlement() {
         // Feb 29 settlement with basis=0, YEARFRAC adjusts Feb 29 → day 30
-        let settlement = Utc.with_ymd_and_hms(2024, 2, 29, 0, 0, 0).unwrap();
-        let maturity = Utc.with_ymd_and_hms(2024, 5, 31, 0, 0, 0).unwrap();
+        let settlement = Utc
+            .with_ymd_and_hms(2024, 2, 29, 0, 0, 0)
+            .single()
+            .expect("valid test date");
+        let maturity = Utc
+            .with_ymd_and_hms(2024, 5, 31, 0, 0, 0)
+            .single()
+            .expect("valid test date");
         let result = codcel_disc(settlement, maturity, 99.75, 100.0, Some(0)).unwrap();
         assert!((result - 0.00989010989010968).abs() < 1e-12);
     }

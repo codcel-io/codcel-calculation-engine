@@ -5,7 +5,8 @@
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
 use crate::compensated_sum::CompensatedSum;
-use chrono::{DateTime, Datelike, TimeZone, Utc};
+use crate::date_and_time::add_months::add_months;
+use chrono::{DateTime, Datelike, Utc};
 use std::error::Error;
 
 /// Calculates the Macaulay duration for a security with periodic interest payments.
@@ -49,7 +50,7 @@ pub fn codcel_duration(
     let cpn = 100.0 * coupon / frequency as f64;
     let yld = yield_rate / frequency as f64;
 
-    let (pcd, ncd) = get_coupon_dates(settlement, maturity, frequency);
+    let (pcd, ncd) = get_coupon_dates(settlement, maturity, frequency)?;
 
     let dsc_over_e = match basis {
         0 => {
@@ -80,7 +81,7 @@ pub fn codcel_duration(
         _ => unreachable!(),
     };
 
-    let n = count_coupon_periods(ncd, maturity, frequency);
+    let n = count_coupon_periods(ncd, maturity, frequency)?;
 
     if n == 1 {
         return Ok(dsc_over_e / frequency as f64);
@@ -106,83 +107,38 @@ pub fn codcel_duration(
     Ok(weighted.total() / dirty_price.total())
 }
 
-fn count_coupon_periods(start_date: DateTime<Utc>, maturity: DateTime<Utc>, frequency: i32) -> i32 {
+fn count_coupon_periods(
+    start_date: DateTime<Utc>,
+    maturity: DateTime<Utc>,
+    frequency: i32,
+) -> Result<i32, Box<dyn Error + Send + Sync>> {
     let months_per_period = 12 / frequency;
     let mut count = 0;
     let mut current = start_date;
 
     while current <= maturity {
         count += 1;
-        current = add_months(current, months_per_period);
+        current = add_months(current, months_per_period)?;
     }
 
-    count
+    Ok(count)
 }
 
 fn get_coupon_dates(
     settlement: DateTime<Utc>,
     maturity: DateTime<Utc>,
     frequency: i32,
-) -> (DateTime<Utc>, DateTime<Utc>) {
+) -> Result<(DateTime<Utc>, DateTime<Utc>), Box<dyn Error + Send + Sync>> {
     let months = 12 / frequency;
     let mut current = maturity;
 
     loop {
-        let prev = add_months(current, -months);
+        let prev = add_months(current, -months)?;
         if prev <= settlement {
-            return (prev, current);
+            return Ok((prev, current));
         }
         current = prev;
     }
-}
-
-fn add_months(date: DateTime<Utc>, months: i32) -> DateTime<Utc> {
-    let mut year = date.year();
-    let mut month = date.month() as i32 + months;
-
-    while month > 12 {
-        month -= 12;
-        year += 1;
-    }
-    while month < 1 {
-        month += 12;
-        year -= 1;
-    }
-
-    let original_day = date.day();
-    let max_day_in_target_month = days_in_month(year, month);
-
-    let day = if original_day >= days_in_month(date.year(), date.month() as i32) {
-        max_day_in_target_month
-    } else {
-        original_day.min(max_day_in_target_month)
-    };
-
-    Utc.with_ymd_and_hms(year, month as u32, day, 0, 0, 0)
-        .unwrap()
-}
-
-fn days_in_month(year: i32, month: i32) -> u32 {
-    match month {
-        1 => 31,
-        2 if is_leap_year(year) => 29,
-        2 => 28,
-        3 => 31,
-        4 => 30,
-        5 => 31,
-        6 => 30,
-        7 => 31,
-        8 => 31,
-        9 => 30,
-        10 => 31,
-        11 => 30,
-        12 => 31,
-        _ => 30,
-    }
-}
-
-fn is_leap_year(year: i32) -> bool {
-    (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0)
 }
 
 fn get_days_30_360_us(start: DateTime<Utc>, end: DateTime<Utc>) -> f64 {
@@ -212,7 +168,10 @@ mod tests {
 
     fn excel_serial_to_date(serial: f64) -> DateTime<Utc> {
         // Excel epoch is 1899-12-30 (accounting for the Lotus 1-2-3 bug)
-        let epoch = Utc.with_ymd_and_hms(1899, 12, 30, 0, 0, 0).unwrap();
+        let epoch = Utc
+            .with_ymd_and_hms(1899, 12, 30, 0, 0, 0)
+            .single()
+            .expect("valid test date");
         epoch + Duration::days(serial as i64)
     }
 
@@ -270,14 +229,23 @@ mod tests {
 
     #[test]
     fn test_duration_error_cases() {
-        let settlement = Utc.with_ymd_and_hms(2022, 1, 1, 0, 0, 0).unwrap();
-        let maturity = Utc.with_ymd_and_hms(2022, 1, 1, 0, 0, 0).unwrap();
+        let settlement = Utc
+            .with_ymd_and_hms(2022, 1, 1, 0, 0, 0)
+            .single()
+            .expect("valid test date");
+        let maturity = Utc
+            .with_ymd_and_hms(2022, 1, 1, 0, 0, 0)
+            .single()
+            .expect("valid test date");
 
         // Settlement must be before maturity
         assert!(codcel_duration(settlement, maturity, 0.05, 0.06, 2, Some(0)).is_err());
 
         // Coupon must be non-negative
-        let maturity = Utc.with_ymd_and_hms(2027, 1, 1, 0, 0, 0).unwrap();
+        let maturity = Utc
+            .with_ymd_and_hms(2027, 1, 1, 0, 0, 0)
+            .single()
+            .expect("valid test date");
         assert!(codcel_duration(settlement, maturity, -0.05, 0.06, 2, Some(0)).is_err());
 
         // Yield must be non-negative

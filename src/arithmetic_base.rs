@@ -10,6 +10,7 @@ use crate::area::{
     process_area_int_op_int_to_string, process_area_string_to_float,
 };
 use crate::compensated_sum::{CompensatedSum, CompensatedSumExt};
+use crate::excel_error::coercion_error;
 use crate::information::codcel_is_blank::{codcel_is_blank, codcel_is_blank_or_empty_string};
 use crate::information::codcel_na::codcel_na;
 use crate::logical::codcel_not::codcel_not;
@@ -991,7 +992,7 @@ pub fn decimal(
                 // Convert to an owned String to prevent temporary lifetimes
                 text_values[row_pos][column_pos]
                     .string(value_format)
-                    .expect("DECIMAL: Must contain text")
+                    .map_err(|_| coercion_error(&text_values[row_pos][column_pos]))?
                     .to_owned()
             };
 
@@ -1000,7 +1001,7 @@ pub fn decimal(
             } else {
                 radix_values[row_pos][column_pos]
                     .i32(value_format)
-                    .expect("DECIMAL: Radix must be a number")
+                    .map_err(|_| coercion_error(&radix_values[row_pos][column_pos]))?
             };
 
             let computed_result = codcel_decimal(&text, radix)?;
@@ -1069,7 +1070,7 @@ pub fn floor(
                 // Convert to an owned String to prevent temporary lifetimes
                 number_values[row_pos][column_pos]
                     .f64(value_format)
-                    .expect("FLOOR: Must contain a number")
+                    .map_err(|_| coercion_error(&number_values[row_pos][column_pos]))?
                     .to_owned()
             };
 
@@ -1078,7 +1079,7 @@ pub fn floor(
             } else {
                 significance_values[row_pos][column_pos]
                     .f64(value_format)
-                    .expect("FLOOR: Significance must be a number")
+                    .map_err(|_| coercion_error(&significance_values[row_pos][column_pos]))?
             };
 
             let computed_result = codcel_floor(number, significance)?;
@@ -1223,7 +1224,7 @@ pub fn floor_math(
                 // Convert to an owned String to prevent temporary lifetimes
                 number_values[row_pos][column_pos]
                     .f64(value_format)
-                    .expect("FLOOR.MATH: Must contain a number")
+                    .map_err(|_| coercion_error(&number_values[row_pos][column_pos]))?
                     .to_owned()
             };
 
@@ -1232,7 +1233,7 @@ pub fn floor_math(
             } else if let Some(significance_values) = &significance_values {
                 significance_values[row_pos][column_pos]
                     .f64(value_format)
-                    .expect("FLOOR.MATH: Significance must be a number")
+                    .map_err(|_| coercion_error(&significance_values[row_pos][column_pos]))?
             } else {
                 1.0
             };

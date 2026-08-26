@@ -172,12 +172,15 @@ fn exact_or_next_larger_match(
                 match lookup_value.partial_cmp(value) {
                     Some(Ordering::Equal) => return Ok(i as i32 + 1),
                     Some(Ordering::Less) => {
-                        if best_match.is_none()
-                            || (matches!(search_mode, SearchMode::FirstToLast)
-                                && i < best_match.unwrap())
-                            || (matches!(search_mode, SearchMode::LastToFirst)
-                                && i > best_match.unwrap())
-                        {
+                        let is_better = match best_match {
+                            None => true,
+                            Some(current) => {
+                                (matches!(search_mode, SearchMode::FirstToLast) && i < current)
+                                    || (matches!(search_mode, SearchMode::LastToFirst)
+                                        && i > current)
+                            }
+                        };
+                        if is_better {
                             best_match = Some(i);
                         }
                         if matches!(search_mode, SearchMode::LastToFirst) {

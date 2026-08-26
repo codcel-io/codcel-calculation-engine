@@ -4,6 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
+use crate::excel_error::{err_to_box, ExcelError};
 use std::error::Error;
 
 /// Excel-compatible `QUARTILE.INC` that returns the quartile of a data set (inclusive method).
@@ -27,7 +28,12 @@ pub fn codcel_quartile_inc(
     }
 
     // Sort the values in ascending order
-    values.sort_by(|a, b| a.partial_cmp(b).unwrap());
+    // A NaN in the range is the legacy in-band representation of an Excel error;
+    // Excel propagates it rather than sorting around it.
+    if values.iter().any(|v| v.is_nan()) {
+        return Err(err_to_box(ExcelError::Na));
+    }
+    values.sort_by(f64::total_cmp);
 
     let n = values.len() as f64;
 
@@ -52,6 +58,18 @@ pub fn codcel_quartile_inc(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// A NaN in the range is the legacy in-band representation of an Excel error.
+    /// QUARTILE.INC used to panic on it inside `partial_cmp(..).unwrap()`; it must return `#N/A`.
+    #[test]
+    fn test_nan_in_range_returns_na_instead_of_panicking() {
+        let error =
+            codcel_quartile_inc(vec![1.0, 2.0, f64::NAN, 4.0], 2).expect_err("NaN must not sort");
+        assert!(
+            error.to_string().contains("#N/A"),
+            "expected #N/A, got {error}"
+        );
+    }
 
     #[test]
     fn test_quartile_inc_min() {

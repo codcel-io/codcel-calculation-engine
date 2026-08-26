@@ -4,6 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
+use crate::excel_error::{err_to_box, ExcelError};
 use std::error::Error;
 
 /// Excel-compatible `PERCENTILE.INC` that returns the k-th percentile (inclusive method).
@@ -22,7 +23,12 @@ pub fn codcel_percentile_inc(array: Vec<f64>, k: f64) -> Result<f64, Box<dyn Err
     }
 
     let mut sorted_array = array.clone();
-    sorted_array.sort_unstable_by(|a, b| a.partial_cmp(b).unwrap());
+    // A NaN in the range is the legacy in-band representation of an Excel error;
+    // Excel propagates it rather than sorting around it.
+    if sorted_array.iter().any(|v| v.is_nan()) {
+        return Err(err_to_box(ExcelError::Na));
+    }
+    sorted_array.sort_unstable_by(f64::total_cmp);
 
     let n = sorted_array.len() as f64;
     let pos = k * (n - 1.0);
@@ -47,6 +53,18 @@ pub fn codcel_percentile_inc(array: Vec<f64>, k: f64) -> Result<f64, Box<dyn Err
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// A NaN in the range is the legacy in-band representation of an Excel error.
+    /// PERCENTILE.INC used to panic on it inside `partial_cmp(..).unwrap()`; it must return `#N/A`.
+    #[test]
+    fn test_nan_in_range_returns_na_instead_of_panicking() {
+        let error = codcel_percentile_inc(vec![1.0, 2.0, f64::NAN, 4.0], 0.5)
+            .expect_err("NaN must not sort");
+        assert!(
+            error.to_string().contains("#N/A"),
+            "expected #N/A, got {error}"
+        );
+    }
 
     #[test]
     fn test_percentile_inc_basic() {

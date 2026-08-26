@@ -55,7 +55,9 @@ pub fn codcel_regexreplace(
         for caps in regex.captures_iter(text) {
             count += 1;
             if count == instance_num {
-                let whole_match = caps.get(0).unwrap();
+                let Some(whole_match) = caps.get(0) else {
+                    continue;
+                };
                 result.push_str(&text[..whole_match.start()]);
                 caps.expand(replacement, &mut result);
                 result.push_str(&text[whole_match.end()..]);

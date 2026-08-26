@@ -392,8 +392,14 @@ mod tests {
     fn test_hlookup_datetime() {
         use chrono::{TimeZone, Utc};
 
-        let date1 = Utc.with_ymd_and_hms(2023, 1, 1, 0, 0, 0).unwrap();
-        let date2 = Utc.with_ymd_and_hms(2023, 1, 2, 0, 0, 0).unwrap();
+        let date1 = Utc
+            .with_ymd_and_hms(2023, 1, 1, 0, 0, 0)
+            .single()
+            .expect("valid test date");
+        let date2 = Utc
+            .with_ymd_and_hms(2023, 1, 2, 0, 0, 0)
+            .single()
+            .expect("valid test date");
 
         let table = vec![
             vec![Value::ChronoDateTime(date1), Value::ChronoDateTime(date2)],

@@ -53,22 +53,37 @@ mod tests {
 
     #[test]
     fn test_t_bill_yield_basic() {
-        let settlement = Utc.with_ymd_and_hms(2022, 1, 1, 0, 0, 0).unwrap();
-        let maturity = Utc.with_ymd_and_hms(2022, 7, 1, 0, 0, 0).unwrap();
+        let settlement = Utc
+            .with_ymd_and_hms(2022, 1, 1, 0, 0, 0)
+            .single()
+            .expect("valid test date");
+        let maturity = Utc
+            .with_ymd_and_hms(2022, 7, 1, 0, 0, 0)
+            .single()
+            .expect("valid test date");
         let result = codcel_t_bill_yield(settlement, maturity, 95.0).unwrap();
         assert!(result > 0.0);
     }
 
     #[test]
     fn test_t_bill_yield_error_cases() {
-        let settlement = Utc.with_ymd_and_hms(2022, 1, 1, 0, 0, 0).unwrap();
-        let maturity = Utc.with_ymd_and_hms(2022, 1, 1, 0, 0, 0).unwrap();
+        let settlement = Utc
+            .with_ymd_and_hms(2022, 1, 1, 0, 0, 0)
+            .single()
+            .expect("valid test date");
+        let maturity = Utc
+            .with_ymd_and_hms(2022, 1, 1, 0, 0, 0)
+            .single()
+            .expect("valid test date");
 
         // Maturity must be after settlement
         assert!(codcel_t_bill_yield(settlement, maturity, 95.0).is_err());
 
         // Price must be greater than 0 and less than or equal to 100
-        let maturity = Utc.with_ymd_and_hms(2022, 7, 1, 0, 0, 0).unwrap();
+        let maturity = Utc
+            .with_ymd_and_hms(2022, 7, 1, 0, 0, 0)
+            .single()
+            .expect("valid test date");
         assert!(codcel_t_bill_yield(settlement, maturity, 0.0).is_err());
         assert!(codcel_t_bill_yield(settlement, maturity, 101.0).is_err());
     }

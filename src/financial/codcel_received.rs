@@ -58,8 +58,14 @@ mod tests {
     #[test]
     fn test_received_basic() {
         // Excel: =RECEIVED(DATE(2022,1,1),DATE(2023,1,1),1000,0.05,0) = 1052.631578947368
-        let settlement = Utc.with_ymd_and_hms(2022, 1, 1, 0, 0, 0).unwrap();
-        let maturity = Utc.with_ymd_and_hms(2023, 1, 1, 0, 0, 0).unwrap();
+        let settlement = Utc
+            .with_ymd_and_hms(2022, 1, 1, 0, 0, 0)
+            .single()
+            .expect("valid test date");
+        let maturity = Utc
+            .with_ymd_and_hms(2023, 1, 1, 0, 0, 0)
+            .single()
+            .expect("valid test date");
 
         let result = codcel_received(settlement, maturity, 1000.0, 0.05, Some(0)).unwrap();
         assert!((result - 1052.631578947368).abs() < 1e-6);
@@ -68,8 +74,14 @@ mod tests {
     #[test]
     fn test_received_basis_2() {
         // Basis 2 = Actual/360
-        let settlement = Utc.with_ymd_and_hms(2022, 1, 1, 0, 0, 0).unwrap();
-        let maturity = Utc.with_ymd_and_hms(2023, 1, 1, 0, 0, 0).unwrap();
+        let settlement = Utc
+            .with_ymd_and_hms(2022, 1, 1, 0, 0, 0)
+            .single()
+            .expect("valid test date");
+        let maturity = Utc
+            .with_ymd_and_hms(2023, 1, 1, 0, 0, 0)
+            .single()
+            .expect("valid test date");
 
         let result = codcel_received(settlement, maturity, 1000.0, 0.05, Some(2));
         assert!(result.is_ok());
@@ -79,8 +91,14 @@ mod tests {
     #[test]
     fn test_received_basis_3() {
         // Basis 3 = Actual/365
-        let settlement = Utc.with_ymd_and_hms(2022, 1, 1, 0, 0, 0).unwrap();
-        let maturity = Utc.with_ymd_and_hms(2023, 1, 1, 0, 0, 0).unwrap();
+        let settlement = Utc
+            .with_ymd_and_hms(2022, 1, 1, 0, 0, 0)
+            .single()
+            .expect("valid test date");
+        let maturity = Utc
+            .with_ymd_and_hms(2023, 1, 1, 0, 0, 0)
+            .single()
+            .expect("valid test date");
 
         let result = codcel_received(settlement, maturity, 1000.0, 0.05, Some(3));
         assert!(result.is_ok());
@@ -89,14 +107,23 @@ mod tests {
 
     #[test]
     fn test_received_error_cases() {
-        let settlement = Utc.with_ymd_and_hms(2022, 1, 1, 0, 0, 0).unwrap();
-        let maturity = Utc.with_ymd_and_hms(2022, 1, 1, 0, 0, 0).unwrap();
+        let settlement = Utc
+            .with_ymd_and_hms(2022, 1, 1, 0, 0, 0)
+            .single()
+            .expect("valid test date");
+        let maturity = Utc
+            .with_ymd_and_hms(2022, 1, 1, 0, 0, 0)
+            .single()
+            .expect("valid test date");
 
         // Maturity must be after settlement
         assert!(codcel_received(settlement, maturity, 1000.0, 0.05, Some(0)).is_err());
 
         // Investment must be greater than zero
-        let maturity = Utc.with_ymd_and_hms(2023, 1, 1, 0, 0, 0).unwrap();
+        let maturity = Utc
+            .with_ymd_and_hms(2023, 1, 1, 0, 0, 0)
+            .single()
+            .expect("valid test date");
         assert!(codcel_received(settlement, maturity, 0.0, 0.05, Some(0)).is_err());
 
         // Discount must be greater than 0 and less than 1

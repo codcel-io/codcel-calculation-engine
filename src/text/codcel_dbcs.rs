@@ -16,7 +16,7 @@ pub fn codcel_dbcs<S: AsRef<str>>(text: S) -> Result<String, Box<dyn Error + Sen
     for c in text.as_ref().chars() {
         // Convert half-width ASCII characters (U+0021 to U+007E) to full-width
         if ('\u{0021}'..='\u{007E}').contains(&c) {
-            result.push(char::from_u32(c as u32 + 0xFEE0).unwrap());
+            result.push(char::from_u32(c as u32 + 0xFEE0).unwrap_or(c));
         }
         // Leave other characters (spaces, control chars, non-ASCII) as they are
         else {

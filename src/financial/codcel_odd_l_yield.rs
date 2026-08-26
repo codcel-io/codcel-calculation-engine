@@ -112,7 +112,10 @@ mod tests {
     use chrono::TimeZone;
 
     fn excel_date(serial: f64) -> DateTime<Utc> {
-        let base = Utc.with_ymd_and_hms(1899, 12, 30, 0, 0, 0).unwrap();
+        let base = Utc
+            .with_ymd_and_hms(1899, 12, 30, 0, 0, 0)
+            .single()
+            .expect("valid test date");
         base + chrono::Duration::days(serial as i64)
     }
 
@@ -184,7 +187,10 @@ mod tests {
     /// Excel serial to date, so schedules can be copied straight out of a spreadsheet.
     /// The epoch is 1899-12-30, accounting for the Lotus 1-2-3 1900 leap year bug.
     fn excel_serial_to_date(serial: i64) -> DateTime<Utc> {
-        Utc.with_ymd_and_hms(1899, 12, 30, 0, 0, 0).unwrap() + Duration::days(serial)
+        Utc.with_ymd_and_hms(1899, 12, 30, 0, 0, 0)
+            .single()
+            .expect("valid test date")
+            + Duration::days(serial)
     }
 
     // Expected values below are Excel's own cached results, taken from
@@ -1452,9 +1458,18 @@ mod tests {
 
     #[test]
     fn test_odd_l_yield_error_cases() {
-        let settlement = Utc.with_ymd_and_hms(2022, 1, 1, 0, 0, 0).unwrap();
-        let maturity = Utc.with_ymd_and_hms(2022, 1, 1, 0, 0, 0).unwrap();
-        let last_interest = Utc.with_ymd_and_hms(2021, 7, 1, 0, 0, 0).unwrap();
+        let settlement = Utc
+            .with_ymd_and_hms(2022, 1, 1, 0, 0, 0)
+            .single()
+            .expect("valid test date");
+        let maturity = Utc
+            .with_ymd_and_hms(2022, 1, 1, 0, 0, 0)
+            .single()
+            .expect("valid test date");
+        let last_interest = Utc
+            .with_ymd_and_hms(2021, 7, 1, 0, 0, 0)
+            .single()
+            .expect("valid test date");
 
         assert!(codcel_odd_l_yield(
             settlement,

@@ -60,7 +60,10 @@ mod tests {
     /// Excel serial to date, so schedules can be copied straight out of a spreadsheet.
     /// The epoch is 1899-12-30, accounting for the Lotus 1-2-3 1900 leap year bug.
     fn excel_serial_to_date(serial: i64) -> DateTime<Utc> {
-        Utc.with_ymd_and_hms(1899, 12, 30, 0, 0, 0).unwrap() + Duration::days(serial)
+        Utc.with_ymd_and_hms(1899, 12, 30, 0, 0, 0)
+            .single()
+            .expect("valid test date")
+            + Duration::days(serial)
     }
 
     // Expected values below are Excel's own cached results, taken from
@@ -371,7 +374,10 @@ mod tests {
         assert!(codcel_x_npv(
             0.1,
             vec![100.0, 200.0],
-            vec![Utc.with_ymd_and_hms(2020, 1, 1, 0, 0, 0).unwrap()],
+            vec![Utc
+                .with_ymd_and_hms(2020, 1, 1, 0, 0, 0)
+                .single()
+                .expect("valid test date")],
         )
         .is_err());
 
@@ -380,8 +386,12 @@ mod tests {
             -1.1, // Less than -100%
             vec![100.0, 200.0],
             vec![
-                Utc.with_ymd_and_hms(2020, 1, 1, 0, 0, 0).unwrap(),
-                Utc.with_ymd_and_hms(2020, 2, 1, 0, 0, 0).unwrap(),
+                Utc.with_ymd_and_hms(2020, 1, 1, 0, 0, 0)
+                    .single()
+                    .expect("valid test date"),
+                Utc.with_ymd_and_hms(2020, 2, 1, 0, 0, 0)
+                    .single()
+                    .expect("valid test date"),
             ],
         )
         .is_err());

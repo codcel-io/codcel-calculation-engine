@@ -302,7 +302,10 @@ mod tests {
         // A payload missing a field falls back to the default rather than erroring.
         let sparse: ValueFormat = serde_json::from_str(r#"{"language": "fr"}"#).unwrap();
         assert_eq!(sparse.language, "fr");
-        assert_eq!(sparse.decimal_separator, ValueFormat::default().decimal_separator);
+        assert_eq!(
+            sparse.decimal_separator,
+            ValueFormat::default().decimal_separator
+        );
     }
 
     #[test]

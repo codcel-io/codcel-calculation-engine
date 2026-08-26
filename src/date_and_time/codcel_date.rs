@@ -5,7 +5,7 @@
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
 use crate::date_and_time::days_in_month::days_in_month;
-use chrono::{DateTime, NaiveDate, TimeZone, Utc};
+use chrono::{DateTime, NaiveDate, NaiveTime, TimeZone, Utc};
 use std::error::Error;
 
 /// Excel-compatible `DATE` that constructs a date from year, month, and day components.
@@ -69,7 +69,7 @@ pub fn codcel_date(
 
     // Create final date
     match NaiveDate::from_ymd_opt(year, month as u32, day as u32) {
-        Some(final_date) => Ok(Utc.from_utc_datetime(&final_date.and_hms_opt(0, 0, 0).unwrap())),
+        Some(final_date) => Ok(Utc.from_utc_datetime(&final_date.and_time(NaiveTime::MIN))),
         None => Err("Invalid date calculation".into()),
     }
 }

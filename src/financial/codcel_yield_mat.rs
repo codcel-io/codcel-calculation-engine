@@ -96,29 +96,56 @@ mod tests {
 
     #[test]
     fn test_yield_mat_basic() {
-        let issue = Utc.with_ymd_and_hms(2021, 1, 1, 0, 0, 0).unwrap();
-        let settlement = Utc.with_ymd_and_hms(2022, 1, 1, 0, 0, 0).unwrap();
-        let maturity = Utc.with_ymd_and_hms(2023, 1, 1, 0, 0, 0).unwrap();
+        let issue = Utc
+            .with_ymd_and_hms(2021, 1, 1, 0, 0, 0)
+            .single()
+            .expect("valid test date");
+        let settlement = Utc
+            .with_ymd_and_hms(2022, 1, 1, 0, 0, 0)
+            .single()
+            .expect("valid test date");
+        let maturity = Utc
+            .with_ymd_and_hms(2023, 1, 1, 0, 0, 0)
+            .single()
+            .expect("valid test date");
         let result = codcel_yield_mat(settlement, maturity, issue, 0.05, 95.0, Some(0)).unwrap();
         assert!(result > 0.0);
     }
 
     #[test]
     fn test_yield_mat_error_cases() {
-        let issue = Utc.with_ymd_and_hms(2021, 1, 1, 0, 0, 0).unwrap();
-        let settlement = Utc.with_ymd_and_hms(2022, 1, 1, 0, 0, 0).unwrap();
-        let maturity = Utc.with_ymd_and_hms(2022, 1, 1, 0, 0, 0).unwrap();
+        let issue = Utc
+            .with_ymd_and_hms(2021, 1, 1, 0, 0, 0)
+            .single()
+            .expect("valid test date");
+        let settlement = Utc
+            .with_ymd_and_hms(2022, 1, 1, 0, 0, 0)
+            .single()
+            .expect("valid test date");
+        let maturity = Utc
+            .with_ymd_and_hms(2022, 1, 1, 0, 0, 0)
+            .single()
+            .expect("valid test date");
 
         // Maturity date must be after settlement date
         assert!(codcel_yield_mat(settlement, maturity, issue, 0.05, 95.0, Some(0)).is_err());
 
         // Settlement must be after issue date
-        let settlement = Utc.with_ymd_and_hms(2021, 1, 1, 0, 0, 0).unwrap();
-        let maturity = Utc.with_ymd_and_hms(2023, 1, 1, 0, 0, 0).unwrap();
+        let settlement = Utc
+            .with_ymd_and_hms(2021, 1, 1, 0, 0, 0)
+            .single()
+            .expect("valid test date");
+        let maturity = Utc
+            .with_ymd_and_hms(2023, 1, 1, 0, 0, 0)
+            .single()
+            .expect("valid test date");
         assert!(codcel_yield_mat(settlement, maturity, issue, 0.05, 95.0, Some(0)).is_err());
 
         // Price must be greater than 0
-        let settlement = Utc.with_ymd_and_hms(2022, 1, 1, 0, 0, 0).unwrap();
+        let settlement = Utc
+            .with_ymd_and_hms(2022, 1, 1, 0, 0, 0)
+            .single()
+            .expect("valid test date");
         assert!(codcel_yield_mat(settlement, maturity, issue, 0.05, 0.0, Some(0)).is_err());
 
         // Rate must be greater than or equal to 0

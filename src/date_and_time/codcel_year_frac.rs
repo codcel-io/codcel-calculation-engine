@@ -5,7 +5,7 @@
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
 use crate::date_and_time::is_leap_year::is_leap_year;
-use chrono::{DateTime, Datelike, NaiveDate, Utc};
+use chrono::{DateTime, Datelike, NaiveDate, NaiveTime, Utc};
 use std::error::Error;
 
 /// Returns the last day of February for the given year (28 or 29).
@@ -97,7 +97,7 @@ pub fn codcel_year_frac(
                         if is_leap_year(y1) {
                             if let Some(mar1) = NaiveDate::from_ymd_opt(y1, 3, 1) {
                                 let mar1_dt = DateTime::<Utc>::from_naive_utc_and_offset(
-                                    mar1.and_hms_opt(0, 0, 0).unwrap(),
+                                    mar1.and_time(NaiveTime::MIN),
                                     Utc,
                                 );
                                 if *d1 < mar1_dt && *d2 >= mar1_dt {
@@ -108,7 +108,7 @@ pub fn codcel_year_frac(
                         if is_leap_year(y2) {
                             if let Some(mar1) = NaiveDate::from_ymd_opt(y2, 3, 1) {
                                 let mar1_dt = DateTime::<Utc>::from_naive_utc_and_offset(
-                                    mar1.and_hms_opt(0, 0, 0).unwrap(),
+                                    mar1.and_time(NaiveTime::MIN),
                                     Utc,
                                 );
                                 if *d1 < mar1_dt && *d2 >= mar1_dt {
@@ -170,7 +170,9 @@ mod tests {
     use chrono::TimeZone;
 
     fn create_date(year: i32, month: u32, day: u32) -> DateTime<Utc> {
-        Utc.with_ymd_and_hms(year, month, day, 0, 0, 0).unwrap()
+        Utc.with_ymd_and_hms(year, month, day, 0, 0, 0)
+            .single()
+            .expect("valid test date")
     }
 
     #[test]

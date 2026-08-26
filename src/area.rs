@@ -842,22 +842,10 @@ where
     let optional_values =
         optional_values.option_area_of_f64(strict_type_conversion, value_format)?;
 
-    // Determine if we should use the default value
-    let default_value = if let Some(op_values) = &optional_values {
-        if op_values.is_empty() {
-            Some(default_optional_value)
-        } else {
-            None
-        }
-    } else {
-        Some(default_optional_value)
-    };
-
     // Create the secondary values array, using either the provided values or a default
-    let secondary_values: Vec<Vec<f64>> = if let Some(value) = default_value {
-        vec![vec![value]]
-    } else {
-        optional_values.unwrap()
+    let secondary_values: Vec<Vec<f64>> = match optional_values {
+        Some(op_values) if !op_values.is_empty() => op_values,
+        _ => vec![vec![default_optional_value]],
     };
 
     // Calculate dimensions for the result
@@ -931,22 +919,10 @@ where
     let optional_values =
         optional_values.option_area_of_i32(strict_type_conversion, value_format)?;
 
-    // Determine if we should use the default value
-    let default_value = if let Some(op_values) = &optional_values {
-        if op_values.is_empty() {
-            Some(default_optional_value)
-        } else {
-            None
-        }
-    } else {
-        Some(default_optional_value)
-    };
-
     // Create the secondary values array, using either the provided values or a default
-    let secondary_values: Vec<Vec<i32>> = if let Some(value) = default_value {
-        vec![vec![value]]
-    } else {
-        optional_values.unwrap()
+    let secondary_values: Vec<Vec<i32>> = match optional_values {
+        Some(op_values) if !op_values.is_empty() => op_values,
+        _ => vec![vec![default_optional_value]],
     };
 
     // Calculate dimensions for the result
@@ -1006,20 +982,9 @@ where
     let optional_values =
         optional_values.option_area_of_i32(strict_type_conversion, value_format)?;
 
-    let default_value = if let Some(op_values) = &optional_values {
-        if op_values.is_empty() {
-            Some(default_optional_value)
-        } else {
-            None
-        }
-    } else {
-        Some(default_optional_value)
-    };
-
-    let secondary_values: Vec<Vec<i32>> = if let Some(value) = default_value {
-        vec![vec![value]]
-    } else {
-        optional_values.unwrap()
+    let secondary_values: Vec<Vec<i32>> = match optional_values {
+        Some(op_values) if !op_values.is_empty() => op_values,
+        _ => vec![vec![default_optional_value]],
     };
 
     let rows_a = values.len();

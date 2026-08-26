@@ -60,22 +60,37 @@ mod tests {
 
     #[test]
     fn test_int_rate_basic() {
-        let settlement = Utc.with_ymd_and_hms(2022, 1, 1, 0, 0, 0).unwrap();
-        let maturity = Utc.with_ymd_and_hms(2023, 1, 1, 0, 0, 0).unwrap();
+        let settlement = Utc
+            .with_ymd_and_hms(2022, 1, 1, 0, 0, 0)
+            .single()
+            .expect("valid test date");
+        let maturity = Utc
+            .with_ymd_and_hms(2023, 1, 1, 0, 0, 0)
+            .single()
+            .expect("valid test date");
         let result = codcel_int_rate(settlement, maturity, 1000.0, 1100.0, Some(0)).unwrap();
         assert!((result - 0.1).abs() < 0.001);
     }
 
     #[test]
     fn test_int_rate_error_cases() {
-        let settlement = Utc.with_ymd_and_hms(2022, 1, 1, 0, 0, 0).unwrap();
-        let maturity = Utc.with_ymd_and_hms(2022, 1, 1, 0, 0, 0).unwrap();
+        let settlement = Utc
+            .with_ymd_and_hms(2022, 1, 1, 0, 0, 0)
+            .single()
+            .expect("valid test date");
+        let maturity = Utc
+            .with_ymd_and_hms(2022, 1, 1, 0, 0, 0)
+            .single()
+            .expect("valid test date");
 
         // Settlement must be before maturity
         assert!(codcel_int_rate(settlement, maturity, 1000.0, 1100.0, Some(0)).is_err());
 
         // Investment must be greater than 0
-        let maturity = Utc.with_ymd_and_hms(2023, 1, 1, 0, 0, 0).unwrap();
+        let maturity = Utc
+            .with_ymd_and_hms(2023, 1, 1, 0, 0, 0)
+            .single()
+            .expect("valid test date");
         assert!(codcel_int_rate(settlement, maturity, 0.0, 1100.0, Some(0)).is_err());
 
         // Redemption must be greater than 0

@@ -208,8 +208,11 @@ pub fn codcel_aggregate(
             if filtered_values.len() < 2 {
                 return Err("AGGREGATE: Not enough values for LARGE.".into());
             }
-            let k = *filtered_values.last().unwrap() as usize;
-            let data: Vec<f64> = filtered_values[..filtered_values.len() - 1].to_vec();
+            let (parameter, rest) = filtered_values
+                .split_last()
+                .ok_or("AGGREGATE: Missing the trailing parameter.")?;
+            let k = *parameter as usize;
+            let data: Vec<f64> = rest.to_vec();
             let mut sorted = data.clone();
             sorted.sort_by(|a, b| b.partial_cmp(a).unwrap_or(Ordering::Equal));
             if k == 0 || k > sorted.len() {
@@ -222,8 +225,11 @@ pub fn codcel_aggregate(
             if filtered_values.len() < 2 {
                 return Err("AGGREGATE: Not enough values for SMALL.".into());
             }
-            let k = *filtered_values.last().unwrap() as usize;
-            let data: Vec<f64> = filtered_values[..filtered_values.len() - 1].to_vec();
+            let (parameter, rest) = filtered_values
+                .split_last()
+                .ok_or("AGGREGATE: Missing the trailing parameter.")?;
+            let k = *parameter as usize;
+            let data: Vec<f64> = rest.to_vec();
             let mut sorted = data.clone();
             sorted.sort_by(|a, b| a.partial_cmp(b).unwrap_or(Ordering::Equal));
             if k == 0 || k > sorted.len() {
@@ -236,8 +242,11 @@ pub fn codcel_aggregate(
             if filtered_values.len() < 2 {
                 return Err("AGGREGATE: Not enough values for PERCENTILE.INC.".into());
             }
-            let k = *filtered_values.last().unwrap();
-            let data: Vec<f64> = filtered_values[..filtered_values.len() - 1].to_vec();
+            let (parameter, rest) = filtered_values
+                .split_last()
+                .ok_or("AGGREGATE: Missing the trailing parameter.")?;
+            let k = *parameter;
+            let data: Vec<f64> = rest.to_vec();
 
             let mut sorted_values = data.clone();
             sorted_values.sort_by(|a, b| a.partial_cmp(b).unwrap_or(Ordering::Equal));
@@ -260,8 +269,11 @@ pub fn codcel_aggregate(
             if filtered_values.len() < 2 {
                 return Err("AGGREGATE: Not enough values for QUARTILE.INC.".into());
             }
-            let quart = *filtered_values.last().unwrap() as i32;
-            let data: Vec<f64> = filtered_values[..filtered_values.len() - 1].to_vec();
+            let (parameter, rest) = filtered_values
+                .split_last()
+                .ok_or("AGGREGATE: Missing the trailing parameter.")?;
+            let quart = *parameter as i32;
+            let data: Vec<f64> = rest.to_vec();
 
             if !(0..=4).contains(&quart) {
                 return Err(
@@ -291,8 +303,11 @@ pub fn codcel_aggregate(
             if filtered_values.len() < 3 {
                 return Err("AGGREGATE: Not enough values for PERCENTILE.EXC.".into());
             }
-            let k = *filtered_values.last().unwrap();
-            let data: Vec<f64> = filtered_values[..filtered_values.len() - 1].to_vec();
+            let (parameter, rest) = filtered_values
+                .split_last()
+                .ok_or("AGGREGATE: Missing the trailing parameter.")?;
+            let k = *parameter;
+            let data: Vec<f64> = rest.to_vec();
 
             if k <= 0.0 || k >= 1.0 {
                 return Err("AGGREGATE: Invalid k parameter for PERCENTILE.EXC. Must be between 0 and 1 exclusive.".into());
@@ -326,8 +341,11 @@ pub fn codcel_aggregate(
             if filtered_values.len() < 4 {
                 return Err("AGGREGATE: Not enough values for QUARTILE.EXC.".into());
             }
-            let quart = *filtered_values.last().unwrap() as i32;
-            let data: Vec<f64> = filtered_values[..filtered_values.len() - 1].to_vec();
+            let (parameter, rest) = filtered_values
+                .split_last()
+                .ok_or("AGGREGATE: Missing the trailing parameter.")?;
+            let quart = *parameter as i32;
+            let data: Vec<f64> = rest.to_vec();
 
             if !(1..=3).contains(&quart) {
                 return Err("AGGREGATE: Invalid quartile parameter for QUARTILE.EXC. Must be between 1 and 3.".into());

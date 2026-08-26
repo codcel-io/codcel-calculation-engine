@@ -70,9 +70,10 @@ pub fn codcel_lookup_array(
         vector_lookup(lookup_value, lookup_vector, result_vector)
     } else {
         // Search across the first row, return from last row
-        let lookup_vector = array.first().unwrap().clone();
-        let result_vector = array.last().unwrap().clone();
-        vector_lookup(lookup_value, lookup_vector, result_vector)
+        let (Some(first_row), Some(last_row)) = (array.first(), array.last()) else {
+            return Err("LOOKUP: array must not be empty".into());
+        };
+        vector_lookup(lookup_value, first_row.clone(), last_row.clone())
     }
 }
 
@@ -313,9 +314,18 @@ mod tests {
     fn test_lookup_with_datetime() {
         use chrono::{TimeZone, Utc};
 
-        let date1 = Utc.with_ymd_and_hms(2023, 1, 1, 0, 0, 0).unwrap();
-        let date2 = Utc.with_ymd_and_hms(2023, 1, 2, 0, 0, 0).unwrap();
-        let date3 = Utc.with_ymd_and_hms(2023, 1, 3, 0, 0, 0).unwrap();
+        let date1 = Utc
+            .with_ymd_and_hms(2023, 1, 1, 0, 0, 0)
+            .single()
+            .expect("valid test date");
+        let date2 = Utc
+            .with_ymd_and_hms(2023, 1, 2, 0, 0, 0)
+            .single()
+            .expect("valid test date");
+        let date3 = Utc
+            .with_ymd_and_hms(2023, 1, 3, 0, 0, 0)
+            .single()
+            .expect("valid test date");
 
         let lookup_vector = vec![
             Value::ChronoDateTime(date1),

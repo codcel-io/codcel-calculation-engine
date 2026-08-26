@@ -41,8 +41,8 @@ pub fn codcel_mode(values: Vec<f64>) -> Result<f64, Box<dyn Error + Send + Sync>
         return Err("MODE: No mode found (no value appears more than once)".into());
     }
 
-    // Unwrap is safe here because we've already checked that mode_value is Some
-    Ok(mode_value.unwrap())
+    // `mode_value` is always set once `max_frequency` exceeds 1, which the check above enforces.
+    mode_value.ok_or_else(|| "MODE: No mode found (no value appears more than once)".into())
 }
 
 #[cfg(test)]

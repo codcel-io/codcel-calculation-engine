@@ -88,7 +88,10 @@ mod tests {
 
     #[test]
     fn test_is_logical_with_date_and_time() {
-        let date_time = Utc.with_ymd_and_hms(2026, 1, 1, 0, 0, 0).unwrap();
+        let date_time = Utc
+            .with_ymd_and_hms(2026, 1, 1, 0, 0, 0)
+            .single()
+            .expect("valid test date");
         assert!(!codcel_is_logical(&Value::ChronoDateTime(date_time), &default_format()).unwrap());
 
         let time = NaiveTime::from_hms_opt(12, 30, 0).unwrap();

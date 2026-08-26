@@ -55,31 +55,23 @@ pub fn codcel_date_dif<S: AsRef<str>>(
             let start_day = start.day() as i64;
 
             if end_day < start_day {
-                // Adjust for month rollover
-                let prev_month = if end.month() == 1 {
-                    12
+                // Adjust for month rollover by adding the length of the month before `end`,
+                // which is the day before the first of the month `end` falls in.
+                let (prev_year, prev_month) = if end.month() == 1 {
+                    (end.year() - 1, 12)
                 } else {
-                    end.month() - 1
+                    (end.year(), end.month() - 1)
+                };
+                let (next_year, next_month) = if prev_month == 12 {
+                    (prev_year + 1, 1)
+                } else {
+                    (prev_year, prev_month + 1)
                 };
 
-                let days_in_prev_month = chrono::NaiveDate::from_ymd_opt(
-                    if prev_month == 12 {
-                        end.year() - 1
-                    } else {
-                        end.year()
-                    },
-                    prev_month,
-                    1,
-                )
-                .unwrap()
-                .with_day(
-                    chrono::NaiveDate::from_ymd_opt(end.year(), prev_month + 1, 1)
-                        .unwrap()
-                        .day()
-                        - 1,
-                )
-                .unwrap()
-                .day();
+                let days_in_prev_month = chrono::NaiveDate::from_ymd_opt(next_year, next_month, 1)
+                    .and_then(|first_of_next_month| first_of_next_month.pred_opt())
+                    .ok_or("DATEDIF: could not determine the length of the preceding month")?
+                    .day();
 
                 end_day += days_in_prev_month as i64;
             }
@@ -110,10 +102,10 @@ pub fn codcel_date_dif<S: AsRef<str>>(
             // If end month/day is earlier in the year than start month/day, Excel adds 1 day
 
             // Create dates with the same year to compare month and day
-            let same_year_start =
-                chrono::NaiveDate::from_ymd_opt(2000, start.month(), start.day()).unwrap();
-            let same_year_end =
-                chrono::NaiveDate::from_ymd_opt(2000, end.month(), end.day()).unwrap();
+            let same_year_start = chrono::NaiveDate::from_ymd_opt(2000, start.month(), start.day())
+                .ok_or("DATEDIF: start_date is not a valid calendar date")?;
+            let same_year_end = chrono::NaiveDate::from_ymd_opt(2000, end.month(), end.day())
+                .ok_or("DATEDIF: end_date is not a valid calendar date")?;
 
             // Calculate the difference in days
             let days_diff = if same_year_end >= same_year_start {
@@ -135,7 +127,9 @@ mod tests {
     use chrono::TimeZone;
 
     fn create_date(year: i32, month: u32, day: u32) -> DateTime<Utc> {
-        Utc.with_ymd_and_hms(year, month, day, 0, 0, 0).unwrap()
+        Utc.with_ymd_and_hms(year, month, day, 0, 0, 0)
+            .single()
+            .expect("valid test date")
     }
 
     #[test]
@@ -172,6 +166,33 @@ mod tests {
         println!("{result}");
         // Expected: 1221
         assert_eq!(result, 1221);
+    }
+
+    #[test]
+    fn test_date_dif_md_end_date_in_january() {
+        // =DATEDIF("2023-03-20", "2024-01-05", "MD")
+        // Regression: the rollover branch used to compute month `prev_month + 1` == 13 and
+        // unwrap the resulting `None`, so every January end date with end.day < start.day
+        // aborted the process instead of returning a number.
+        let start_date = create_date(2023, 3, 20);
+        let end_date = create_date(2024, 1, 5);
+        let result = codcel_date_dif(start_date, end_date, "MD").unwrap();
+        println!("{result}");
+        // December 2023 has 31 days: 5 + 31 - 20
+        assert_eq!(result, 16);
+    }
+
+    #[test]
+    fn test_date_dif_md_rollover_into_february() {
+        // =DATEDIF("2023-01-28", "2024-03-05", "MD") — February 2024 has 29 days.
+        let result =
+            codcel_date_dif(create_date(2023, 1, 28), create_date(2024, 3, 5), "MD").unwrap();
+        assert_eq!(result, 6);
+
+        // =DATEDIF("2022-01-28", "2023-03-05", "MD") — February 2023 has 28 days.
+        let result =
+            codcel_date_dif(create_date(2022, 1, 28), create_date(2023, 3, 5), "MD").unwrap();
+        assert_eq!(result, 5);
     }
 
     #[test]

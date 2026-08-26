@@ -230,8 +230,14 @@ mod tests {
 
     #[test]
     fn test_excel_equals_datetime_and_time() {
-        let date = Utc.with_ymd_and_hms(2023, 1, 1, 0, 0, 0).unwrap();
-        let other = Utc.with_ymd_and_hms(2023, 1, 2, 0, 0, 0).unwrap();
+        let date = Utc
+            .with_ymd_and_hms(2023, 1, 1, 0, 0, 0)
+            .single()
+            .expect("valid test date");
+        let other = Utc
+            .with_ymd_and_hms(2023, 1, 2, 0, 0, 0)
+            .single()
+            .expect("valid test date");
         assert!(excel_equals(
             &Value::ChronoDateTime(date),
             &Value::OptionChronoDateTime(Some(date))

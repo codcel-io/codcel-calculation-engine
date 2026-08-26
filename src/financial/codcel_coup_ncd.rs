@@ -64,15 +64,24 @@ mod tests {
 
     #[test]
     fn test_coup_ncd_basic() {
-        let settlement = Utc.with_ymd_and_hms(2021, 2, 15, 0, 0, 0).unwrap();
-        let maturity = Utc.with_ymd_and_hms(2023, 5, 15, 0, 0, 0).unwrap();
+        let settlement = Utc
+            .with_ymd_and_hms(2021, 2, 15, 0, 0, 0)
+            .single()
+            .expect("valid test date");
+        let maturity = Utc
+            .with_ymd_and_hms(2023, 5, 15, 0, 0, 0)
+            .single()
+            .expect("valid test date");
         let frequency = 2; // Semi-annual
 
         // With basis 0 (30/360)
         let result = codcel_coup_ncd(settlement, maturity, frequency, Some(0)).unwrap();
 
         // Next coupon date would be 2021-05-15
-        let expected = Utc.with_ymd_and_hms(2021, 5, 15, 0, 0, 0).unwrap();
+        let expected = Utc
+            .with_ymd_and_hms(2021, 5, 15, 0, 0, 0)
+            .single()
+            .expect("valid test date");
         assert_eq!(result, expected);
     }
 }

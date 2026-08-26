@@ -4,9 +4,9 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
-use crate::date_system::DateSemantics;
 use super::forecast::*;
 use crate::compensated_sum::CompensatedSum;
+use crate::date_system::DateSemantics;
 use std::error::Error;
 
 /// Excel-compatible `FORECAST.ETS.STAT` — returns a statistical value for the ETS model.

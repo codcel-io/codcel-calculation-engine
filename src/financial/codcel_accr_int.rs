@@ -5,60 +5,10 @@
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
 use crate::compensated_sum::CompensatedSum;
+use crate::date_and_time::add_months::add_months;
 use crate::date_time_base::{actual_actual_days, thirty_360_days, thirty_e_360_days};
-use chrono::{DateTime, Datelike, TimeZone, Utc};
+use chrono::{DateTime, Utc};
 use std::error::Error;
-
-/// Add months to a date, preserving end-of-month behavior
-fn add_months(date: DateTime<Utc>, months: i32) -> DateTime<Utc> {
-    let mut year = date.year();
-    let mut month = date.month() as i32 + months;
-
-    while month > 12 {
-        month -= 12;
-        year += 1;
-    }
-    while month < 1 {
-        month += 12;
-        year -= 1;
-    }
-
-    let original_day = date.day();
-    let max_day = days_in_month(year, month);
-
-    // For end-of-month dates, preserve end-of-month behavior
-    let day = if original_day >= days_in_month(date.year(), date.month() as i32) {
-        max_day
-    } else {
-        original_day.min(max_day)
-    };
-
-    Utc.with_ymd_and_hms(year, month as u32, day, 0, 0, 0)
-        .unwrap()
-}
-
-fn days_in_month(year: i32, month: i32) -> u32 {
-    match month {
-        1 => 31,
-        2 if is_leap_year(year) => 29,
-        2 => 28,
-        3 => 31,
-        4 => 30,
-        5 => 31,
-        6 => 30,
-        7 => 31,
-        8 => 31,
-        9 => 30,
-        10 => 31,
-        11 => 30,
-        12 => 31,
-        _ => 30,
-    }
-}
-
-fn is_leap_year(year: i32) -> bool {
-    (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0)
-}
 
 /// Calculate the numerator days (Ai) for the accrual based on the day-count basis
 fn accrual_days(start: DateTime<Utc>, end: DateTime<Utc>, basis: i32) -> f64 {
@@ -119,7 +69,7 @@ pub fn codcel_accr_int(
     let mut date = first_interest;
     quasi_dates.push(date);
     while date > issue_date {
-        date = add_months(date, -months_per_period);
+        date = add_months(date, -months_per_period)?;
         quasi_dates.push(date);
     }
     quasi_dates.sort();
@@ -127,8 +77,8 @@ pub fn codcel_accr_int(
     // Step forward from first_interest to cover settlement_date
     date = first_interest;
     while date < settlement_date {
-        date = add_months(date, months_per_period);
-        if date > *quasi_dates.last().unwrap() {
+        date = add_months(date, months_per_period)?;
+        if quasi_dates.last().is_none_or(|last| date > *last) {
             quasi_dates.push(date);
         }
     }
@@ -139,7 +89,7 @@ pub fn codcel_accr_int(
     // The first odd partial period (containing issue) uses its own quasi-coupon
     // period length instead.
     let reference_nl = if basis == 1 {
-        let prev = add_months(first_interest, -months_per_period);
+        let prev = add_months(first_interest, -months_per_period)?;
         actual_actual_days(prev, first_interest)
     } else {
         0.0
@@ -236,7 +186,9 @@ mod tests {
     use chrono::TimeZone;
 
     fn dt(year: i32, month: u32, day: u32) -> DateTime<Utc> {
-        Utc.with_ymd_and_hms(year, month, day, 0, 0, 0).unwrap()
+        Utc.with_ymd_and_hms(year, month, day, 0, 0, 0)
+            .single()
+            .expect("valid test date")
     }
 
     // -------------------------------------------------------------------------

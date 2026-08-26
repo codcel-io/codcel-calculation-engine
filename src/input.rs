@@ -75,14 +75,21 @@ impl Input {
 
     /// Check the per-request function cache.
     pub fn fn_cache_get(&self, key: &str) -> Option<Value> {
-        self.fn_cache.lock().unwrap().get(key).cloned()
+        self.fn_cache
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner())
+            .get(key)
+            .cloned()
     }
 
     /// Insert into the per-request function cache.
     /// Skips caching for large collections where the clone cost exceeds the lookup cost.
     pub fn fn_cache_insert(&self, key: String, value: Value) {
         if value.is_cacheable() {
-            self.fn_cache.lock().unwrap().insert(key, value);
+            self.fn_cache
+                .lock()
+                .unwrap_or_else(|poisoned| poisoned.into_inner())
+                .insert(key, value);
         }
     }
 

@@ -23,14 +23,16 @@ pub fn codcel_complex(
 ) -> Result<String, Box<dyn Error + Send + Sync>> {
     // Validate the suffix
     let suffix = suffix.unwrap_or("i".to_string());
-    if suffix != "i" && suffix != "j" {
-        return Err("COMPLEX: Invalid suffix. Must be 'i' or 'j'".into());
-    }
+    let suffix_char = match suffix.as_str() {
+        "i" => 'i',
+        "j" => 'j',
+        _ => return Err("COMPLEX: Invalid suffix. Must be 'i' or 'j'".into()),
+    };
 
     format_complex(
         real,
         imaginary,
-        suffix.chars().next().unwrap(),
+        suffix_char,
         decimal_separator,
         use_excel_rounding,
     )

@@ -4,7 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
-use chrono::{DateTime, Datelike, NaiveDate, TimeZone, Utc};
+use chrono::{DateTime, Datelike, NaiveDate, NaiveTime, TimeZone, Utc};
 
 /// Parses month/day-only strings (e.g. `"Jan 30"`, `"30/01"`) assuming the current year.
 ///
@@ -27,7 +27,7 @@ pub fn try_parse_month_day_formats(date_text: &str) -> Option<DateTime<Utc>> {
             &format!("{date_text} {current_year}"),
             &format!("{format} %Y"),
         ) {
-            let dt = date.and_hms_opt(0, 0, 0).unwrap();
+            let dt = date.and_time(NaiveTime::MIN);
             return Some(Utc.from_utc_datetime(&dt));
         }
     }

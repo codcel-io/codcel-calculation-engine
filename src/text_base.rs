@@ -14,6 +14,7 @@ use crate::area::{
     process_area_string_to_string, process_area_value_opt_bool_to_string,
     process_area_value_to_float, process_area_value_to_string,
 };
+use crate::excel_error::coercion_error;
 use crate::text::{
     codcel_array_to_text::codcel_array_to_text, codcel_asc::codcel_asc,
     codcel_bahttext::codcel_bahttext, codcel_char::codcel_char, codcel_clean::codcel_clean,
@@ -73,11 +74,11 @@ pub fn find(
 
         // Iterate over each value (cell) in the row
         for value in row.iter() {
-            let value = value
+            let text = value
                 .string(value_format)
-                .expect("FIND: Text must be a string");
+                .map_err(|_| coercion_error(value))?;
 
-            let result = codcel_find(&substring, &value, start_position)?;
+            let result = codcel_find(&substring, &text, start_position)?;
 
             // Add the processed result to the result row
             result_row.push(Value::I32(result));
@@ -120,11 +121,11 @@ pub fn findb(
 
         // Iterate over each value (cell) in the row
         for value in row.iter() {
-            let value = value
+            let text = value
                 .string(value_format)
-                .expect("FINDB: Text must be a string");
+                .map_err(|_| coercion_error(value))?;
 
-            let result = codcel_findb(&substring, &value, start_position)?;
+            let result = codcel_findb(&substring, &text, start_position)?;
 
             // Add the processed result to the result row
             result_row.push(Value::I32(result));
@@ -167,11 +168,11 @@ pub fn search(
 
         // Iterate over each value (cell) in the row
         for value in row.iter() {
-            let value = value
+            let text = value
                 .string(value_format)
-                .expect("SEARCH: Text must be a string");
+                .map_err(|_| coercion_error(value))?;
 
-            let result = codcel_search(&substring, &value, start_position)?;
+            let result = codcel_search(&substring, &text, start_position)?;
 
             // Add the processed result to the result row
             result_row.push(Value::I32(result));
@@ -215,11 +216,11 @@ pub fn searchb(
 
         // Iterate over each value (cell) in the row
         for value in row.iter() {
-            let value = value
+            let text = value
                 .string(value_format)
-                .expect("SEARCHB: Text must be a string");
+                .map_err(|_| coercion_error(value))?;
 
-            let result = codcel_searchb(&substring, &value, start_position)?;
+            let result = codcel_searchb(&substring, &text, start_position)?;
 
             // Add the processed result to the result row
             result_row.push(Value::I32(result));
@@ -709,7 +710,7 @@ pub fn concatenate(
     for value in values {
         let strings_in_array = value
             .vec_string(value_format)
-            .expect("CONCATENATE: Input values are not strings");
+            .map_err(|_| coercion_error(&value))?;
         for s in strings_in_array {
             result_string.push_str(&s);
         }
@@ -759,14 +760,14 @@ pub fn text_join(
             value_strings.extend(
                 value
                     .vec_string(value_format)
-                    .expect("TEXTJOIN: Input values are not strings"),
+                    .map_err(|_| coercion_error(&value))?,
             );
         } else {
             // Get the single string value
             value_strings.push(
                 value
                     .string(value_format)
-                    .expect("TEXTJOIN: Input value is not a string"),
+                    .map_err(|_| coercion_error(&value))?,
             );
         }
 

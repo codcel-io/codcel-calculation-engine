@@ -76,8 +76,14 @@ mod tests {
 
     #[test]
     fn test_coup_days_basic() {
-        let settlement = Utc.with_ymd_and_hms(2021, 2, 15, 0, 0, 0).unwrap();
-        let maturity = Utc.with_ymd_and_hms(2023, 5, 15, 0, 0, 0).unwrap();
+        let settlement = Utc
+            .with_ymd_and_hms(2021, 2, 15, 0, 0, 0)
+            .single()
+            .expect("valid test date");
+        let maturity = Utc
+            .with_ymd_and_hms(2023, 5, 15, 0, 0, 0)
+            .single()
+            .expect("valid test date");
         let frequency = 2; // Semi-annual
 
         // With basis 0 (30/360)

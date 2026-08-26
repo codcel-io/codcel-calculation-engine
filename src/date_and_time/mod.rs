@@ -4,6 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
+pub mod add_months;
 pub mod codcel_date;
 pub mod codcel_date_dif;
 pub mod codcel_date_value;

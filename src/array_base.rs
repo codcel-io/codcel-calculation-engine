@@ -5,6 +5,7 @@
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
 use crate::codcel_information;
+use crate::excel_error::coercion_error;
 use crate::information::codcel_cell::codcel_cell;
 use crate::lookup_and_reference::codcel_address::codcel_address;
 use crate::lookup_and_reference::codcel_areas::codcel_areas;
@@ -591,7 +592,7 @@ pub fn excel_mod(
 
         // Iterate over each value (cell) in the row
         for value in row.iter() {
-            let number = value.f64(value_format).expect("MOD: It must be a number");
+            let number = value.f64(value_format).map_err(|_| coercion_error(value))?;
 
             // Excel MOD: n - d * INT(n/d) where INT = floor
             let result = number - divisor * (number / divisor).floor();

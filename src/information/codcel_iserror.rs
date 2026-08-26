@@ -105,7 +105,10 @@ mod tests {
 
     #[test]
     fn test_iserror_with_datetime() {
-        let dt = Utc.with_ymd_and_hms(2024, 1, 1, 0, 0, 0).unwrap();
+        let dt = Utc
+            .with_ymd_and_hms(2024, 1, 1, 0, 0, 0)
+            .single()
+            .expect("valid test date");
         assert!(!codcel_iserror(&Value::ChronoDateTime(dt), &default_format()).unwrap());
     }
 

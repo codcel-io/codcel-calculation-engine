@@ -9,7 +9,7 @@ use crate::date_time_base::{
     date_time_to_excel, date_time_to_iso, date_time_to_time, excel_to_date_time, excel_to_time,
     force_string_to_date_time, force_string_to_time, time_to_date_time, time_to_excel, time_to_iso,
 };
-use crate::excel_error::{err_to_box, ExcelError};
+use crate::excel_error::{coercion_error, err_to_box, ExcelError};
 use crate::value_format::ValueFormat;
 use chrono::{DateTime, NaiveTime, Utc};
 use serde::{Deserialize, Serialize};
@@ -36,6 +36,33 @@ pub enum Value {
     Time(NaiveTime),
     None,
     Error(ExcelError),
+}
+
+/// The engine-wide fallible result type.
+type EngineResult<T> = Result<T, Box<dyn Error + Send + Sync>>;
+
+/// Coerce every element of a flat list, mapping any failure onto the Excel error Excel
+/// itself would raise: an in-band `Value::Error` propagates unchanged, and anything else
+/// that will not coerce becomes `#VALUE!`.
+///
+/// This exists because `?` cannot be used inside a `.map()` closure; collecting into a
+/// `Result` keeps the first failure instead of aborting the process.
+fn coerce_list<T>(
+    values: &[Value],
+    coerce: impl Fn(&Value) -> EngineResult<T>,
+) -> EngineResult<Vec<T>> {
+    values
+        .iter()
+        .map(|val| coerce(val).map_err(|_| coercion_error(val)))
+        .collect()
+}
+
+/// As [`coerce_list`], over an area. The outer `Vec` are the rows.
+fn coerce_area<T>(
+    rows: &[Vec<Value>],
+    coerce: impl Fn(&Value) -> EngineResult<T>,
+) -> EngineResult<Vec<Vec<T>>> {
+    rows.iter().map(|row| coerce_list(row, &coerce)).collect()
 }
 
 impl PartialOrd for Value {
@@ -446,9 +473,7 @@ impl Value {
             }
             Value::OptionChronoDateTime(value) => match value {
                 None => Err("Cannot convert date time none to number value".into()),
-                Some(value) => {
-                    date_time_to_excel(value, value_format.date_semantics())
-                }
+                Some(value) => date_time_to_excel(value, value_format.date_semantics()),
             },
             Value::OptionTime(value) => match value {
                 None => Err("Cannot convert time none to number value".into()),
@@ -464,9 +489,7 @@ impl Value {
         value_format: &ValueFormat,
     ) -> Result<DateTime<Utc>, Box<dyn Error + Send + Sync>> {
         match self {
-            Value::F64(value) => {
-                excel_to_date_time(*value, value_format.date_semantics())
-            }
+            Value::F64(value) => excel_to_date_time(*value, value_format.date_semantics()),
             Value::I32(value) => excel_to_date_time(
                 float(*value, &value_format.decimal_separator)?,
                 value_format.date_semantics(),
@@ -479,9 +502,7 @@ impl Value {
             Value::Bool(_value) => Err("Cannot convert boolean to date time value".into()),
             Value::OptionF64(value) => match value {
                 None => Err("Cannot convert float none to date time value".into()),
-                Some(value) => {
-                    excel_to_date_time(*value, value_format.date_semantics())
-                }
+                Some(value) => excel_to_date_time(*value, value_format.date_semantics()),
             },
             Value::OptionI32(value) => match value {
                 None => Err("Cannot convert integer none to date time value".into()),
@@ -940,14 +961,7 @@ impl Value {
                 if value.is_empty() {
                     Err("Cannot convert empty value list to number value list".into())
                 } else {
-                    let vector: Vec<f64> = value
-                        .iter()
-                        .map(|val| {
-                            val.f64(value_format)
-                                .expect("Cannot convert value list to number list")
-                        })
-                        .collect();
-                    Ok(vector)
+                    coerce_list(value, |val| val.f64(value_format))
                 }
             }
             Value::OptionVecValue(value) => match value {
@@ -956,27 +970,12 @@ impl Value {
                     if value.is_empty() {
                         Err("Cannot convert empty value list to number value list".into())
                     } else {
-                        let vector: Vec<f64> = value
-                            .iter()
-                            .map(|val| {
-                                val.f64(value_format)
-                                    .expect("Cannot convert value list to number list")
-                            })
-                            .collect();
-                        Ok(vector)
+                        coerce_list(value, |val| val.f64(value_format))
                     }
                 }
             },
             Value::AreaValue(value) => {
-                let values: Vec<f64> = value
-                    .iter()
-                    .flat_map(|inner_vec| {
-                        inner_vec.iter().map(|val| {
-                            val.f64(value_format)
-                                .expect("Cannot convert empty value area to number value list")
-                        })
-                    })
-                    .collect();
+                let values: Vec<f64> = coerce_area(value, |val| val.f64(value_format))?.concat();
 
                 if !values.is_empty() {
                     return Ok(values);
@@ -985,15 +984,8 @@ impl Value {
             }
             Value::OptionAreaValue(value) => {
                 if let Some(value) = value {
-                    let values: Vec<f64> = value
-                        .iter()
-                        .flat_map(|inner_vec| {
-                            inner_vec.iter().map(|val| {
-                                val.f64(value_format)
-                                    .expect("Cannot convert empty value area to number value list")
-                            })
-                        })
-                        .collect();
+                    let values: Vec<f64> =
+                        coerce_area(value, |val| val.f64(value_format))?.concat();
 
                     if !values.is_empty() {
                         return Ok(values);
@@ -1345,43 +1337,15 @@ impl Value {
                 None => Err("Value cannot be None".into()),
                 Some(_value) => Ok(vec![vec![self.f64(value_format)?]]),
             },
-            Value::VecValue(value) => {
-                let values = value
-                    .iter()
-                    .map(|val| val.f64(value_format).expect("Value must be a number"))
-                    .collect();
-                Ok(vec![values])
-            }
+            Value::VecValue(value) => Ok(vec![coerce_list(value, |val| val.f64(value_format))?]),
             Value::OptionVecValue(value) => match value {
                 None => Err("Value cannot be None".into()),
-                Some(value) => {
-                    let values = value
-                        .iter()
-                        .map(|val| val.f64(value_format).expect("Value must be a number"))
-                        .collect();
-                    Ok(vec![values])
-                }
+                Some(value) => Ok(vec![coerce_list(value, |val| val.f64(value_format))?]),
             },
-            Value::AreaValue(value) => Ok(value
-                .iter()
-                .map(|inner_vec| {
-                    inner_vec
-                        .iter()
-                        .map(|val| val.f64(value_format).expect("Value must be a number"))
-                        .collect()
-                })
-                .collect()),
+            Value::AreaValue(value) => coerce_area(value, |val| val.f64(value_format)),
             Value::OptionAreaValue(value) => match value {
                 None => Err("Value cannot be None".into()),
-                Some(value) => Ok(value
-                    .iter()
-                    .map(|inner_vec| {
-                        inner_vec
-                            .iter()
-                            .map(|val| val.f64(value_format).expect("Value must be a number"))
-                            .collect()
-                    })
-                    .collect()),
+                Some(value) => coerce_area(value, |val| val.f64(value_format)),
             },
             Value::None => Err("Value cannot be None".into()),
             Value::ChronoDateTime(_value) => Ok(vec![vec![self.f64(value_format)?]]),
@@ -1442,54 +1406,16 @@ impl Value {
             },
             Value::OptionBool(_value) => Err("Cannot convert boolean to date time value".into()),
             Value::VecValue(value) => {
-                let values = value
-                    .iter()
-                    .map(|val| {
-                        val.date_time(value_format)
-                            .expect("Value must be a date time")
-                    })
-                    .collect();
-                Ok(vec![values])
+                Ok(vec![coerce_list(value, |val| val.date_time(value_format))?])
             }
             Value::OptionVecValue(value) => match value {
                 None => Err("Value cannot be None".into()),
-                Some(value) => {
-                    let values = value
-                        .iter()
-                        .map(|val| {
-                            val.date_time(value_format)
-                                .expect("Value must be a date time")
-                        })
-                        .collect();
-                    Ok(vec![values])
-                }
+                Some(value) => Ok(vec![coerce_list(value, |val| val.date_time(value_format))?]),
             },
-            Value::AreaValue(value) => Ok(value
-                .iter()
-                .map(|inner_vec| {
-                    inner_vec
-                        .iter()
-                        .map(|val| {
-                            val.date_time(value_format)
-                                .expect("Value must be a date time")
-                        })
-                        .collect()
-                })
-                .collect()),
+            Value::AreaValue(value) => coerce_area(value, |val| val.date_time(value_format)),
             Value::OptionAreaValue(value) => match value {
                 None => Err("Value cannot be None".into()),
-                Some(value) => Ok(value
-                    .iter()
-                    .map(|inner_vec| {
-                        inner_vec
-                            .iter()
-                            .map(|val| {
-                                val.date_time(value_format)
-                                    .expect("Value must be a date time")
-                            })
-                            .collect()
-                    })
-                    .collect()),
+                Some(value) => coerce_area(value, |val| val.date_time(value_format)),
             },
             Value::None => Err("Value cannot be None".into()),
             Value::ChronoDateTime(value) => Ok(vec![vec![*value]]),
@@ -1532,43 +1458,15 @@ impl Value {
                 None => Err("Value cannot be None".into()),
                 Some(_value) => Ok(vec![vec![self.bool(value_format)?]]),
             },
-            Value::VecValue(value) => {
-                let values = value
-                    .iter()
-                    .map(|val| val.bool(value_format).expect("Value must be a boolean"))
-                    .collect();
-                Ok(vec![values])
-            }
+            Value::VecValue(value) => Ok(vec![coerce_list(value, |val| val.bool(value_format))?]),
             Value::OptionVecValue(value) => match value {
                 None => Err("Value cannot be None".into()),
-                Some(value) => {
-                    let values = value
-                        .iter()
-                        .map(|val| val.bool(value_format).expect("Value must be a boolean"))
-                        .collect();
-                    Ok(vec![values])
-                }
+                Some(value) => Ok(vec![coerce_list(value, |val| val.bool(value_format))?]),
             },
-            Value::AreaValue(value) => Ok(value
-                .iter()
-                .map(|inner_vec| {
-                    inner_vec
-                        .iter()
-                        .map(|val| val.bool(value_format).expect("Value must be a boolean"))
-                        .collect()
-                })
-                .collect()),
+            Value::AreaValue(value) => coerce_area(value, |val| val.bool(value_format)),
             Value::OptionAreaValue(value) => match value {
                 None => Err("Value cannot be None".into()),
-                Some(value) => Ok(value
-                    .iter()
-                    .map(|inner_vec| {
-                        inner_vec
-                            .iter()
-                            .map(|val| val.bool(value_format).expect("Value must be a boolean"))
-                            .collect()
-                    })
-                    .collect()),
+                Some(value) => coerce_area(value, |val| val.bool(value_format)),
             },
             Value::None => Err("Value cannot be None".into()),
             Value::ChronoDateTime(_value) => Ok(vec![vec![self.bool(value_format)?]]),
@@ -1611,43 +1509,15 @@ impl Value {
                 None => Ok(vec![vec![String::new()]]),
                 Some(_value) => Ok(vec![vec![self.string(value_format)?]]),
             },
-            Value::VecValue(value) => {
-                let values = value
-                    .iter()
-                    .map(|val| val.string(value_format).expect("Value must be a string"))
-                    .collect();
-                Ok(vec![values])
-            }
+            Value::VecValue(value) => Ok(vec![coerce_list(value, |val| val.string(value_format))?]),
             Value::OptionVecValue(value) => match value {
                 None => Err("Value cannot be None".into()),
-                Some(value) => {
-                    let values = value
-                        .iter()
-                        .map(|val| val.string(value_format).expect("Value must be a string"))
-                        .collect();
-                    Ok(vec![values])
-                }
+                Some(value) => Ok(vec![coerce_list(value, |val| val.string(value_format))?]),
             },
-            Value::AreaValue(value) => Ok(value
-                .iter()
-                .map(|inner_vec| {
-                    inner_vec
-                        .iter()
-                        .map(|val| val.string(value_format).expect("Value must be a string"))
-                        .collect()
-                })
-                .collect()),
+            Value::AreaValue(value) => coerce_area(value, |val| val.string(value_format)),
             Value::OptionAreaValue(value) => match value {
                 None => Err("Value cannot be None".into()),
-                Some(value) => Ok(value
-                    .iter()
-                    .map(|inner_vec| {
-                        inner_vec
-                            .iter()
-                            .map(|val| val.string(value_format).expect("Value must be a string"))
-                            .collect()
-                    })
-                    .collect()),
+                Some(value) => coerce_area(value, |val| val.string(value_format)),
             },
             Value::None => Ok(vec![vec![String::new()]]),
             Value::ChronoDateTime(_value) => Ok(vec![vec![self.string(value_format)?]]),
@@ -1691,46 +1561,16 @@ impl Value {
                 Some(_value) => Ok(Some(vec![vec![self.f64(value_format)?]])),
             },
             Value::VecValue(value) => {
-                let values = value
-                    .iter()
-                    .map(|val| val.f64(value_format).expect("Value must be a number"))
-                    .collect();
-                Ok(Some(vec![values]))
+                Ok(Some(vec![coerce_list(value, |val| val.f64(value_format))?]))
             }
             Value::OptionVecValue(value) => match value {
                 None => Ok(None),
-                Some(value) => {
-                    let values = value
-                        .iter()
-                        .map(|val| val.f64(value_format).expect("Value must be a number"))
-                        .collect();
-                    Ok(Some(vec![values]))
-                }
+                Some(value) => Ok(Some(vec![coerce_list(value, |val| val.f64(value_format))?])),
             },
-            Value::AreaValue(value) => Ok(Some(
-                value
-                    .iter()
-                    .map(|inner_vec| {
-                        inner_vec
-                            .iter()
-                            .map(|val| val.f64(value_format).expect("Value must be a number"))
-                            .collect()
-                    })
-                    .collect(),
-            )),
+            Value::AreaValue(value) => Ok(Some(coerce_area(value, |val| val.f64(value_format))?)),
             Value::OptionAreaValue(value) => match value {
                 None => Ok(None),
-                Some(value) => Ok(Some(
-                    value
-                        .iter()
-                        .map(|inner_vec| {
-                            inner_vec
-                                .iter()
-                                .map(|val| val.f64(value_format).expect("Value must be a number"))
-                                .collect()
-                        })
-                        .collect(),
-                )),
+                Some(value) => Ok(Some(coerce_area(value, |val| val.f64(value_format))?)),
             },
             Value::None => Ok(None),
             Value::ChronoDateTime(_value) => Ok(Some(vec![vec![self.f64(value_format)?]])),
@@ -1773,43 +1613,15 @@ impl Value {
                 None => Err("Value cannot be None".into()),
                 Some(_value) => Ok(vec![vec![self.i32(value_format)?]]),
             },
-            Value::VecValue(value) => {
-                let values = value
-                    .iter()
-                    .map(|val| val.i32(value_format).expect("Value must be an integer"))
-                    .collect();
-                Ok(vec![values])
-            }
+            Value::VecValue(value) => Ok(vec![coerce_list(value, |val| val.i32(value_format))?]),
             Value::OptionVecValue(value) => match value {
                 None => Err("Value cannot be None".into()),
-                Some(value) => {
-                    let values = value
-                        .iter()
-                        .map(|val| val.i32(value_format).expect("Value must be an integer"))
-                        .collect();
-                    Ok(vec![values])
-                }
+                Some(value) => Ok(vec![coerce_list(value, |val| val.i32(value_format))?]),
             },
-            Value::AreaValue(value) => Ok(value
-                .iter()
-                .map(|inner_vec| {
-                    inner_vec
-                        .iter()
-                        .map(|val| val.i32(value_format).expect("Value must be an integer"))
-                        .collect()
-                })
-                .collect()),
+            Value::AreaValue(value) => coerce_area(value, |val| val.i32(value_format)),
             Value::OptionAreaValue(value) => match value {
                 None => Err("Value cannot be None".into()),
-                Some(value) => Ok(value
-                    .iter()
-                    .map(|inner_vec| {
-                        inner_vec
-                            .iter()
-                            .map(|val| val.i32(value_format).expect("Value must be an integer"))
-                            .collect()
-                    })
-                    .collect()),
+                Some(value) => coerce_area(value, |val| val.i32(value_format)),
             },
             Value::None => Err("Value cannot be None".into()),
             Value::ChronoDateTime(_value) => Ok(vec![vec![self.i32(value_format)?]]),
@@ -1853,46 +1665,16 @@ impl Value {
                 Some(_value) => Ok(Some(vec![vec![self.i32(value_format)?]])),
             },
             Value::VecValue(value) => {
-                let values = value
-                    .iter()
-                    .map(|val| val.i32(value_format).expect("Value must be an integer"))
-                    .collect();
-                Ok(Some(vec![values]))
+                Ok(Some(vec![coerce_list(value, |val| val.i32(value_format))?]))
             }
             Value::OptionVecValue(value) => match value {
                 None => Ok(None),
-                Some(value) => {
-                    let values = value
-                        .iter()
-                        .map(|val| val.i32(value_format).expect("Value must be an integer"))
-                        .collect();
-                    Ok(Some(vec![values]))
-                }
+                Some(value) => Ok(Some(vec![coerce_list(value, |val| val.i32(value_format))?])),
             },
-            Value::AreaValue(value) => Ok(Some(
-                value
-                    .iter()
-                    .map(|inner_vec| {
-                        inner_vec
-                            .iter()
-                            .map(|val| val.i32(value_format).expect("Value must be an integer"))
-                            .collect()
-                    })
-                    .collect(),
-            )),
+            Value::AreaValue(value) => Ok(Some(coerce_area(value, |val| val.i32(value_format))?)),
             Value::OptionAreaValue(value) => match value {
                 None => Ok(None),
-                Some(value) => Ok(Some(
-                    value
-                        .iter()
-                        .map(|inner_vec| {
-                            inner_vec
-                                .iter()
-                                .map(|val| val.i32(value_format).expect("Value must be an integer"))
-                                .collect()
-                        })
-                        .collect(),
-                )),
+                Some(value) => Ok(Some(coerce_area(value, |val| val.i32(value_format))?)),
             },
             Value::None => Ok(None),
             Value::ChronoDateTime(_value) => Ok(Some(vec![vec![self.i32(value_format)?]])),
@@ -1935,47 +1717,19 @@ impl Value {
                 None => Ok(None),
                 Some(value) => Ok(Some(vec![vec![*value]])),
             },
-            Value::VecValue(value) => {
-                let values = value
-                    .iter()
-                    .map(|val| val.bool(value_format).expect("Value must be a boolean"))
-                    .collect();
-                Ok(Some(vec![values]))
-            }
+            Value::VecValue(value) => Ok(Some(vec![coerce_list(value, |val| {
+                val.bool(value_format)
+            })?])),
             Value::OptionVecValue(value) => match value {
                 None => Ok(None),
-                Some(value) => {
-                    let values = value
-                        .iter()
-                        .map(|val| val.bool(value_format).expect("Value must be a boolean"))
-                        .collect();
-                    Ok(Some(vec![values]))
-                }
+                Some(value) => Ok(Some(vec![coerce_list(value, |val| {
+                    val.bool(value_format)
+                })?])),
             },
-            Value::AreaValue(value) => Ok(Some(
-                value
-                    .iter()
-                    .map(|inner_vec| {
-                        inner_vec
-                            .iter()
-                            .map(|val| val.bool(value_format).expect("Value must be a boolean"))
-                            .collect()
-                    })
-                    .collect(),
-            )),
+            Value::AreaValue(value) => Ok(Some(coerce_area(value, |val| val.bool(value_format))?)),
             Value::OptionAreaValue(value) => match value {
                 None => Ok(None),
-                Some(value) => Ok(Some(
-                    value
-                        .iter()
-                        .map(|inner_vec| {
-                            inner_vec
-                                .iter()
-                                .map(|val| val.bool(value_format).expect("Value must be a boolean"))
-                                .collect()
-                        })
-                        .collect(),
-                )),
+                Some(value) => Ok(Some(coerce_area(value, |val| val.bool(value_format))?)),
             },
             Value::None => Ok(None),
             Value::ChronoDateTime(_value) => Ok(Some(vec![vec![self.bool(value_format)?]])),
@@ -2125,14 +1879,7 @@ impl Value {
                 if value.is_empty() {
                     Err("Cannot convert empty value list to whole number value list".into())
                 } else {
-                    let vector: Vec<i32> = value
-                        .iter()
-                        .map(|val| {
-                            val.i32(value_format)
-                                .expect("Cannot convert empty value list to whole number list")
-                        })
-                        .collect();
-                    Ok(vector)
+                    coerce_list(value, |val| val.i32(value_format))
                 }
             }
             Value::OptionVecValue(value) => match value {
@@ -2141,28 +1888,12 @@ impl Value {
                     if value.is_empty() {
                         Err("Cannot convert empty value list to whole number value list".into())
                     } else {
-                        let vector: Vec<i32> = value
-                            .iter()
-                            .map(|val| {
-                                val.i32(value_format)
-                                    .expect("Cannot convert value list to whole number list")
-                            })
-                            .collect();
-                        Ok(vector)
+                        coerce_list(value, |val| val.i32(value_format))
                     }
                 }
             },
             Value::AreaValue(value) => {
-                let values: Vec<i32> = value
-                    .iter()
-                    .flat_map(|inner_vec| {
-                        inner_vec.iter().map(|val| {
-                            val.i32(value_format).expect(
-                                "Cannot convert empty value area to whole number value list",
-                            )
-                        })
-                    })
-                    .collect();
+                let values: Vec<i32> = coerce_area(value, |val| val.i32(value_format))?.concat();
 
                 if !values.is_empty() {
                     return Ok(values);
@@ -2171,16 +1902,8 @@ impl Value {
             }
             Value::OptionAreaValue(value) => {
                 if let Some(value) = value {
-                    let values: Vec<i32> = value
-                        .iter()
-                        .flat_map(|inner_vec| {
-                            inner_vec.iter().map(|val| {
-                                val.i32(value_format).expect(
-                                    "Cannot convert empty value area to whole number value list",
-                                )
-                            })
-                        })
-                        .collect();
+                    let values: Vec<i32> =
+                        coerce_area(value, |val| val.i32(value_format))?.concat();
 
                     if !values.is_empty() {
                         return Ok(values);
@@ -2335,23 +2058,15 @@ impl Value {
             match self {
                 Value::OptionChronoDateTime(value) => {
                     return if let Some(value) = value {
-                        Ok(
-                            date_time_to_excel(
-                                value,
-                                value_format.date_semantics(),
-                            )?
-                            .to_string(),
-                        )
+                        Ok(date_time_to_excel(value, value_format.date_semantics())?.to_string())
                     } else {
                         Err("Cannot convert an empty datetime to a string value".into())
                     };
                 }
                 Value::ChronoDateTime(value) => {
-                    return Ok(date_time_to_excel(
-                        value,
-                        value_format.date_semantics(),
-                    )?
-                    .to_string());
+                    return Ok(
+                        date_time_to_excel(value, value_format.date_semantics())?.to_string()
+                    );
                 }
                 _ => {}
             }
@@ -2910,14 +2625,7 @@ impl Value {
                 if value.is_empty() {
                     Err("Cannot convert empty value list to boolean list".into())
                 } else {
-                    let vector: Vec<bool> = value
-                        .iter()
-                        .map(|val| {
-                            val.bool(value_format)
-                                .expect("Cannot convert empty value list to boolean list")
-                        })
-                        .collect();
-                    Ok(vector)
+                    coerce_list(value, |val| val.bool(value_format))
                 }
             }
             Value::OptionVecValue(value) => match value {
@@ -2926,27 +2634,12 @@ impl Value {
                     if value.is_empty() {
                         Err("Cannot convert empty value list to boolean value list".into())
                     } else {
-                        let vector: Vec<bool> = value
-                            .iter()
-                            .map(|val| {
-                                val.bool(value_format)
-                                    .expect("Cannot convert value list to boolean list")
-                            })
-                            .collect();
-                        Ok(vector)
+                        coerce_list(value, |val| val.bool(value_format))
                     }
                 }
             },
             Value::AreaValue(value) => {
-                let values: Vec<bool> = value
-                    .iter()
-                    .flat_map(|inner_vec| {
-                        inner_vec.iter().map(|val| {
-                            val.bool(value_format)
-                                .expect("Cannot convert empty value area to boolean value list")
-                        })
-                    })
-                    .collect();
+                let values: Vec<bool> = coerce_area(value, |val| val.bool(value_format))?.concat();
 
                 if !values.is_empty() {
                     return Ok(values);
@@ -2955,15 +2648,8 @@ impl Value {
             }
             Value::OptionAreaValue(value) => {
                 if let Some(value) = value {
-                    let values: Vec<bool> = value
-                        .iter()
-                        .flat_map(|inner_vec| {
-                            inner_vec.iter().map(|val| {
-                                val.bool(value_format)
-                                    .expect("Cannot convert empty value area to boolean value list")
-                            })
-                        })
-                        .collect();
+                    let values: Vec<bool> =
+                        coerce_area(value, |val| val.bool(value_format))?.concat();
 
                     if !values.is_empty() {
                         return Ok(values);
@@ -3021,14 +2707,7 @@ impl Value {
                 if value.is_empty() {
                     Err("Cannot convert empty value list to string value area".into())
                 } else {
-                    let vector: Vec<String> = value
-                        .iter()
-                        .map(|val| {
-                            val.string(value_format)
-                                .expect("Cannot convert empty value list to string list")
-                        })
-                        .collect();
-                    Ok(vec![vector])
+                    Ok(vec![coerce_list(value, |val| val.string(value_format))?])
                 }
             }
             Value::OptionVecValue(value) => match value {
@@ -3037,32 +2716,15 @@ impl Value {
                     if value.is_empty() {
                         Err("Cannot convert empty value list to string value area".into())
                     } else {
-                        let vector: Vec<String> = value
-                            .iter()
-                            .map(|val| {
-                                val.string(value_format)
-                                    .expect("Cannot convert value list to string list")
-                            })
-                            .collect();
-                        Ok(vec![vector])
+                        Ok(vec![coerce_list(value, |val| val.string(value_format))?])
                     }
                 }
             },
             Value::AreaValue(value) => {
-                let values: Vec<Vec<String>> = value
-                    .iter()
-                    .map(|values| {
-                        values
-                            .iter()
-                            .map(|val| match val {
-                                Value::None => String::new(),
-                                other => other
-                                    .string(value_format)
-                                    .expect("Cannot convert value area to string value area"),
-                            })
-                            .collect()
-                    })
-                    .collect();
+                let values: Vec<Vec<String>> = coerce_area(value, |val| match val {
+                    Value::None => Ok(String::new()),
+                    other => other.string(value_format),
+                })?;
 
                 if !values.is_empty() {
                     return Ok(values);
@@ -3071,20 +2733,10 @@ impl Value {
             }
             Value::OptionAreaValue(value) => {
                 if let Some(value) = value {
-                    let values: Vec<Vec<String>> = value
-                        .iter()
-                        .map(|values| {
-                            values
-                                .iter()
-                                .map(|val| match val {
-                                    Value::None => String::new(),
-                                    other => other
-                                        .string(value_format)
-                                        .expect("Cannot convert value area to string value area"),
-                                })
-                                .collect()
-                        })
-                        .collect();
+                    let values: Vec<Vec<String>> = coerce_area(value, |val| match val {
+                        Value::None => Ok(String::new()),
+                        other => other.string(value_format),
+                    })?;
 
                     if !values.is_empty() {
                         return Ok(values);
@@ -3141,15 +2793,10 @@ impl Value {
                 if value.is_empty() {
                     Err("Cannot convert empty value list to number value area".into())
                 } else {
-                    let vector: Vec<Vec<f64>> = value
-                        .iter()
-                        .map(|val| {
-                            vec![val
-                                .f64(value_format)
-                                .expect("Cannot convert value list to number area")]
-                        })
-                        .collect();
-                    Ok(vector)
+                    Ok(coerce_list(value, |val| val.f64(value_format))?
+                        .into_iter()
+                        .map(|v| vec![v])
+                        .collect())
                 }
             }
             Value::OptionVecValue(value) => match value {
@@ -3158,33 +2805,18 @@ impl Value {
                     if value.is_empty() {
                         Err("Cannot convert empty value list to number value area".into())
                     } else {
-                        let vector: Vec<Vec<f64>> = value
-                            .iter()
-                            .map(|val| {
-                                vec![val
-                                    .f64(value_format)
-                                    .expect("Cannot convert value list to number list")]
-                            })
-                            .collect();
-                        Ok(vector)
+                        Ok(coerce_list(value, |val| val.f64(value_format))?
+                            .into_iter()
+                            .map(|v| vec![v])
+                            .collect())
                     }
                 }
             },
             Value::AreaValue(value) => {
-                let values: Vec<Vec<f64>> = value
-                    .iter()
-                    .map(|values| {
-                        values
-                            .iter()
-                            .map(|val| match val {
-                                Value::None => 0.0,
-                                other => other
-                                    .f64(value_format)
-                                    .expect("Cannot convert value area to number value area"),
-                            })
-                            .collect()
-                    })
-                    .collect();
+                let values: Vec<Vec<f64>> = coerce_area(value, |val| match val {
+                    Value::None => Ok(0.0),
+                    other => other.f64(value_format),
+                })?;
 
                 if !values.is_empty() {
                     return Ok(values);
@@ -3193,20 +2825,10 @@ impl Value {
             }
             Value::OptionAreaValue(value) => {
                 if let Some(value) = value {
-                    let values: Vec<Vec<f64>> = value
-                        .iter()
-                        .map(|values| {
-                            values
-                                .iter()
-                                .map(|val| match val {
-                                    Value::None => 0.0,
-                                    other => other
-                                        .f64(value_format)
-                                        .expect("Cannot convert value area to number value area"),
-                                })
-                                .collect()
-                        })
-                        .collect();
+                    let values: Vec<Vec<f64>> = coerce_area(value, |val| match val {
+                        Value::None => Ok(0.0),
+                        other => other.f64(value_format),
+                    })?;
 
                     if !values.is_empty() {
                         return Ok(values);
@@ -3288,15 +2910,10 @@ impl Value {
                 if value.is_empty() {
                     Err("Cannot convert empty value list to number value area".into())
                 } else {
-                    let vector: Vec<Vec<i32>> = value
-                        .iter()
-                        .map(|val| {
-                            vec![val
-                                .i32(value_format)
-                                .expect("Cannot convert value list to number area")]
-                        })
-                        .collect();
-                    Ok(vector)
+                    Ok(coerce_list(value, |val| val.i32(value_format))?
+                        .into_iter()
+                        .map(|v| vec![v])
+                        .collect())
                 }
             }
             Value::OptionVecValue(value) => match value {
@@ -3305,33 +2922,18 @@ impl Value {
                     if value.is_empty() {
                         Err("Cannot convert empty value list to number value area".into())
                     } else {
-                        let vector: Vec<Vec<i32>> = value
-                            .iter()
-                            .map(|val| {
-                                vec![val
-                                    .i32(value_format)
-                                    .expect("Cannot convert value list to number list")]
-                            })
-                            .collect();
-                        Ok(vector)
+                        Ok(coerce_list(value, |val| val.i32(value_format))?
+                            .into_iter()
+                            .map(|v| vec![v])
+                            .collect())
                     }
                 }
             },
             Value::AreaValue(value) => {
-                let values: Vec<Vec<i32>> = value
-                    .iter()
-                    .map(|values| {
-                        values
-                            .iter()
-                            .map(|val| match val {
-                                Value::None => 0,
-                                other => other
-                                    .i32(value_format)
-                                    .expect("Cannot convert value area to number value area"),
-                            })
-                            .collect()
-                    })
-                    .collect();
+                let values: Vec<Vec<i32>> = coerce_area(value, |val| match val {
+                    Value::None => Ok(0),
+                    other => other.i32(value_format),
+                })?;
 
                 if !values.is_empty() {
                     return Ok(values);
@@ -3340,20 +2942,10 @@ impl Value {
             }
             Value::OptionAreaValue(value) => {
                 if let Some(value) = value {
-                    let values: Vec<Vec<i32>> = value
-                        .iter()
-                        .map(|values| {
-                            values
-                                .iter()
-                                .map(|val| match val {
-                                    Value::None => 0,
-                                    other => other
-                                        .i32(value_format)
-                                        .expect("Cannot convert value area to number value area"),
-                                })
-                                .collect()
-                        })
-                        .collect();
+                    let values: Vec<Vec<i32>> = coerce_area(value, |val| match val {
+                        Value::None => Ok(0),
+                        other => other.i32(value_format),
+                    })?;
 
                     if !values.is_empty() {
                         return Ok(values);
@@ -3483,15 +3075,10 @@ impl Value {
                 if value.is_empty() {
                     Err("Cannot convert empty value list to boolean value area".into())
                 } else {
-                    let vector: Vec<Vec<bool>> = value
-                        .iter()
-                        .map(|val| {
-                            vec![val
-                                .bool(value_format)
-                                .expect("Cannot convert value list to boolean area")]
-                        })
-                        .collect();
-                    Ok(vector)
+                    Ok(coerce_list(value, |val| val.bool(value_format))?
+                        .into_iter()
+                        .map(|v| vec![v])
+                        .collect())
                 }
             }
             Value::OptionVecValue(value) => match value {
@@ -3500,31 +3087,15 @@ impl Value {
                     if value.is_empty() {
                         Err("Cannot convert empty value list to boolean value area".into())
                     } else {
-                        let vector: Vec<Vec<bool>> = value
-                            .iter()
-                            .map(|val| {
-                                vec![val
-                                    .bool(value_format)
-                                    .expect("Cannot convert value list to boolean list")]
-                            })
-                            .collect();
-                        Ok(vector)
+                        Ok(coerce_list(value, |val| val.bool(value_format))?
+                            .into_iter()
+                            .map(|v| vec![v])
+                            .collect())
                     }
                 }
             },
             Value::AreaValue(value) => {
-                let values: Vec<Vec<bool>> = value
-                    .iter()
-                    .map(|values| {
-                        values
-                            .iter()
-                            .map(|val| {
-                                val.bool(value_format)
-                                    .expect("Cannot convert empty value area to boolean value area")
-                            })
-                            .collect()
-                    })
-                    .collect();
+                let values: Vec<Vec<bool>> = coerce_area(value, |val| val.bool(value_format))?;
 
                 if !values.is_empty() {
                     return Ok(values);
@@ -3533,19 +3104,7 @@ impl Value {
             }
             Value::OptionAreaValue(value) => {
                 if let Some(value) = value {
-                    let values: Vec<Vec<bool>> = value
-                        .iter()
-                        .map(|values| {
-                            values
-                                .iter()
-                                .map(|val| {
-                                    val.bool(value_format).expect(
-                                        "Cannot convert empty value area to boolean value area",
-                                    )
-                                })
-                                .collect()
-                        })
-                        .collect();
+                    let values: Vec<Vec<bool>> = coerce_area(value, |val| val.bool(value_format))?;
 
                     if !values.is_empty() {
                         return Ok(values);
@@ -4071,7 +3630,10 @@ mod tests {
         let value_format = default_value_format();
 
         // Create a DateTime value
-        let dt = Utc.with_ymd_and_hms(2023, 1, 1, 12, 0, 0).unwrap();
+        let dt = Utc
+            .with_ymd_and_hms(2023, 1, 1, 12, 0, 0)
+            .single()
+            .expect("valid test date");
         let dt_value = date_time(dt);
         let string_value = string("2023-01-01T12:00:00Z".to_string());
 
@@ -4205,7 +3767,10 @@ mod tests {
         let string_value = string("test".to_string());
         let vec_value = vec_f64(vec![1.0, 2.0, 3.0]);
         let area_value = area_f64(vec![vec![1.0, 2.0], vec![3.0, 4.0]]);
-        let dt = Utc.with_ymd_and_hms(2023, 1, 1, 12, 0, 0).unwrap();
+        let dt = Utc
+            .with_ymd_and_hms(2023, 1, 1, 12, 0, 0)
+            .single()
+            .expect("valid test date");
         let dt_value = date_time(dt);
         let time_val = NaiveTime::from_hms_opt(12, 0, 0).unwrap();
         let time_value = Value::Time(time_val);

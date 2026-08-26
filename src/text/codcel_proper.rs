@@ -25,7 +25,10 @@ pub fn codcel_proper<S: AsRef<str>>(text: S) -> Result<String, Box<dyn Error + S
     // Process text using grapheme clusters instead of chars to handle complex Unicode correctly
     for grapheme in text.graphemes(true) {
         let mut chars = grapheme.chars();
-        let first_char = chars.next().unwrap();
+        // A grapheme cluster always contains at least one char.
+        let Some(first_char) = chars.next() else {
+            continue;
+        };
 
         if first_char.is_whitespace()
             || first_char.is_ascii_punctuation()

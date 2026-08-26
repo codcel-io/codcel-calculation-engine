@@ -85,9 +85,18 @@ mod tests {
 
     #[test]
     fn test_price_mat_basic() {
-        let settlement = Utc.with_ymd_and_hms(2022, 1, 1, 0, 0, 0).unwrap();
-        let maturity = Utc.with_ymd_and_hms(2023, 1, 1, 0, 0, 0).unwrap();
-        let issue = Utc.with_ymd_and_hms(2021, 1, 1, 0, 0, 0).unwrap();
+        let settlement = Utc
+            .with_ymd_and_hms(2022, 1, 1, 0, 0, 0)
+            .single()
+            .expect("valid test date");
+        let maturity = Utc
+            .with_ymd_and_hms(2023, 1, 1, 0, 0, 0)
+            .single()
+            .expect("valid test date");
+        let issue = Utc
+            .with_ymd_and_hms(2021, 1, 1, 0, 0, 0)
+            .single()
+            .expect("valid test date");
 
         let result = codcel_price_mat(settlement, maturity, issue, 0.05, 0.06, Some(0));
 
@@ -98,20 +107,38 @@ mod tests {
 
     #[test]
     fn test_price_mat_error_cases() {
-        let settlement = Utc.with_ymd_and_hms(2022, 1, 1, 0, 0, 0).unwrap();
-        let maturity = Utc.with_ymd_and_hms(2022, 1, 1, 0, 0, 0).unwrap();
-        let issue = Utc.with_ymd_and_hms(2021, 1, 1, 0, 0, 0).unwrap();
+        let settlement = Utc
+            .with_ymd_and_hms(2022, 1, 1, 0, 0, 0)
+            .single()
+            .expect("valid test date");
+        let maturity = Utc
+            .with_ymd_and_hms(2022, 1, 1, 0, 0, 0)
+            .single()
+            .expect("valid test date");
+        let issue = Utc
+            .with_ymd_and_hms(2021, 1, 1, 0, 0, 0)
+            .single()
+            .expect("valid test date");
 
         // Maturity must be later than settlement
         assert!(codcel_price_mat(settlement, maturity, issue, 0.05, 0.06, Some(0)).is_err());
 
         // Settlement must be later than issue
-        let settlement = Utc.with_ymd_and_hms(2021, 1, 1, 0, 0, 0).unwrap();
-        let maturity = Utc.with_ymd_and_hms(2023, 1, 1, 0, 0, 0).unwrap();
+        let settlement = Utc
+            .with_ymd_and_hms(2021, 1, 1, 0, 0, 0)
+            .single()
+            .expect("valid test date");
+        let maturity = Utc
+            .with_ymd_and_hms(2023, 1, 1, 0, 0, 0)
+            .single()
+            .expect("valid test date");
         assert!(codcel_price_mat(settlement, maturity, settlement, 0.05, 0.06, Some(0)).is_err());
 
         // Rate must be non-negative
-        let settlement = Utc.with_ymd_and_hms(2022, 1, 1, 0, 0, 0).unwrap();
+        let settlement = Utc
+            .with_ymd_and_hms(2022, 1, 1, 0, 0, 0)
+            .single()
+            .expect("valid test date");
         assert!(codcel_price_mat(settlement, maturity, issue, -0.05, 0.06, Some(0)).is_err());
 
         // Yield must be non-negative

@@ -5,7 +5,8 @@
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
 use crate::compensated_sum::CompensatedSum;
-use chrono::{DateTime, Datelike, TimeZone, Utc};
+use crate::date_and_time::add_months::add_months;
+use chrono::{DateTime, Datelike, Utc};
 use std::error::Error;
 
 /// Calculates the price of a security with an odd (short or long) first coupon period.
@@ -42,7 +43,7 @@ pub fn codcel_odd_f_price(
     let months_per_period = 12 / frequency;
 
     // Find the previous quasi-coupon date before first_coupon
-    let prev_quasi = add_months(first_coupon, -months_per_period);
+    let prev_quasi = add_months(first_coupon, -months_per_period)?;
 
     if issue >= prev_quasi {
         // SHORT first coupon period
@@ -95,7 +96,7 @@ fn odd_f_price_short(
     let months_per_period = 12 / frequency;
 
     // Previous quasi-coupon date (start of the standard coupon period)
-    let pcd = add_months(first_coupon, -months_per_period);
+    let pcd = add_months(first_coupon, -months_per_period)?;
 
     // E = standard coupon period length (denominator)
     let e = coupon_period_days(pcd, first_coupon, basis, frequency);
@@ -110,7 +111,7 @@ fn odd_f_price_short(
     let dfc = day_count(issue, first_coupon, basis);
 
     // N = number of coupon periods from first coupon to maturity (inclusive of first_coupon)
-    let n = count_coupon_periods(first_coupon, maturity, frequency);
+    let n = count_coupon_periods(first_coupon, maturity, frequency)?;
 
     let dsc_e = dsc / e;
 
@@ -156,8 +157,8 @@ fn odd_f_price_long(
     // Generate quasi-coupon dates by stepping backward from first_coupon
     // until we reach or pass the issue date
     let mut quasi_dates = vec![first_coupon];
-    loop {
-        let prev = add_months(*quasi_dates.last().unwrap(), -months_per_period);
+    while let Some(&last) = quasi_dates.last() {
+        let prev = add_months(last, -months_per_period)?;
         quasi_dates.push(prev);
         if prev <= issue {
             break;
@@ -249,7 +250,7 @@ fn odd_f_price_long(
     let nq = (nc as i32) - (nqd_idx as i32);
 
     // N = number of coupon periods from first coupon to maturity
-    let n = count_coupon_periods(first_coupon, maturity, frequency);
+    let n = count_coupon_periods(first_coupon, maturity, frequency)?;
 
     let dsc_e = dsc / e;
 
@@ -276,15 +277,19 @@ fn odd_f_price_long(
 }
 
 /// Count coupon periods from `start` to `maturity` (inclusive of both endpoints).
-fn count_coupon_periods(start: DateTime<Utc>, maturity: DateTime<Utc>, frequency: i32) -> i32 {
+fn count_coupon_periods(
+    start: DateTime<Utc>,
+    maturity: DateTime<Utc>,
+    frequency: i32,
+) -> Result<i32, Box<dyn Error + Send + Sync>> {
     let months_per_period = 12 / frequency;
     let mut count = 0;
     let mut current = start;
     while current <= maturity {
         count += 1;
-        current = add_months(current, months_per_period);
+        current = add_months(current, months_per_period)?;
     }
-    count
+    Ok(count)
 }
 
 /// Calculate day count between two dates based on the specified basis (numerator).
@@ -346,54 +351,15 @@ fn days_30_360_eu(start: DateTime<Utc>, end: DateTime<Utc>) -> f64 {
     ((y2 - y1) * 360 + (m2 - m1) * 30 + (d2 - d1)) as f64
 }
 
-/// Add months to a date, preserving end-of-month behavior.
-fn add_months(date: DateTime<Utc>, months: i32) -> DateTime<Utc> {
-    let mut year = date.year();
-    let mut month = date.month() as i32 + months;
-
-    while month > 12 {
-        month -= 12;
-        year += 1;
-    }
-    while month < 1 {
-        month += 12;
-        year -= 1;
-    }
-
-    let original_day = date.day();
-    let max_day = days_in_month(year, month as u32);
-
-    // Preserve end-of-month: if original was last day of its month, use last day of target
-    let day = if original_day >= days_in_month(date.year(), date.month()) {
-        max_day
-    } else {
-        original_day.min(max_day)
-    };
-
-    Utc.with_ymd_and_hms(year, month as u32, day, 0, 0, 0)
-        .unwrap()
-}
-
-fn days_in_month(year: i32, month: u32) -> u32 {
-    match month {
-        2 if is_leap_year(year) => 29,
-        2 => 28,
-        4 | 6 | 9 | 11 => 30,
-        _ => 31,
-    }
-}
-
-fn is_leap_year(year: i32) -> bool {
-    (year % 4 == 0 && year % 100 != 0) || (year % 400 == 0)
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
     use chrono::TimeZone;
 
     fn dt(y: i32, m: u32, d: u32) -> DateTime<Utc> {
-        Utc.with_ymd_and_hms(y, m, d, 0, 0, 0).unwrap()
+        Utc.with_ymd_and_hms(y, m, d, 0, 0, 0)
+            .single()
+            .expect("valid test date")
     }
 
     #[test]

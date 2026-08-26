@@ -62,8 +62,14 @@ mod tests {
 
     #[test]
     fn test_price_disc_basic() {
-        let settlement = Utc.with_ymd_and_hms(2022, 1, 1, 0, 0, 0).unwrap();
-        let maturity = Utc.with_ymd_and_hms(2023, 1, 1, 0, 0, 0).unwrap();
+        let settlement = Utc
+            .with_ymd_and_hms(2022, 1, 1, 0, 0, 0)
+            .single()
+            .expect("valid test date");
+        let maturity = Utc
+            .with_ymd_and_hms(2023, 1, 1, 0, 0, 0)
+            .single()
+            .expect("valid test date");
 
         let result = codcel_price_disc(settlement, maturity, 0.05, 100.0, Some(0));
 
@@ -74,14 +80,23 @@ mod tests {
 
     #[test]
     fn test_price_disc_error_cases() {
-        let settlement = Utc.with_ymd_and_hms(2022, 1, 1, 0, 0, 0).unwrap();
-        let maturity = Utc.with_ymd_and_hms(2022, 1, 1, 0, 0, 0).unwrap();
+        let settlement = Utc
+            .with_ymd_and_hms(2022, 1, 1, 0, 0, 0)
+            .single()
+            .expect("valid test date");
+        let maturity = Utc
+            .with_ymd_and_hms(2022, 1, 1, 0, 0, 0)
+            .single()
+            .expect("valid test date");
 
         // Maturity must be later than settlement
         assert!(codcel_price_disc(settlement, maturity, 0.05, 100.0, Some(0)).is_err());
 
         // Discount must be greater than 0
-        let maturity = Utc.with_ymd_and_hms(2023, 1, 1, 0, 0, 0).unwrap();
+        let maturity = Utc
+            .with_ymd_and_hms(2023, 1, 1, 0, 0, 0)
+            .single()
+            .expect("valid test date");
         assert!(codcel_price_disc(settlement, maturity, 0.0, 100.0, Some(0)).is_err());
 
         // Redemption must be greater than 0

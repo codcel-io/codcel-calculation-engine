@@ -106,8 +106,14 @@ mod tests {
     #[test]
     fn test_amor_linc_first_period() {
         let cost = 2400.0;
-        let date_purchased = Utc.with_ymd_and_hms(2020, 1, 1, 0, 0, 0).unwrap();
-        let first_period_end = Utc.with_ymd_and_hms(2020, 12, 31, 0, 0, 0).unwrap();
+        let date_purchased = Utc
+            .with_ymd_and_hms(2020, 1, 1, 0, 0, 0)
+            .single()
+            .expect("valid test date");
+        let first_period_end = Utc
+            .with_ymd_and_hms(2020, 12, 31, 0, 0, 0)
+            .single()
+            .expect("valid test date");
         let salvage = 300.0;
         let rate = 0.2;
 
@@ -131,8 +137,14 @@ mod tests {
     #[test]
     fn test_amor_linc_regular_period() {
         let cost = 2400.0;
-        let date_purchased = Utc.with_ymd_and_hms(2020, 1, 1, 0, 0, 0).unwrap();
-        let first_period_end = Utc.with_ymd_and_hms(2020, 12, 31, 0, 0, 0).unwrap();
+        let date_purchased = Utc
+            .with_ymd_and_hms(2020, 1, 1, 0, 0, 0)
+            .single()
+            .expect("valid test date");
+        let first_period_end = Utc
+            .with_ymd_and_hms(2020, 12, 31, 0, 0, 0)
+            .single()
+            .expect("valid test date");
         let salvage = 300.0;
         let rate = 0.2;
 
@@ -155,8 +167,14 @@ mod tests {
     #[test]
     fn test_amor_linc_after_life() {
         let cost = 2400.0;
-        let date_purchased = Utc.with_ymd_and_hms(2020, 1, 1, 0, 0, 0).unwrap();
-        let first_period_end = Utc.with_ymd_and_hms(2020, 12, 31, 0, 0, 0).unwrap();
+        let date_purchased = Utc
+            .with_ymd_and_hms(2020, 1, 1, 0, 0, 0)
+            .single()
+            .expect("valid test date");
+        let first_period_end = Utc
+            .with_ymd_and_hms(2020, 12, 31, 0, 0, 0)
+            .single()
+            .expect("valid test date");
         let salvage = 300.0;
         let rate = 0.2;
 

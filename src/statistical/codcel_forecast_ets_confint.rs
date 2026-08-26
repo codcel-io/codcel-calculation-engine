@@ -4,9 +4,9 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
-use crate::date_system::DateSemantics;
 use super::forecast::*;
 use crate::compensated_sum::CompensatedSum;
+use crate::date_system::DateSemantics;
 use crate::statistical::codcel_norm_dot_s_dot_inv::codcel_norm_dot_s_dot_inv;
 use std::error::Error;
 
