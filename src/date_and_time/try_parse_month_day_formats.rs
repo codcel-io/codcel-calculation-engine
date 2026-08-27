@@ -10,8 +10,16 @@ use chrono::{DateTime, Datelike, NaiveDate, NaiveTime, TimeZone, Utc};
 ///
 /// Returns a midnight UTC `DateTime` when a format matches.
 pub fn try_parse_month_day_formats(date_text: &str) -> Option<DateTime<Utc>> {
-    // Try to handle month and day only formats (assumes current year)
-    let current_year = chrono::Utc::now().year();
+    // "Which year is it" is a wall-clock question, and Excel answers it from
+    // local time — on 31 December a caller west of Greenwich is still in the
+    // old year while UTC has already rolled over.
+    //
+    // This resolves the host zone and honours `CODCEL_MOCK_NOW`, but not an
+    // explicit `ValueFormat::timezone`: `DATEVALUE` is handed a
+    // `DateSemantics` rather than a `ValueFormat`, and threading one in would
+    // change a signature the transpiler generates calls against for a
+    // discrepancy that can only show at a year boundary.
+    let current_year = crate::clock::now(&crate::value_format::ValueFormat::default()).year();
 
     let month_day_formats = [
         "%b %d", // Jan 30

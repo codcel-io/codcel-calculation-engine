@@ -4,88 +4,147 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
+//! Excel's `TEXT` and its locale sensitivity.
+//!
+//! Excel format codes are written in the interface language of the Excel that
+//! produced them. A German workbook may carry `"jjjj-mm-tt"` where the
+//! canonical code is `"yyyy-mm-dd"`, and a comma-decimal locale writes
+//! `"#.##0,00"` where the canonical code is `"#,##0.00"`. The tokenizer in
+//! [`crate::text_function`] understands only the canonical form, so both are
+//! rewritten here before it sees them.
+//!
+//! | Meaning | English | Portuguese | German | French | Italian |
+//! |---------|---------|------------|--------|--------|---------|
+//! | Year    | `yyyy`  | `aaaa`     | `jjjj` | `aaaa` | `aaaa`  |
+//! | Month   | `mm`    | `mm`       | `mm`   | `mm`   | `mm`    |
+//! | Day     | `dd`    | `dd`       | `tt`   | `jj`   | `gg`    |
+//!
+//! The per-language pairs live in the generated locale table as
+//! [`Locale::date_token_aliases`](crate::locale::Locale::date_token_aliases).
+//!
+//! Two related pieces of Excel's locale sensitivity are **out of scope here**
+//! and always will be:
+//!
+//! - The argument separator (`,` in English locales, `;` in most European
+//!   ones) is a property of the formula grammar, not of a format code.
+//! - Localized function names (`DATUM`, `DATA`) likewise. A workbook stores
+//!   formula text in canonical English regardless of the authoring language;
+//!   Excel localizes only what it displays. Codcel reads files rather than
+//!   keystrokes, so nothing localized ever reaches its parser.
+
+use crate::locale::Locale;
 use crate::text_function::format_value;
 use crate::value_format::ValueFormat;
 use std::error::Error;
 
-/* TODO
-Excel TEXT() and DATE/DATUM Function Locale Caveats
-===================================================
+/// Is this character a digit placeholder?
+///
+/// Used to decide whether a separator sits inside a number pattern, which is
+/// the only place it should be rewritten.
+fn is_digit_placeholder(c: char) -> bool {
+    matches!(c, '0' | '#' | '?')
+}
 
-Excel formulas are **locale-sensitive**, affecting:
-1. Argument separators (`,` vs `;`)
-2. Function names (`DATE` vs `DATUM`)
-3. Format codes in `TEXT()` (like `yyyy`, `aaaa`, `jjjj`)
+/// Rewrites a format code written in `locale`'s conventions into the canonical
+/// form the tokenizer expects.
+///
+/// Runs one quote-aware pass. Text inside `"…"` and any character escaped with
+/// a backslash is copied through untouched, matching how Excel treats literals
+/// in a format code.
+fn canonicalize(format: &str, locale: &'static Locale, value_format: &ValueFormat) -> String {
+    let chars: Vec<char> = format.chars().collect();
+    let lower: Vec<char> = format.to_lowercase().chars().collect();
+    // Case folding can change length for a few scripts; fall back to the raw
+    // form rather than risk indexing the two out of step.
+    let lower = if lower.len() == chars.len() {
+        lower
+    } else {
+        chars.clone()
+    };
 
-----------------------------------------
-| Meaning      | English | Portuguese | German | French |
-|--------------|---------|------------|--------|--------|
-| Year         | yyyy    | aaaa       | jjjj   | aaaa   |
-| Month        | mm      | mm         | mm     | mm     |
-| Day          | dd      | dd         | tt     | jj     |
-| Hour         | hh      | hh         | hh     | hh     |
-| Minute       | mm      | mm         | mm     | mm     |
-| Second       | ss      | ss         | ss     | ss     |
+    // Only the separators that actually differ from canonical need rewriting,
+    // and only when they are unambiguous single characters.
+    let decimal = one_char(&value_format.decimal_separator).filter(|c| *c != '.');
+    let thousands = one_char(&value_format.thousands_separator).filter(|c| *c != ',');
 
-Function Names:
----------------
-| Language     | DATE function name |
-|--------------|--------------------|
-| English      | DATE               |
-| Portuguese   | DATA               |
-| German       | DATUM              |
-| French       | DATE               |
-
-Examples:
----------
-=TEXT(DATE(2023,5,15), "yyyy-mm-dd")         --> English (US/UK)
-=TEXT(DATA(2023;5;15); "aaaa-mm-dd")         --> Portuguese
-=TEXT(DATUM(2023;5;15); "jjjj-mm-tt")        --> German
-=TEXT(DATE(2023;5;15); "aaaa-mm-jj")         --> French
-
-Other Notes:
-------------
-- Argument separator is `,` in English locales, but `;` in most European locales.
-- Excel reuses `mm` for both **month** and **minute**, depending on context.
-- `"dddd"` and `"mmmm"` return weekday/month names in the local language.
-- TEXT() format strings **do not follow ISO 8601**, and must match Excel's UI language.
-- Localised function names like `DATUM`, `DATA`, etc., are needed **only if your Excel is running in that language**.
-- In VBA or Excel with English interface, always use `DATE`, not `DATUM`.
-
-Tip:
-Use Excel's **Format Cells → Custom** dialog to inspect the correct formatting codes for your region.
-
-*/
-
-// Function to normalize format string based on language
-fn normalize_format_string(format: &str, language: &str) -> String {
-    match language {
-        "de" => {
-            // German format
-            // Note: We need to convert from German format to standard format
-            // before passing to format_date_time_with_locale
-            format
-                .replace("jjjj", "yyyy") // Year
-                .replace("jj", "yy") // 2-digit year
-                .replace("tt", "dd") // Day
+    let mut out = String::with_capacity(format.len());
+    let mut i = 0;
+    while i < chars.len() {
+        match chars[i] {
+            '"' => {
+                out.push('"');
+                i += 1;
+                while i < chars.len() && chars[i] != '"' {
+                    out.push(chars[i]);
+                    i += 1;
+                }
+                if i < chars.len() {
+                    out.push('"');
+                    i += 1;
+                }
+                continue;
+            }
+            '\\' => {
+                out.push('\\');
+                i += 1;
+                if i < chars.len() {
+                    out.push(chars[i]);
+                    i += 1;
+                }
+                continue;
+            }
+            _ => {}
         }
-        "pt" | "pt-BR" | "pt-PT" => {
-            // Portuguese format
-            format
-                .replace("aaaa", "yyyy") // Year
-                .replace("aa", "yy") // 2-digit year
+
+        // Date-code aliases. The table is ordered longest-first, so the first
+        // match is the greedy one: `jjjj` is tried before `jj`.
+        if let Some((from, to)) = locale
+            .date_token_aliases
+            .iter()
+            .find(|(from, _)| lower[i..].starts_with(&from.chars().collect::<Vec<_>>()[..]))
+        {
+            debug_assert!(!from.is_empty());
+            out.push_str(to);
+            i += from.chars().count();
+            continue;
         }
-        "fr" => {
-            // French format
-            format
-                .replace("aaaa", "yyyy") // Year
-                .replace("aa", "yy") // 2-digit year
-                .replace("jj", "dd") // Day
+
+        // Separators, but only where one is standing between digit
+        // placeholders. Restricting it that way is what lets a French date code
+        // keep its spaces: in `dd mmm yyyy` the space separates letters, while
+        // in `# ##0,00` it separates digit placeholders.
+        let adjacent_to_digits = |i: usize| {
+            let before = i
+                .checked_sub(1)
+                .and_then(|j| chars.get(j))
+                .is_some_and(|c| is_digit_placeholder(*c));
+            let after = chars.get(i + 1).is_some_and(|c| is_digit_placeholder(*c));
+            before || after
+        };
+
+        if Some(chars[i]) == decimal && adjacent_to_digits(i) {
+            out.push('.');
+            i += 1;
+            continue;
         }
-        _ => {
-            // Default to English format
-            format.to_string()
+        if Some(chars[i]) == thousands && adjacent_to_digits(i) {
+            out.push(',');
+            i += 1;
+            continue;
         }
+
+        out.push(chars[i]);
+        i += 1;
+    }
+    out
+}
+
+/// The single `char` of `s`, or `None` if `s` is empty or longer than one.
+fn one_char(s: &str) -> Option<char> {
+    let mut it = s.chars();
+    match (it.next(), it.next()) {
+        (Some(c), None) => Some(c),
+        _ => None,
     }
 }
 
@@ -101,68 +160,8 @@ pub fn codcel_text_with_locale<S: AsRef<str>>(
     format_string: S,
     value_format: &ValueFormat,
 ) -> Result<String, Box<dyn Error + Send + Sync>> {
-    let format = format_string.as_ref();
-    let language = &value_format.language;
-
-    // Convert format string based on language (date token aliases)
-    let mut normalized_format = normalize_format_string(format, language);
-
-    // Normalize decimal/thousands separators so the tokenizer (which always treats
-    // '.' as decimal and ',' as thousands) works correctly for any locale.
-    // For locales where ',' is the decimal separator and '.' is the thousands separator
-    // (e.g. German, French, Portuguese), swap them using a placeholder to avoid collision.
-    if value_format.decimal_separator == "," && value_format.thousands_separator == "." {
-        // Swap simultaneously: , → . and . → , via placeholder
-        normalized_format = swap_separators(&normalized_format);
-    }
-
-    format_value(value, &normalized_format, value_format)
-}
-
-/// Swap ',' and '.' in a format string, respecting quoted/escaped sections.
-fn swap_separators(format: &str) -> String {
-    let mut result = String::with_capacity(format.len());
-    let chars: Vec<char> = format.chars().collect();
-    let mut i = 0;
-    while i < chars.len() {
-        match chars[i] {
-            '"' => {
-                // Pass through quoted sections unchanged
-                result.push('"');
-                i += 1;
-                while i < chars.len() && chars[i] != '"' {
-                    result.push(chars[i]);
-                    i += 1;
-                }
-                if i < chars.len() {
-                    result.push('"');
-                    i += 1;
-                }
-            }
-            '\\' => {
-                // Pass through escaped character unchanged
-                result.push('\\');
-                i += 1;
-                if i < chars.len() {
-                    result.push(chars[i]);
-                    i += 1;
-                }
-            }
-            ',' => {
-                result.push('.'); // locale decimal → standard decimal
-                i += 1;
-            }
-            '.' => {
-                result.push(','); // locale thousands → standard thousands
-                i += 1;
-            }
-            c => {
-                result.push(c);
-                i += 1;
-            }
-        }
-    }
-    result
+    let canonical = canonicalize(format_string.as_ref(), value_format.locale(), value_format);
+    format_value(value, &canonical, value_format)
 }
 
 /// Excel-compatible `TEXT` that converts a value to text with a specified format (English locale).
@@ -180,11 +179,13 @@ pub fn codcel_text<S: AsRef<str>>(
 
 #[cfg(test)]
 mod tests {
-    use crate::date_and_time::codcel_date::codcel_date;
-
     use super::*;
-    use crate::date_system::DateSemantics;
-    use crate::date_time_base::date_time_to_excel;
+    // Used only by the German-locale test, which needs the locale table.
+    #[cfg(feature = "locale-data")]
+    use crate::{
+        date_and_time::codcel_date::codcel_date, date_system::DateSemantics,
+        date_time_base::date_time_to_excel,
+    };
 
     // Helper function to create a ValueFormat for testing
     fn create_value_format(language: &str) -> ValueFormat {
@@ -280,6 +281,8 @@ mod tests {
         println!("German: {result_de}");
     }
 
+    // Asserts a non-English locale, which only exists with `locale-data` on.
+    #[cfg(feature = "locale-data")]
     #[test]
     fn test_text_date_yyyy_mm_dd() {
         // =TEXT(DATE(2023,5,15), "yyyy-mm-dd") in US format
@@ -307,10 +310,8 @@ mod tests {
         let german_format = create_value_format("de");
         println!("German language: {}", german_format.language);
 
-        // Debug the normalization process
-        let format_string = "jjjj-mm-tt";
-        let normalized = normalize_format_string(format_string, &german_format.language);
-        println!("Original format: {format_string}, Normalized: {normalized}");
+        let normalized = canonicalize("jjjj-mm-tt", german_format.locale(), &german_format);
+        assert_eq!(normalized, "yyyy-mm-dd");
 
         let result_de =
             codcel_text_with_locale(days_since_base, "jjjj-mm-tt", &german_format).unwrap();

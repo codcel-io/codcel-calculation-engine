@@ -4,57 +4,41 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
-use chrono::{DateTime, Datelike, NaiveDate, TimeZone, Utc};
+use crate::clock;
+use crate::value_format::ValueFormat;
+use chrono::{DateTime, Utc};
 use std::error::Error;
 
-/// Excel-compatible `TODAY` that returns the current date.
-///   Returns today's date as a UTC datetime with the time set to midnight (00:00:00).
-pub fn codcel_today() -> Result<DateTime<Utc>, Box<dyn Error + Send + Sync>> {
-    let now = Utc::now();
-    let naive_date = NaiveDate::from_ymd_opt(now.year(), now.month(), now.day())
-        .ok_or("Failed to construct TODAY")?;
-
-    // Assuming `midnight` is a NaiveDateTime
-    let midnight = naive_date
-        .and_hms_opt(0, 0, 0)
-        .ok_or("Failed to construct DateTime")?;
-    let datetime = Utc.from_utc_datetime(&midnight);
-    Ok(datetime)
+/// Excel-compatible `TODAY` that returns the current date at midnight.
+///
+/// Reads the wall clock of [`ValueFormat::timezone`], or of the host when that
+/// is empty, which is what Excel does. Truncating UTC instead would hand a
+/// caller at UTC+13 yesterday's date for thirteen hours of every day.
+pub fn codcel_today(
+    value_format: &ValueFormat,
+) -> Result<DateTime<Utc>, Box<dyn Error + Send + Sync>> {
+    clock::today(value_format)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
-    use chrono::Timelike;
+    use chrono::{Datelike, Timelike};
 
     #[test]
-    fn test_today() {
-        // =TODAY() in US format
-        // =TODAY() in German format
-        let now = Utc::now();
-        let result = codcel_today().unwrap();
-        println!("{result}");
+    fn today_matches_the_local_date() {
+        let vf = ValueFormat::default();
+        let now = clock::now(&vf);
+        let result = codcel_today(&vf).unwrap();
 
-        // Check that the result has the same date as now
         assert_eq!(result.year(), now.year());
         assert_eq!(result.month(), now.month());
         assert_eq!(result.day(), now.day());
-
-        // Check that the time is set to midnight
-        assert_eq!(result.hour(), 0);
-        assert_eq!(result.minute(), 0);
-        assert_eq!(result.second(), 0);
-        assert_eq!(result.nanosecond(), 0);
     }
 
     #[test]
-    fn test_today_is_date_only() {
-        // =TODAY() in US format
-        // =TODAY() in German format
-        let result = codcel_today().unwrap();
-        println!("{result}");
-
-        // Check that the time is set to midnight
+    fn today_is_date_only() {
+        let result = codcel_today(&ValueFormat::default()).unwrap();
         assert_eq!(result.hour(), 0);
         assert_eq!(result.minute(), 0);
         assert_eq!(result.second(), 0);

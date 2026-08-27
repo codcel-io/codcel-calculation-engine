@@ -15,6 +15,7 @@ include = [
     "src/**/*.rs",
     "clippy.toml",
     "README.md",
+    "CHANGELOG.md",
     "CONTRIBUTING.md",
     "LICENSE-MIT",
     "LICENSE-APACHE",
@@ -26,6 +27,23 @@ include = [
 all-features = true
 targets = ["x86_64-unknown-linux-gnu"]
 
+[features]
+default = ["locale-data", "named-timezones", "mock-clock"]
+# The full CLDR locale table. With it off `src/locale/data.rs` collapses to the
+# `en` entry alone, which keeps an English-only wasm bundle from carrying 76
+# locales it never looks up.
+locale-data = []
+# IANA timezone names for `CODCEL_TIMEZONE` / `ValueFormat::timezone`. Without
+# it `NOW` and `TODAY` still read the host's local clock, they just cannot be
+# pointed at a named zone. Costs the embedded tz database, so wasm builds that
+# do not need named zones can turn it off.
+named-timezones = ["dep:chrono-tz"]
+# Honour `CODCEL_MOCK_NOW` to freeze the clock. Generated test suites need this
+# — a workbook with a `TODAY()` cell otherwise only passes on the day it was
+# saved. Turn it off for a build that must not read the clock from the
+# environment at all.
+mock-clock = []
+
 [dependencies]
 serde = { version= "1.0.229", features= ['derive'] }
 chrono = { version = "0.4.45", features = ["serde"] }
@@ -36,6 +54,7 @@ fastrand = "2.5.0"
 nalgebra = { version = "0.35.0", default-features = false, features = ["std"] }
 statrs = { version = "0.19.0", default-features = false }
 sys-locale = "0.3.2"
+chrono-tz = { version = "0.10", optional = true }
 
 [dev-dependencies]
 # Test-only: exercises the serde back-compat guarantee on `ValueFormat`, which

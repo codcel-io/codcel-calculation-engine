@@ -1,0 +1,635 @@
+{
+  "_comment": [
+    "Hand-maintained Excel locale data. CLDR does not carry either of these:",
+    "spreadsheet format-code letters and error values are Microsoft's, not Unicode's.",
+    "",
+    "dateTokenAliases: Excel accepts number-format date codes written in the UI",
+    "language, so a German workbook may carry 'jjjj-mm-tt' where the canonical",
+    "code is 'yyyy-mm-dd'. Pairs are applied longest-first over a quote-aware",
+    "scan. Only languages whose letters map unambiguously are listed; Hungarian",
+    "and Turkish are omitted because their letters collide across fields (Turkish",
+    "'s' is both saat/hour and saniye/second), which cannot be resolved by",
+    "substitution alone.",
+    "",
+    "errors: Excel's localized error values, in ExcelError declaration order:",
+    "Null, Div0, Value, Ref, Name, Num, Na. Languages absent here fall back to",
+    "the English values.",
+    "",
+    "errorSuffix: Codcel's own annotation appended to an error message, not",
+    "something Excel emits. Listed only for languages where the phrasing is",
+    "unambiguous; anything absent falls back to the English text."
+  ],
+  "dateTokenAliases": {
+    "de": [
+      [
+        "jjjj",
+        "yyyy"
+      ],
+      [
+        "jj",
+        "yy"
+      ],
+      [
+        "tttt",
+        "dddd"
+      ],
+      [
+        "ttt",
+        "ddd"
+      ],
+      [
+        "tt",
+        "dd"
+      ],
+      [
+        "t",
+        "d"
+      ]
+    ],
+    "fr": [
+      [
+        "aaaa",
+        "yyyy"
+      ],
+      [
+        "aa",
+        "yy"
+      ],
+      [
+        "jjjj",
+        "dddd"
+      ],
+      [
+        "jjj",
+        "ddd"
+      ],
+      [
+        "jj",
+        "dd"
+      ],
+      [
+        "j",
+        "d"
+      ]
+    ],
+    "es": [
+      [
+        "aaaa",
+        "yyyy"
+      ],
+      [
+        "aa",
+        "yy"
+      ]
+    ],
+    "pt": [
+      [
+        "aaaa",
+        "yyyy"
+      ],
+      [
+        "aa",
+        "yy"
+      ]
+    ],
+    "it": [
+      [
+        "aaaa",
+        "yyyy"
+      ],
+      [
+        "aa",
+        "yy"
+      ],
+      [
+        "gggg",
+        "dddd"
+      ],
+      [
+        "ggg",
+        "ddd"
+      ],
+      [
+        "gg",
+        "dd"
+      ],
+      [
+        "g",
+        "d"
+      ]
+    ],
+    "nl": [
+      [
+        "jjjj",
+        "yyyy"
+      ],
+      [
+        "jj",
+        "yy"
+      ],
+      [
+        "uu",
+        "hh"
+      ],
+      [
+        "u",
+        "h"
+      ]
+    ],
+    "da": [
+      [
+        "åååå",
+        "yyyy"
+      ],
+      [
+        "åå",
+        "yy"
+      ],
+      [
+        "tt",
+        "hh"
+      ],
+      [
+        "t",
+        "h"
+      ]
+    ],
+    "nb": [
+      [
+        "åååå",
+        "yyyy"
+      ],
+      [
+        "åå",
+        "yy"
+      ],
+      [
+        "tt",
+        "hh"
+      ],
+      [
+        "t",
+        "h"
+      ]
+    ],
+    "nn": [
+      [
+        "åååå",
+        "yyyy"
+      ],
+      [
+        "åå",
+        "yy"
+      ],
+      [
+        "tt",
+        "hh"
+      ],
+      [
+        "t",
+        "h"
+      ]
+    ],
+    "no": [
+      [
+        "åååå",
+        "yyyy"
+      ],
+      [
+        "åå",
+        "yy"
+      ],
+      [
+        "tt",
+        "hh"
+      ],
+      [
+        "t",
+        "h"
+      ]
+    ],
+    "sv": [
+      [
+        "åååå",
+        "yyyy"
+      ],
+      [
+        "åå",
+        "yy"
+      ],
+      [
+        "tt",
+        "hh"
+      ],
+      [
+        "t",
+        "h"
+      ]
+    ],
+    "fi": [
+      [
+        "vvvv",
+        "yyyy"
+      ],
+      [
+        "vv",
+        "yy"
+      ],
+      [
+        "kkkk",
+        "mmmm"
+      ],
+      [
+        "kk",
+        "mm"
+      ],
+      [
+        "pp",
+        "dd"
+      ],
+      [
+        "tt",
+        "hh"
+      ]
+    ],
+    "pl": [
+      [
+        "rrrr",
+        "yyyy"
+      ],
+      [
+        "rr",
+        "yy"
+      ],
+      [
+        "gg",
+        "hh"
+      ],
+      [
+        "g",
+        "h"
+      ]
+    ],
+    "cs": [
+      [
+        "rrrr",
+        "yyyy"
+      ],
+      [
+        "rr",
+        "yy"
+      ]
+    ],
+    "sk": [
+      [
+        "rrrr",
+        "yyyy"
+      ],
+      [
+        "rr",
+        "yy"
+      ]
+    ],
+    "hr": [
+      [
+        "gggg",
+        "yyyy"
+      ],
+      [
+        "gg",
+        "yy"
+      ]
+    ],
+    "sl": [
+      [
+        "llll",
+        "yyyy"
+      ],
+      [
+        "ll",
+        "yy"
+      ]
+    ],
+    "ro": [
+      [
+        "aaaa",
+        "yyyy"
+      ],
+      [
+        "aa",
+        "yy"
+      ],
+      [
+        "zzzz",
+        "dddd"
+      ],
+      [
+        "zz",
+        "dd"
+      ],
+      [
+        "z",
+        "d"
+      ]
+    ],
+    "ru": [
+      [
+        "гггг",
+        "yyyy"
+      ],
+      [
+        "гг",
+        "yy"
+      ],
+      [
+        "ддд",
+        "ddd"
+      ],
+      [
+        "дд",
+        "dd"
+      ],
+      [
+        "д",
+        "d"
+      ],
+      [
+        "ччч",
+        "hhh"
+      ],
+      [
+        "чч",
+        "hh"
+      ],
+      [
+        "ч",
+        "h"
+      ],
+      [
+        "ссс",
+        "sss"
+      ],
+      [
+        "сс",
+        "ss"
+      ],
+      [
+        "с",
+        "s"
+      ]
+    ],
+    "uk": [
+      [
+        "рррр",
+        "yyyy"
+      ],
+      [
+        "рр",
+        "yy"
+      ],
+      [
+        "ддд",
+        "ddd"
+      ],
+      [
+        "дд",
+        "dd"
+      ],
+      [
+        "д",
+        "d"
+      ]
+    ],
+    "bg": [
+      [
+        "гггг",
+        "yyyy"
+      ],
+      [
+        "гг",
+        "yy"
+      ],
+      [
+        "ддд",
+        "ddd"
+      ],
+      [
+        "дд",
+        "dd"
+      ],
+      [
+        "д",
+        "d"
+      ]
+    ]
+  },
+  "errors": {
+    "en": [
+      "#NULL!",
+      "#DIV/0!",
+      "#VALUE!",
+      "#REF!",
+      "#NAME?",
+      "#NUM!",
+      "#N/A"
+    ],
+    "de": [
+      "#NULL!",
+      "#DIV/0!",
+      "#WERT!",
+      "#BEZUG!",
+      "#NAME?",
+      "#ZAHL!",
+      "#NV"
+    ],
+    "fr": [
+      "#NUL!",
+      "#DIV/0!",
+      "#VALEUR!",
+      "#REF!",
+      "#NOM?",
+      "#NOMBRE!",
+      "#N/A"
+    ],
+    "es": [
+      "#¡NULO!",
+      "#¡DIV/0!",
+      "#¡VALOR!",
+      "#¡REF!",
+      "#¿NOMBRE?",
+      "#¡NUM!",
+      "#N/A"
+    ],
+    "pt": [
+      "#NULO!",
+      "#DIV/0!",
+      "#VALOR!",
+      "#REF!",
+      "#NOME?",
+      "#NÚM!",
+      "#N/DISP"
+    ],
+    "it": [
+      "#NULLO!",
+      "#DIV/0!",
+      "#VALORE!",
+      "#RIF!",
+      "#NOME?",
+      "#NUM!",
+      "#N/D"
+    ],
+    "nl": [
+      "#LEEG!",
+      "#DEEL/0!",
+      "#WAARDE!",
+      "#VERW!",
+      "#NAAM?",
+      "#GETAL!",
+      "#N/B"
+    ],
+    "da": [
+      "#NUL!",
+      "#DIVISION/0!",
+      "#VÆRDI!",
+      "#REFERENCE!",
+      "#NAVN?",
+      "#NUM!",
+      "#I/T"
+    ],
+    "nb": [
+      "#NULL!",
+      "#DIV/0!",
+      "#VERDI!",
+      "#REF!",
+      "#NAVN?",
+      "#NUM!",
+      "#I/T"
+    ],
+    "nn": [
+      "#NULL!",
+      "#DIV/0!",
+      "#VERDI!",
+      "#REF!",
+      "#NAVN?",
+      "#NUM!",
+      "#I/T"
+    ],
+    "no": [
+      "#NULL!",
+      "#DIV/0!",
+      "#VERDI!",
+      "#REF!",
+      "#NAVN?",
+      "#NUM!",
+      "#I/T"
+    ],
+    "sv": [
+      "#SKÄRNING!",
+      "#DIVISION/0!",
+      "#VÄRDEFEL!",
+      "#REFERENS!",
+      "#NAMN?",
+      "#OGILTIGT!",
+      "#SAKNAS!"
+    ],
+    "fi": [
+      "#TYHJÄ!",
+      "#JAKO/0!",
+      "#ARVO!",
+      "#VIITTAUS!",
+      "#NIMI?",
+      "#LUKU!",
+      "#PUUTTUU!"
+    ],
+    "pl": [
+      "#ZERO!",
+      "#DZIEL/0!",
+      "#ARG!",
+      "#ADR!",
+      "#NAZWA?",
+      "#LICZBA!",
+      "#N/D!"
+    ],
+    "cs": [
+      "#NULL!",
+      "#DIV/0!",
+      "#HODNOTA!",
+      "#ODKAZ!",
+      "#NÁZEV?",
+      "#ČÍSLO!",
+      "#NENÍ_K_DISPOZICI"
+    ],
+    "sk": [
+      "#NULL!",
+      "#DIV/0!",
+      "#HODNOTA!",
+      "#ODKAZ!",
+      "#NÁZOV?",
+      "#ČÍSLO!",
+      "#NEDOSTUPNÝ"
+    ],
+    "hu": [
+      "#NULLA!",
+      "#ZÉRÓOSZTÓ!",
+      "#ÉRTÉK!",
+      "#HIV!",
+      "#NÉV?",
+      "#SZÁM!",
+      "#HIÁNYZIK"
+    ],
+    "tr": [
+      "#BOŞ!",
+      "#SAYI/0!",
+      "#DEĞER!",
+      "#BAŞV!",
+      "#AD?",
+      "#SAYI!",
+      "#YOK"
+    ],
+    "ru": [
+      "#ПУСТО!",
+      "#ДЕЛ/0!",
+      "#ЗНАЧ!",
+      "#ССЫЛ!",
+      "#ИМЯ?",
+      "#ЧИСЛО!",
+      "#Н/Д"
+    ],
+    "uk": [
+      "#ПОРОЖНЬО!",
+      "#ДІЛ/0!",
+      "#ЗНАЧ!",
+      "#ПОСИЛ!",
+      "#ІМ'Я?",
+      "#ЧИСЛО!",
+      "#Н/Д"
+    ]
+  },
+  "errorSuffix": {
+    "en": "Excel error",
+    "de": "Excel-Fehler",
+    "fr": "erreur Excel",
+    "es": "error de Excel",
+    "pt": "erro do Excel",
+    "it": "errore di Excel",
+    "nl": "Excel-fout",
+    "da": "Excel-fejl",
+    "nb": "Excel-feil",
+    "nn": "Excel-feil",
+    "no": "Excel-feil",
+    "sv": "Excel-fel",
+    "fi": "Excel-virhe",
+    "pl": "błąd programu Excel",
+    "cs": "chyba aplikace Excel",
+    "sk": "chyba programu Excel",
+    "hu": "Excel-hiba",
+    "tr": "Excel hatası",
+    "ru": "ошибка Excel",
+    "uk": "помилка Excel",
+    "bg": "грешка в Excel",
+    "el": "σφάλμα Excel",
+    "ja": "Excel エラー",
+    "ko": "Excel 오류",
+    "zh": "Excel 错误"
+  }
+}

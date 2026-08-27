@@ -5,6 +5,7 @@
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
 use crate::date_time_base::excel_to_date_time;
+use crate::locale::Locale;
 use crate::value_format::ValueFormat;
 use chrono::{Datelike, Weekday};
 use std::error::Error;
@@ -38,6 +39,10 @@ enum FormatToken {
     LiteralText(String),
     LiteralChar(char),
     ColorCode(String),
+    /// `[$€-407]` — the currency symbol from a currency format code. The
+    /// trailing hex locale id is Excel's own and carries no formatting we do
+    /// not already take from the [`ValueFormat`], so only the symbol survives.
+    CurrencyPrefix(String),
     AtSign,
     Asterisk(char),
     Underscore(char),
@@ -286,6 +291,14 @@ fn tokenize(section: &str) -> Vec<FormatToken> {
                     tokens.push(FormatToken::ElapsedMinutes);
                 } else if lower == "s" || lower == "ss" {
                     tokens.push(FormatToken::ElapsedSeconds);
+                } else if let Some(rest) = content.strip_prefix('$') {
+                    // `[$SYMBOL-LCID]`, `[$SYMBOL]` or a bare `[$-LCID]`.
+                    // Everything up to the first `-` is the symbol; a leading
+                    // `-` means the code carries a locale id and no symbol.
+                    let symbol = rest.split('-').next().unwrap_or_default();
+                    if !symbol.is_empty() {
+                        tokens.push(FormatToken::CurrencyPrefix(symbol.to_string()));
+                    }
                 } else {
                     tokens.push(FormatToken::ColorCode(content));
                 }
@@ -705,9 +718,10 @@ fn format_number_section(
     }
 
     // Now assemble the output by walking tokens
+    let locale = value_format.locale();
     let mut result = String::new();
     if is_negative {
-        result.push('-');
+        result.push_str(locale.numbers.minus_sign);
     }
 
     let mut int_emitted = false;
@@ -738,13 +752,16 @@ fn format_number_section(
             }
             FormatToken::ThousandsSep | FormatToken::ScaleComma => {}
             FormatToken::Percent => {
-                result.push('%');
+                result.push_str(locale.numbers.percent_sign);
             }
             FormatToken::LiteralText(text) => {
                 result.push_str(text);
             }
             FormatToken::LiteralChar(ch) => {
                 result.push(*ch);
+            }
+            FormatToken::CurrencyPrefix(symbol) => {
+                result.push_str(symbol);
             }
             FormatToken::ColorCode(_) | FormatToken::Asterisk(_) => {}
             FormatToken::Underscore(_) => {
@@ -896,23 +913,28 @@ fn format_scientific(
         (man, exp)
     };
 
+    let locale = value_format.locale();
     let mantissa_str = format!("{:.prec$}", mantissa, prec = dec_places);
     let exp_sign = if exponent >= 0 {
         if is_plus {
-            "+"
+            locale.numbers.plus_sign
         } else {
             ""
         }
     } else {
-        "-"
+        locale.numbers.minus_sign
     };
     let exp_str = format!("{:0>width$}", exponent.abs(), width = exp_zeros);
 
     let mut result = String::new();
     if value < 0.0 {
-        result.push('-');
+        result.push_str(locale.numbers.minus_sign);
     }
-    write!(result, "{}E{}{}", mantissa_str, exp_sign, exp_str)?;
+    write!(
+        result,
+        "{}{}{}{}",
+        mantissa_str, locale.numbers.exponential, exp_sign, exp_str
+    )?;
     if value_format.decimal_separator != "." {
         result = result.replace('.', &value_format.decimal_separator);
     }
@@ -1173,12 +1195,14 @@ fn format_date_time_section(
     let minute = (total_seconds_of_day % 3600) / 60;
     let second = total_seconds_of_day % 60;
 
+    let locale = value_format.locale();
+
     // Check for AM/PM
     let has_ampm = section
         .tokens
         .iter()
         .any(|t| matches!(t, FormatToken::AmPm(_)));
-    let (hour_display, am_pm) = if has_ampm {
+    let (hour_display, am_pm): (u32, std::borrow::Cow<'_, str>) = if has_ampm {
         let h = if hour24 == 0 {
             12
         } else if hour24 > 12 {
@@ -1186,10 +1210,10 @@ fn format_date_time_section(
         } else {
             hour24
         };
-        let period = if hour24 < 12 { "AM" } else { "PM" };
+        let period = am_pm_marker(locale, hour24 < 12);
         (h, period)
     } else {
-        (hour24, "")
+        (hour24, std::borrow::Cow::Borrowed(""))
     };
 
     let mut result = String::new();
@@ -1200,19 +1224,14 @@ fn format_date_time_section(
             FormatToken::Year(_) => write!(result, "{:04}", year)?,
             FormatToken::Month(1) => write!(result, "{}", month)?,
             FormatToken::Month(2) => write!(result, "{:02}", month)?,
-            FormatToken::Month(3) => result.push_str(month_abbrev(month)),
-            FormatToken::Month(4) => result.push_str(month_name(month)),
-            FormatToken::Month(5) => {
-                let name = month_name(month);
-                if let Some(c) = name.chars().next() {
-                    result.push(c);
-                }
-            }
+            FormatToken::Month(3) => result.push_str(month_abbrev(locale, month)),
+            FormatToken::Month(4) => result.push_str(month_name(locale, month)),
+            FormatToken::Month(5) => result.push_str(month_letter(locale, month)),
             FormatToken::Month(_) => write!(result, "{:02}", month)?,
             FormatToken::Day(1) => write!(result, "{}", day)?,
             FormatToken::Day(2) => write!(result, "{:02}", day)?,
-            FormatToken::Day(3) => result.push_str(weekday_abbrev(weekday)),
-            FormatToken::Day(4) => result.push_str(weekday_name(weekday)),
+            FormatToken::Day(3) => result.push_str(weekday_abbrev(locale, weekday)),
+            FormatToken::Day(4) => result.push_str(weekday_name(locale, weekday)),
             FormatToken::Day(_) => write!(result, "{:02}", day)?,
             FormatToken::Hour(1, true) => write!(result, "{}", hour_display)?,
             FormatToken::Hour(_, true) => write!(result, "{:02}", hour_display)?,
@@ -1223,8 +1242,10 @@ fn format_date_time_section(
             FormatToken::Second(1) => write!(result, "{}", second)?,
             FormatToken::Second(_) => write!(result, "{:02}", second)?,
             FormatToken::AmPm(_) => {
-                // Excel always outputs AM/PM in uppercase regardless of format case
-                result.push_str(am_pm);
+                // Excel ignores the case the format code was written in and
+                // emits the locale's own markers, so `am/pm` under an English
+                // format still gives `AM`.
+                result.push_str(&am_pm);
             }
             FormatToken::ElapsedHours => {
                 let total_hours = (excel_serial * 24.0).floor() as i64;
@@ -1239,7 +1260,13 @@ fn format_date_time_section(
                 write!(result, "{}", total_seconds)?;
             }
             FormatToken::LiteralText(text) => result.push_str(text),
+            FormatToken::LiteralChar(':') => {
+                // A format code always stores `:`; Excel substitutes the
+                // locale's time separator when it renders.
+                result.push_str(locale.numbers.time_separator);
+            }
             FormatToken::LiteralChar(ch) => result.push(*ch),
+            FormatToken::CurrencyPrefix(symbol) => result.push_str(symbol),
             FormatToken::ColorCode(_) | FormatToken::Asterisk(_) => {}
             FormatToken::Underscore(_) => result.push(' '),
             _ => {}
@@ -1249,64 +1276,77 @@ fn format_date_time_section(
     Ok(result)
 }
 
-fn month_abbrev(m: u32) -> &'static str {
-    match m {
-        1 => "Jan",
-        2 => "Feb",
-        3 => "Mar",
-        4 => "Apr",
-        5 => "May",
-        6 => "Jun",
-        7 => "Jul",
-        8 => "Aug",
-        9 => "Sep",
-        10 => "Oct",
-        11 => "Nov",
-        12 => "Dec",
-        _ => "???",
+/// The AM or PM marker for `locale`.
+///
+/// CLDR presents the Latin-script markers in lower case (`am`, `pm`) but Excel
+/// takes them from Windows, which upper-cases them — a British Excel renders
+/// `TEXT(t, "h:mm AM/PM")` as `2:30 PM`, not `2:30 pm`. Scripts with their own
+/// markers are left exactly as CLDR gives them, so Japanese still reads 午後 and
+/// Arabic م.
+fn am_pm_marker(locale: &'static Locale, is_am: bool) -> std::borrow::Cow<'static, str> {
+    let marker = if is_am {
+        locale.dates.am_pm[0]
+    } else {
+        locale.dates.am_pm[1]
+    };
+    if marker.is_ascii() {
+        std::borrow::Cow::Owned(marker.to_ascii_uppercase())
+    } else {
+        std::borrow::Cow::Borrowed(marker)
     }
 }
 
-fn month_name(m: u32) -> &'static str {
-    match m {
-        1 => "January",
-        2 => "February",
-        3 => "March",
-        4 => "April",
-        5 => "May",
-        6 => "June",
-        7 => "July",
-        8 => "August",
-        9 => "September",
-        10 => "October",
-        11 => "November",
-        12 => "December",
-        _ => "???",
-    }
+/// Excel `mmm`. Out-of-range months cannot arrive from `chrono`, but the
+/// crate denies indexing panics, so they degrade rather than abort.
+fn month_abbrev(locale: &'static Locale, m: u32) -> &'static str {
+    locale
+        .dates
+        .months_short
+        .get((m as usize).wrapping_sub(1))
+        .copied()
+        .unwrap_or("???")
 }
 
-fn weekday_abbrev(wd: Weekday) -> &'static str {
-    match wd {
-        Weekday::Mon => "Mon",
-        Weekday::Tue => "Tue",
-        Weekday::Wed => "Wed",
-        Weekday::Thu => "Thu",
-        Weekday::Fri => "Fri",
-        Weekday::Sat => "Sat",
-        Weekday::Sun => "Sun",
-    }
+/// Excel `mmmm`.
+fn month_name(locale: &'static Locale, m: u32) -> &'static str {
+    locale
+        .dates
+        .months
+        .get((m as usize).wrapping_sub(1))
+        .copied()
+        .unwrap_or("???")
 }
 
-fn weekday_name(wd: Weekday) -> &'static str {
-    match wd {
-        Weekday::Mon => "Monday",
-        Weekday::Tue => "Tuesday",
-        Weekday::Wed => "Wednesday",
-        Weekday::Thu => "Thursday",
-        Weekday::Fri => "Friday",
-        Weekday::Sat => "Saturday",
-        Weekday::Sun => "Sunday",
-    }
+/// Excel `mmmmm` — the single-letter month. Not simply the first character of
+/// the full name: CLDR gives Japanese and Chinese a digit here, and several
+/// locales disambiguate months that would otherwise share a letter.
+fn month_letter(locale: &'static Locale, m: u32) -> &'static str {
+    locale
+        .dates
+        .months_letter
+        .get((m as usize).wrapping_sub(1))
+        .copied()
+        .unwrap_or("?")
+}
+
+/// Excel `ddd`. `day_names_short` is Sunday-first, as CLDR orders it.
+fn weekday_abbrev(locale: &'static Locale, wd: Weekday) -> &'static str {
+    locale
+        .dates
+        .day_names_short
+        .get(wd.num_days_from_sunday() as usize)
+        .copied()
+        .unwrap_or("???")
+}
+
+/// Excel `dddd`.
+fn weekday_name(locale: &'static Locale, wd: Weekday) -> &'static str {
+    locale
+        .dates
+        .day_names
+        .get(wd.num_days_from_sunday() as usize)
+        .copied()
+        .unwrap_or("???")
 }
 
 // ---------------------------------------------------------------------------

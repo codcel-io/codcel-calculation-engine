@@ -21,6 +21,7 @@
 pub(crate) mod area;
 pub mod arithmetic_base;
 pub mod array_base;
+pub mod clock;
 pub mod codcel_cache;
 pub mod codcel_information;
 pub mod comparison;
@@ -42,6 +43,7 @@ pub mod financial;
 pub mod financial_base;
 mod information;
 pub mod input;
+pub mod locale;
 pub mod logical;
 pub mod lookup_and_reference;
 pub mod lookup_reference_base;

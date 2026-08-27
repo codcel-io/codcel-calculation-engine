@@ -383,12 +383,12 @@ pub fn date_dif(
     let unit = unit.string(value_format)?;
     Ok(Value::I32(codcel_date_dif(start_date, end_date, unit)?))
 }
-pub fn today(_value_format: &ValueFormat) -> Result<Value, Box<dyn Error + Send + Sync>> {
-    Ok(Value::ChronoDateTime(codcel_today()?))
+pub fn today(value_format: &ValueFormat) -> Result<Value, Box<dyn Error + Send + Sync>> {
+    Ok(Value::ChronoDateTime(codcel_today(value_format)?))
 }
 
-pub fn now(_value_format: &ValueFormat) -> Result<Value, Box<dyn Error + Send + Sync>> {
-    Ok(Value::ChronoDateTime(codcel_now()?))
+pub fn now(value_format: &ValueFormat) -> Result<Value, Box<dyn Error + Send + Sync>> {
+    Ok(Value::ChronoDateTime(codcel_now(value_format)?))
 }
 
 pub fn week_day(

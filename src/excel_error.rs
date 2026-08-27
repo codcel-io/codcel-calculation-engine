@@ -4,6 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
+use crate::locale::Locale;
 use crate::value::Value;
 use serde::{Deserialize, Serialize};
 use std::error::Error;
@@ -33,6 +34,13 @@ impl ExcelError {
         }
     }
 
+    /// The error value in English.
+    ///
+    /// Deliberately not localized. This is the form that goes on the wire, that
+    /// [`ExcelError::from_legacy_string`] round-trips, and that generated code
+    /// compares against; changing it with the caller's language would break all
+    /// three. Use [`ExcelError::display_localized`] to show an error to a
+    /// person.
     pub fn display(&self) -> &'static str {
         match self {
             ExcelError::Null => "#NULL!",
@@ -42,6 +50,29 @@ impl ExcelError {
             ExcelError::Name => "#NAME?",
             ExcelError::Num => "#NUM!",
             ExcelError::Na => "#N/A",
+        }
+    }
+
+    /// The error value as the given locale's Excel writes it — `#WERT!` in
+    /// German, `#VALEUR!` in French.
+    ///
+    /// Excel translates its error values along with its interface, so a German
+    /// user reading `#VALUE!` is reading something their spreadsheet would
+    /// never show them. This is a presentation concern only: the wire format
+    /// stays the typed [`ExcelError`], and localization happens at the display
+    /// boundary.
+    ///
+    /// Languages Codcel has no table for fall back to the English values.
+    pub fn display_localized(&self, locale: &'static Locale) -> &'static str {
+        let e = &locale.errors;
+        match self {
+            ExcelError::Null => e.null,
+            ExcelError::Div0 => e.div0,
+            ExcelError::Value => e.value,
+            ExcelError::Ref => e.r#ref,
+            ExcelError::Name => e.name,
+            ExcelError::Num => e.num,
+            ExcelError::Na => e.na,
         }
     }
 
@@ -61,6 +92,18 @@ impl ExcelError {
 
 pub fn err_to_box(e: ExcelError) -> Box<dyn Error + Send + Sync> {
     format!("{} (Excel error)", e.display()).into()
+}
+
+/// [`err_to_box`] with the error value and the suffix in the caller's language.
+///
+/// For a transport that already knows the reader's locale — a server handling
+/// an `Accept-Language` header, say — so the message it returns is one the
+/// reader's own Excel would have shown them.
+pub fn err_to_box_localized(
+    e: ExcelError,
+    locale: &'static Locale,
+) -> Box<dyn Error + Send + Sync> {
+    format!("{} ({})", e.display_localized(locale), locale.errors.suffix).into()
 }
 
 /// Returns the specific Excel error kind for `value`, if any.
@@ -92,6 +135,77 @@ pub fn coercion_error(value: &Value) -> Box<dyn Error + Send + Sync> {
 
 pub fn is_error(value: &Value) -> bool {
     error_type(value).is_some()
+}
+
+#[cfg(test)]
+mod tests_localized {
+    use super::*;
+    use crate::locale;
+
+    /// The English form is the wire format and must stay put: generated code
+    /// compares against it and `from_legacy_string` parses it back.
+    #[test]
+    fn display_stays_english_and_round_trips() {
+        for e in [
+            ExcelError::Null,
+            ExcelError::Div0,
+            ExcelError::Value,
+            ExcelError::Ref,
+            ExcelError::Name,
+            ExcelError::Num,
+            ExcelError::Na,
+        ] {
+            assert_eq!(ExcelError::from_legacy_string(e.display()), Some(e));
+        }
+        assert_eq!(ExcelError::Value.display(), "#VALUE!");
+        assert_eq!(
+            ExcelError::Value.display_localized(locale::english()),
+            "#VALUE!"
+        );
+    }
+
+    #[cfg(feature = "locale-data")]
+    #[test]
+    fn errors_are_localized_for_display() {
+        assert_eq!(
+            ExcelError::Value.display_localized(locale::lookup("de")),
+            "#WERT!"
+        );
+        assert_eq!(
+            ExcelError::Ref.display_localized(locale::lookup("de")),
+            "#BEZUG!"
+        );
+        assert_eq!(
+            ExcelError::Na.display_localized(locale::lookup("fr")),
+            "#N/A"
+        );
+        assert_eq!(
+            ExcelError::Num.display_localized(locale::lookup("pt")),
+            "#NÚM!"
+        );
+    }
+
+    /// A language with no table of its own reads the English values rather than
+    /// showing a blank.
+    #[cfg(feature = "locale-data")]
+    #[test]
+    fn an_untranslated_language_falls_back_to_english() {
+        assert_eq!(
+            ExcelError::Value.display_localized(locale::lookup("th")),
+            "#VALUE!"
+        );
+    }
+
+    #[cfg(feature = "locale-data")]
+    #[test]
+    fn boxed_errors_carry_the_localized_text() {
+        let boxed = err_to_box_localized(ExcelError::Value, locale::lookup("de"));
+        assert_eq!(boxed.to_string(), "#WERT! (Excel-Fehler)");
+        assert_eq!(
+            err_to_box(ExcelError::Value).to_string(),
+            "#VALUE! (Excel error)"
+        );
+    }
 }
 
 #[cfg(test)]

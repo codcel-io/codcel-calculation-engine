@@ -1,0 +1,8472 @@
+{
+ "cldrVersion": "48.2.1",
+ "locales": {
+  "en": {
+   "region": "US",
+   "defaultNumberingSystem": "latn",
+   "symbols": {
+    "decimal": ".",
+    "group": ",",
+    "list": ";",
+    "percentSign": "%",
+    "plusSign": "+",
+    "minusSign": "-",
+    "approximatelySign": "~",
+    "exponential": "E",
+    "superscriptingExponent": "×",
+    "perMille": "‰",
+    "infinity": "∞",
+    "nan": "NaN",
+    "timeSeparator": ":"
+   },
+   "decimalStandard": "#,##0.###",
+   "currency": {
+    "code": "USD",
+    "symbol": "$",
+    "standard": "¤#,##0.00",
+    "accounting": "¤#,##0.00;(¤#,##0.00)"
+   },
+   "dates": {
+    "monthsWide": [
+     "January",
+     "February",
+     "March",
+     "April",
+     "May",
+     "June",
+     "July",
+     "August",
+     "September",
+     "October",
+     "November",
+     "December"
+    ],
+    "monthsAbbrev": [
+     "Jan",
+     "Feb",
+     "Mar",
+     "Apr",
+     "May",
+     "Jun",
+     "Jul",
+     "Aug",
+     "Sep",
+     "Oct",
+     "Nov",
+     "Dec"
+    ],
+    "monthsNarrow": [
+     "J",
+     "F",
+     "M",
+     "A",
+     "M",
+     "J",
+     "J",
+     "A",
+     "S",
+     "O",
+     "N",
+     "D"
+    ],
+    "daysWide": {
+     "sun": "Sunday",
+     "mon": "Monday",
+     "tue": "Tuesday",
+     "wed": "Wednesday",
+     "thu": "Thursday",
+     "fri": "Friday",
+     "sat": "Saturday"
+    },
+    "daysAbbrev": {
+     "sun": "Sun",
+     "mon": "Mon",
+     "tue": "Tue",
+     "wed": "Wed",
+     "thu": "Thu",
+     "fri": "Fri",
+     "sat": "Sat"
+    },
+    "am": "AM",
+    "pm": "PM",
+    "dateFormats": {
+     "full": "EEEE, MMMM d, y",
+     "long": "MMMM d, y",
+     "medium": "MMM d, y",
+     "short": "M/d/yy"
+    },
+    "timeFormats": {
+     "full": "h:mm:ss a zzzz",
+     "long": "h:mm:ss a z",
+     "medium": "h:mm:ss a",
+     "short": "h:mm a"
+    },
+    "dateTimeFormats": {
+     "full": "{1}, {0}",
+     "long": "{1}, {0}",
+     "medium": "{1}, {0}",
+     "short": "{1}, {0}"
+    }
+   }
+  },
+  "de": {
+   "region": "DE",
+   "defaultNumberingSystem": "latn",
+   "symbols": {
+    "decimal": ",",
+    "group": ".",
+    "list": ";",
+    "percentSign": "%",
+    "plusSign": "+",
+    "minusSign": "-",
+    "approximatelySign": "≈",
+    "exponential": "E",
+    "superscriptingExponent": "·",
+    "perMille": "‰",
+    "infinity": "∞",
+    "nan": "NaN",
+    "timeSeparator": ":"
+   },
+   "decimalStandard": "#,##0.###",
+   "currency": {
+    "code": "EUR",
+    "symbol": "€",
+    "standard": "#,##0.00 ¤",
+    "accounting": "#,##0.00 ¤"
+   },
+   "dates": {
+    "monthsWide": [
+     "Januar",
+     "Februar",
+     "März",
+     "April",
+     "Mai",
+     "Juni",
+     "Juli",
+     "August",
+     "September",
+     "Oktober",
+     "November",
+     "Dezember"
+    ],
+    "monthsAbbrev": [
+     "Jan.",
+     "Feb.",
+     "März",
+     "Apr.",
+     "Mai",
+     "Juni",
+     "Juli",
+     "Aug.",
+     "Sept.",
+     "Okt.",
+     "Nov.",
+     "Dez."
+    ],
+    "monthsNarrow": [
+     "J",
+     "F",
+     "M",
+     "A",
+     "M",
+     "J",
+     "J",
+     "A",
+     "S",
+     "O",
+     "N",
+     "D"
+    ],
+    "daysWide": {
+     "sun": "Sonntag",
+     "mon": "Montag",
+     "tue": "Dienstag",
+     "wed": "Mittwoch",
+     "thu": "Donnerstag",
+     "fri": "Freitag",
+     "sat": "Samstag"
+    },
+    "daysAbbrev": {
+     "sun": "So.",
+     "mon": "Mo.",
+     "tue": "Di.",
+     "wed": "Mi.",
+     "thu": "Do.",
+     "fri": "Fr.",
+     "sat": "Sa."
+    },
+    "am": "AM",
+    "pm": "PM",
+    "dateFormats": {
+     "full": "EEEE, d. MMMM y",
+     "long": "d. MMMM y",
+     "medium": "dd.MM.y",
+     "short": "dd.MM.yy"
+    },
+    "timeFormats": {
+     "full": "HH:mm:ss zzzz",
+     "long": "HH:mm:ss z",
+     "medium": "HH:mm:ss",
+     "short": "HH:mm"
+    },
+    "dateTimeFormats": {
+     "full": "{1}, {0}",
+     "long": "{1}, {0}",
+     "medium": "{1}, {0}",
+     "short": "{1}, {0}"
+    }
+   }
+  },
+  "fr": {
+   "region": "FR",
+   "defaultNumberingSystem": "latn",
+   "symbols": {
+    "decimal": ",",
+    "group": " ",
+    "list": ";",
+    "percentSign": "%",
+    "plusSign": "+",
+    "minusSign": "-",
+    "approximatelySign": "≃",
+    "exponential": "E",
+    "superscriptingExponent": "×",
+    "perMille": "‰",
+    "infinity": "∞",
+    "nan": "NaN",
+    "timeSeparator": ":"
+   },
+   "decimalStandard": "#,##0.###",
+   "currency": {
+    "code": "EUR",
+    "symbol": "€",
+    "standard": "#,##0.00 ¤",
+    "accounting": "#,##0.00 ¤;(#,##0.00 ¤)"
+   },
+   "dates": {
+    "monthsWide": [
+     "janvier",
+     "février",
+     "mars",
+     "avril",
+     "mai",
+     "juin",
+     "juillet",
+     "août",
+     "septembre",
+     "octobre",
+     "novembre",
+     "décembre"
+    ],
+    "monthsAbbrev": [
+     "janv.",
+     "févr.",
+     "mars",
+     "avr.",
+     "mai",
+     "juin",
+     "juil.",
+     "août",
+     "sept.",
+     "oct.",
+     "nov.",
+     "déc."
+    ],
+    "monthsNarrow": [
+     "J",
+     "F",
+     "M",
+     "A",
+     "M",
+     "J",
+     "J",
+     "A",
+     "S",
+     "O",
+     "N",
+     "D"
+    ],
+    "daysWide": {
+     "sun": "dimanche",
+     "mon": "lundi",
+     "tue": "mardi",
+     "wed": "mercredi",
+     "thu": "jeudi",
+     "fri": "vendredi",
+     "sat": "samedi"
+    },
+    "daysAbbrev": {
+     "sun": "dim.",
+     "mon": "lun.",
+     "tue": "mar.",
+     "wed": "mer.",
+     "thu": "jeu.",
+     "fri": "ven.",
+     "sat": "sam."
+    },
+    "am": "AM",
+    "pm": "PM",
+    "dateFormats": {
+     "full": "EEEE d MMMM y",
+     "long": "d MMMM y",
+     "medium": "d MMM y",
+     "short": "dd/MM/y"
+    },
+    "timeFormats": {
+     "full": "HH:mm:ss zzzz",
+     "long": "HH:mm:ss z",
+     "medium": "HH:mm:ss",
+     "short": "HH:mm"
+    },
+    "dateTimeFormats": {
+     "full": "{1}, {0}",
+     "long": "{1}, {0}",
+     "medium": "{1}, {0}",
+     "short": "{1} {0}"
+    }
+   }
+  },
+  "es": {
+   "region": "ES",
+   "defaultNumberingSystem": "latn",
+   "symbols": {
+    "decimal": ",",
+    "group": ".",
+    "list": ";",
+    "percentSign": "%",
+    "plusSign": "+",
+    "minusSign": "-",
+    "approximatelySign": "~",
+    "exponential": "E",
+    "superscriptingExponent": "×",
+    "perMille": "‰",
+    "infinity": "∞",
+    "nan": "NaN",
+    "timeSeparator": ":"
+   },
+   "decimalStandard": "#,##0.###",
+   "currency": {
+    "code": "EUR",
+    "symbol": "€",
+    "standard": "#,##0.00 ¤",
+    "accounting": "#,##0.00 ¤"
+   },
+   "dates": {
+    "monthsWide": [
+     "enero",
+     "febrero",
+     "marzo",
+     "abril",
+     "mayo",
+     "junio",
+     "julio",
+     "agosto",
+     "septiembre",
+     "octubre",
+     "noviembre",
+     "diciembre"
+    ],
+    "monthsAbbrev": [
+     "ene",
+     "feb",
+     "mar",
+     "abr",
+     "may",
+     "jun",
+     "jul",
+     "ago",
+     "sept",
+     "oct",
+     "nov",
+     "dic"
+    ],
+    "monthsNarrow": [
+     "E",
+     "F",
+     "M",
+     "A",
+     "M",
+     "J",
+     "J",
+     "A",
+     "S",
+     "O",
+     "N",
+     "D"
+    ],
+    "daysWide": {
+     "sun": "domingo",
+     "mon": "lunes",
+     "tue": "martes",
+     "wed": "miércoles",
+     "thu": "jueves",
+     "fri": "viernes",
+     "sat": "sábado"
+    },
+    "daysAbbrev": {
+     "sun": "dom",
+     "mon": "lun",
+     "tue": "mar",
+     "wed": "mié",
+     "thu": "jue",
+     "fri": "vie",
+     "sat": "sáb"
+    },
+    "am": "a. m.",
+    "pm": "p. m.",
+    "dateFormats": {
+     "full": "EEEE, d 'de' MMMM 'de' y",
+     "long": "d 'de' MMMM 'de' y",
+     "medium": "d MMM y",
+     "short": "d/M/yy"
+    },
+    "timeFormats": {
+     "full": "H:mm:ss (zzzz)",
+     "long": "H:mm:ss z",
+     "medium": "H:mm:ss",
+     "short": "H:mm"
+    },
+    "dateTimeFormats": {
+     "full": "{1}, {0}",
+     "long": "{1}, {0}",
+     "medium": "{1}, {0}",
+     "short": "{1}, {0}"
+    }
+   }
+  },
+  "pt": {
+   "region": "BR",
+   "defaultNumberingSystem": "latn",
+   "symbols": {
+    "decimal": ",",
+    "group": ".",
+    "list": ";",
+    "percentSign": "%",
+    "plusSign": "+",
+    "minusSign": "-",
+    "approximatelySign": "~",
+    "exponential": "E",
+    "superscriptingExponent": "×",
+    "perMille": "‰",
+    "infinity": "∞",
+    "nan": "NaN",
+    "timeSeparator": ":"
+   },
+   "decimalStandard": "#,##0.###",
+   "currency": {
+    "code": "BRL",
+    "symbol": "R$",
+    "standard": "¤ #,##0.00",
+    "accounting": "¤ #,##0.00"
+   },
+   "dates": {
+    "monthsWide": [
+     "janeiro",
+     "fevereiro",
+     "março",
+     "abril",
+     "maio",
+     "junho",
+     "julho",
+     "agosto",
+     "setembro",
+     "outubro",
+     "novembro",
+     "dezembro"
+    ],
+    "monthsAbbrev": [
+     "jan.",
+     "fev.",
+     "mar.",
+     "abr.",
+     "mai.",
+     "jun.",
+     "jul.",
+     "ago.",
+     "set.",
+     "out.",
+     "nov.",
+     "dez."
+    ],
+    "monthsNarrow": [
+     "J",
+     "F",
+     "M",
+     "A",
+     "M",
+     "J",
+     "J",
+     "A",
+     "S",
+     "O",
+     "N",
+     "D"
+    ],
+    "daysWide": {
+     "sun": "domingo",
+     "mon": "segunda-feira",
+     "tue": "terça-feira",
+     "wed": "quarta-feira",
+     "thu": "quinta-feira",
+     "fri": "sexta-feira",
+     "sat": "sábado"
+    },
+    "daysAbbrev": {
+     "sun": "dom.",
+     "mon": "seg.",
+     "tue": "ter.",
+     "wed": "qua.",
+     "thu": "qui.",
+     "fri": "sex.",
+     "sat": "sáb."
+    },
+    "am": "AM",
+    "pm": "PM",
+    "dateFormats": {
+     "full": "EEEE, d 'de' MMMM 'de' y",
+     "long": "d 'de' MMMM 'de' y",
+     "medium": "d 'de' MMM 'de' y",
+     "short": "dd/MM/y"
+    },
+    "timeFormats": {
+     "full": "HH:mm:ss zzzz",
+     "long": "HH:mm:ss z",
+     "medium": "HH:mm:ss",
+     "short": "HH:mm"
+    },
+    "dateTimeFormats": {
+     "full": "{1} {0}",
+     "long": "{1} {0}",
+     "medium": "{1} {0}",
+     "short": "{1} {0}"
+    }
+   }
+  },
+  "it": {
+   "region": "IT",
+   "defaultNumberingSystem": "latn",
+   "symbols": {
+    "decimal": ",",
+    "group": ".",
+    "list": ";",
+    "percentSign": "%",
+    "plusSign": "+",
+    "minusSign": "-",
+    "approximatelySign": "~",
+    "exponential": "E",
+    "superscriptingExponent": "×",
+    "perMille": "‰",
+    "infinity": "∞",
+    "nan": "NaN",
+    "timeSeparator": ":"
+   },
+   "decimalStandard": "#,##0.###",
+   "currency": {
+    "code": "EUR",
+    "symbol": "€",
+    "standard": "#,##0.00 ¤",
+    "accounting": "#,##0.00 ¤"
+   },
+   "dates": {
+    "monthsWide": [
+     "gennaio",
+     "febbraio",
+     "marzo",
+     "aprile",
+     "maggio",
+     "giugno",
+     "luglio",
+     "agosto",
+     "settembre",
+     "ottobre",
+     "novembre",
+     "dicembre"
+    ],
+    "monthsAbbrev": [
+     "gen",
+     "feb",
+     "mar",
+     "apr",
+     "mag",
+     "giu",
+     "lug",
+     "ago",
+     "set",
+     "ott",
+     "nov",
+     "dic"
+    ],
+    "monthsNarrow": [
+     "G",
+     "F",
+     "M",
+     "A",
+     "M",
+     "G",
+     "L",
+     "A",
+     "S",
+     "O",
+     "N",
+     "D"
+    ],
+    "daysWide": {
+     "sun": "domenica",
+     "mon": "lunedì",
+     "tue": "martedì",
+     "wed": "mercoledì",
+     "thu": "giovedì",
+     "fri": "venerdì",
+     "sat": "sabato"
+    },
+    "daysAbbrev": {
+     "sun": "dom",
+     "mon": "lun",
+     "tue": "mar",
+     "wed": "mer",
+     "thu": "gio",
+     "fri": "ven",
+     "sat": "sab"
+    },
+    "am": "AM",
+    "pm": "PM",
+    "dateFormats": {
+     "full": "EEEE d MMMM y",
+     "long": "d MMMM y",
+     "medium": "d MMM y",
+     "short": "dd/MM/yy"
+    },
+    "timeFormats": {
+     "full": "HH:mm:ss zzzz",
+     "long": "HH:mm:ss z",
+     "medium": "HH:mm:ss",
+     "short": "HH:mm"
+    },
+    "dateTimeFormats": {
+     "full": "{1} {0}",
+     "long": "{1} {0}",
+     "medium": "{1}, {0}",
+     "short": "{1}, {0}"
+    }
+   }
+  },
+  "nl": {
+   "region": "NL",
+   "defaultNumberingSystem": "latn",
+   "symbols": {
+    "decimal": ",",
+    "group": ".",
+    "list": ";",
+    "percentSign": "%",
+    "plusSign": "+",
+    "minusSign": "-",
+    "approximatelySign": "~",
+    "exponential": "E",
+    "superscriptingExponent": "×",
+    "perMille": "‰",
+    "infinity": "∞",
+    "nan": "NaN",
+    "timeSeparator": ":"
+   },
+   "decimalStandard": "#,##0.###",
+   "currency": {
+    "code": "EUR",
+    "symbol": "€",
+    "standard": "¤ #,##0.00;¤ -#,##0.00",
+    "accounting": "¤ #,##0.00;(¤ #,##0.00)"
+   },
+   "dates": {
+    "monthsWide": [
+     "januari",
+     "februari",
+     "maart",
+     "april",
+     "mei",
+     "juni",
+     "juli",
+     "augustus",
+     "september",
+     "oktober",
+     "november",
+     "december"
+    ],
+    "monthsAbbrev": [
+     "jan",
+     "feb",
+     "mrt",
+     "apr",
+     "mei",
+     "jun",
+     "jul",
+     "aug",
+     "sep",
+     "okt",
+     "nov",
+     "dec"
+    ],
+    "monthsNarrow": [
+     "J",
+     "F",
+     "M",
+     "A",
+     "M",
+     "J",
+     "J",
+     "A",
+     "S",
+     "O",
+     "N",
+     "D"
+    ],
+    "daysWide": {
+     "sun": "zondag",
+     "mon": "maandag",
+     "tue": "dinsdag",
+     "wed": "woensdag",
+     "thu": "donderdag",
+     "fri": "vrijdag",
+     "sat": "zaterdag"
+    },
+    "daysAbbrev": {
+     "sun": "zo",
+     "mon": "ma",
+     "tue": "di",
+     "wed": "wo",
+     "thu": "do",
+     "fri": "vr",
+     "sat": "za"
+    },
+    "am": "a.m.",
+    "pm": "p.m.",
+    "dateFormats": {
+     "full": "EEEE d MMMM y",
+     "long": "d MMMM y",
+     "medium": "d MMM y",
+     "short": "dd-MM-y"
+    },
+    "timeFormats": {
+     "full": "HH:mm:ss zzzz",
+     "long": "HH:mm:ss z",
+     "medium": "HH:mm:ss",
+     "short": "HH:mm"
+    },
+    "dateTimeFormats": {
+     "full": "{1}, {0}",
+     "long": "{1}, {0}",
+     "medium": "{1}, {0}",
+     "short": "{1}, {0}"
+    }
+   }
+  },
+  "ro": {
+   "region": "RO",
+   "defaultNumberingSystem": "latn",
+   "symbols": {
+    "decimal": ",",
+    "group": ".",
+    "list": ";",
+    "percentSign": "%",
+    "plusSign": "+",
+    "minusSign": "-",
+    "approximatelySign": "~",
+    "exponential": "E",
+    "superscriptingExponent": "×",
+    "perMille": "‰",
+    "infinity": "∞",
+    "nan": "NaN",
+    "timeSeparator": ":"
+   },
+   "decimalStandard": "#,##0.###",
+   "currency": {
+    "code": "RON",
+    "symbol": "lei",
+    "standard": "#,##0.00 ¤",
+    "accounting": "#,##0.00 ¤;(#,##0.00 ¤)"
+   },
+   "dates": {
+    "monthsWide": [
+     "ianuarie",
+     "februarie",
+     "martie",
+     "aprilie",
+     "mai",
+     "iunie",
+     "iulie",
+     "august",
+     "septembrie",
+     "octombrie",
+     "noiembrie",
+     "decembrie"
+    ],
+    "monthsAbbrev": [
+     "ian.",
+     "feb.",
+     "mar.",
+     "apr.",
+     "mai",
+     "iun.",
+     "iul.",
+     "aug.",
+     "sept.",
+     "oct.",
+     "nov.",
+     "dec."
+    ],
+    "monthsNarrow": [
+     "I",
+     "F",
+     "M",
+     "A",
+     "M",
+     "I",
+     "I",
+     "A",
+     "S",
+     "O",
+     "N",
+     "D"
+    ],
+    "daysWide": {
+     "sun": "duminică",
+     "mon": "luni",
+     "tue": "marți",
+     "wed": "miercuri",
+     "thu": "joi",
+     "fri": "vineri",
+     "sat": "sâmbătă"
+    },
+    "daysAbbrev": {
+     "sun": "dum.",
+     "mon": "lun.",
+     "tue": "mar.",
+     "wed": "mie.",
+     "thu": "joi",
+     "fri": "vin.",
+     "sat": "sâm."
+    },
+    "am": "a.m.",
+    "pm": "p.m.",
+    "dateFormats": {
+     "full": "EEEE, d MMMM y",
+     "long": "d MMMM y",
+     "medium": "d MMM y",
+     "short": "dd.MM.y"
+    },
+    "timeFormats": {
+     "full": "HH:mm:ss zzzz",
+     "long": "HH:mm:ss z",
+     "medium": "HH:mm:ss",
+     "short": "HH:mm"
+    },
+    "dateTimeFormats": {
+     "full": "{1}, {0}",
+     "long": "{1}, {0}",
+     "medium": "{1}, {0}",
+     "short": "{1}, {0}"
+    }
+   }
+  },
+  "hr": {
+   "region": "HR",
+   "defaultNumberingSystem": "latn",
+   "symbols": {
+    "decimal": ",",
+    "group": ".",
+    "list": ";",
+    "percentSign": "%",
+    "plusSign": "+",
+    "minusSign": "−",
+    "approximatelySign": "~",
+    "exponential": "E",
+    "superscriptingExponent": "×",
+    "perMille": "‰",
+    "infinity": "∞",
+    "nan": "NaN",
+    "timeSeparator": ":"
+   },
+   "decimalStandard": "#,##0.###",
+   "currency": {
+    "code": "EUR",
+    "symbol": "€",
+    "standard": "#,##0.00 ¤",
+    "accounting": "#,##0.00 ¤"
+   },
+   "dates": {
+    "monthsWide": [
+     "siječnja",
+     "veljače",
+     "ožujka",
+     "travnja",
+     "svibnja",
+     "lipnja",
+     "srpnja",
+     "kolovoza",
+     "rujna",
+     "listopada",
+     "studenoga",
+     "prosinca"
+    ],
+    "monthsAbbrev": [
+     "sij",
+     "velj",
+     "ožu",
+     "tra",
+     "svi",
+     "lip",
+     "srp",
+     "kol",
+     "ruj",
+     "lis",
+     "stu",
+     "pro"
+    ],
+    "monthsNarrow": [
+     "1.",
+     "2.",
+     "3.",
+     "4.",
+     "5.",
+     "6.",
+     "7.",
+     "8.",
+     "9.",
+     "10.",
+     "11.",
+     "12."
+    ],
+    "daysWide": {
+     "sun": "nedjelja",
+     "mon": "ponedjeljak",
+     "tue": "utorak",
+     "wed": "srijeda",
+     "thu": "četvrtak",
+     "fri": "petak",
+     "sat": "subota"
+    },
+    "daysAbbrev": {
+     "sun": "ned",
+     "mon": "pon",
+     "tue": "uto",
+     "wed": "sri",
+     "thu": "čet",
+     "fri": "pet",
+     "sat": "sub"
+    },
+    "am": "AM",
+    "pm": "PM",
+    "dateFormats": {
+     "full": "EEEE, d. MMMM y.",
+     "long": "d. MMMM y.",
+     "medium": "d. MMM y.",
+     "short": "dd. MM. y."
+    },
+    "timeFormats": {
+     "full": "HH:mm:ss (zzzz)",
+     "long": "HH:mm:ss z",
+     "medium": "HH:mm:ss",
+     "short": "HH:mm"
+    },
+    "dateTimeFormats": {
+     "full": "{1} {0}",
+     "long": "{1} {0}",
+     "medium": "{1} {0}",
+     "short": "{1} {0}"
+    }
+   }
+  },
+  "sl": {
+   "region": "SI",
+   "defaultNumberingSystem": "latn",
+   "symbols": {
+    "decimal": ",",
+    "group": ".",
+    "list": ";",
+    "percentSign": "%",
+    "plusSign": "+",
+    "minusSign": "−",
+    "approximatelySign": "~",
+    "exponential": "e",
+    "superscriptingExponent": "×",
+    "perMille": "‰",
+    "infinity": "∞",
+    "nan": "NaN",
+    "timeSeparator": ":"
+   },
+   "decimalStandard": "#,##0.###",
+   "currency": {
+    "code": "EUR",
+    "symbol": "€",
+    "standard": "#,##0.00 ¤",
+    "accounting": "#,##0.00 ¤;(#,##0.00 ¤)"
+   },
+   "dates": {
+    "monthsWide": [
+     "januar",
+     "februar",
+     "marec",
+     "april",
+     "maj",
+     "junij",
+     "julij",
+     "avgust",
+     "september",
+     "oktober",
+     "november",
+     "december"
+    ],
+    "monthsAbbrev": [
+     "jan.",
+     "feb.",
+     "mar.",
+     "apr.",
+     "maj",
+     "jun.",
+     "jul.",
+     "avg.",
+     "sep.",
+     "okt.",
+     "nov.",
+     "dec."
+    ],
+    "monthsNarrow": [
+     "j",
+     "f",
+     "m",
+     "a",
+     "m",
+     "j",
+     "j",
+     "a",
+     "s",
+     "o",
+     "n",
+     "d"
+    ],
+    "daysWide": {
+     "sun": "nedelja",
+     "mon": "ponedeljek",
+     "tue": "torek",
+     "wed": "sreda",
+     "thu": "četrtek",
+     "fri": "petek",
+     "sat": "sobota"
+    },
+    "daysAbbrev": {
+     "sun": "ned.",
+     "mon": "pon.",
+     "tue": "tor.",
+     "wed": "sre.",
+     "thu": "čet.",
+     "fri": "pet.",
+     "sat": "sob."
+    },
+    "am": "dop.",
+    "pm": "pop.",
+    "dateFormats": {
+     "full": "EEEE, d. MMMM y",
+     "long": "d. MMMM y",
+     "medium": "d. MMM y",
+     "short": "d. M. y"
+    },
+    "timeFormats": {
+     "full": "HH:mm:ss zzzz",
+     "long": "HH:mm:ss z",
+     "medium": "HH:mm:ss",
+     "short": "HH:mm"
+    },
+    "dateTimeFormats": {
+     "full": "{1} {0}",
+     "long": "{1} {0}",
+     "medium": "{1}, {0}",
+     "short": "{1}, {0}"
+    }
+   }
+  },
+  "el": {
+   "region": "GR",
+   "defaultNumberingSystem": "latn",
+   "symbols": {
+    "decimal": ",",
+    "group": ".",
+    "list": ";",
+    "percentSign": "%",
+    "plusSign": "+",
+    "minusSign": "-",
+    "approximatelySign": "~",
+    "exponential": "e",
+    "superscriptingExponent": "×",
+    "perMille": "‰",
+    "infinity": "∞",
+    "nan": "NaN",
+    "timeSeparator": ":"
+   },
+   "decimalStandard": "#,##0.###",
+   "currency": {
+    "code": "EUR",
+    "symbol": "€",
+    "standard": "#,##0.00 ¤",
+    "accounting": "#,##0.00 ¤"
+   },
+   "dates": {
+    "monthsWide": [
+     "Ιανουαρίου",
+     "Φεβρουαρίου",
+     "Μαρτίου",
+     "Απριλίου",
+     "Μαΐου",
+     "Ιουνίου",
+     "Ιουλίου",
+     "Αυγούστου",
+     "Σεπτεμβρίου",
+     "Οκτωβρίου",
+     "Νοεμβρίου",
+     "Δεκεμβρίου"
+    ],
+    "monthsAbbrev": [
+     "Ιαν",
+     "Φεβ",
+     "Μαρ",
+     "Απρ",
+     "Μαΐ",
+     "Ιουν",
+     "Ιουλ",
+     "Αυγ",
+     "Σεπ",
+     "Οκτ",
+     "Νοε",
+     "Δεκ"
+    ],
+    "monthsNarrow": [
+     "Ι",
+     "Φ",
+     "Μ",
+     "Α",
+     "Μ",
+     "Ι",
+     "Ι",
+     "Α",
+     "Σ",
+     "Ο",
+     "Ν",
+     "Δ"
+    ],
+    "daysWide": {
+     "sun": "Κυριακή",
+     "mon": "Δευτέρα",
+     "tue": "Τρίτη",
+     "wed": "Τετάρτη",
+     "thu": "Πέμπτη",
+     "fri": "Παρασκευή",
+     "sat": "Σάββατο"
+    },
+    "daysAbbrev": {
+     "sun": "Κυρ",
+     "mon": "Δευ",
+     "tue": "Τρί",
+     "wed": "Τετ",
+     "thu": "Πέμ",
+     "fri": "Παρ",
+     "sat": "Σάβ"
+    },
+    "am": "π.μ.",
+    "pm": "μ.μ.",
+    "dateFormats": {
+     "full": "EEEE d MMMM y",
+     "long": "d MMMM y",
+     "medium": "d MMM y",
+     "short": "d/M/yy"
+    },
+    "timeFormats": {
+     "full": "h:mm:ss a zzzz",
+     "long": "h:mm:ss a z",
+     "medium": "h:mm:ss a",
+     "short": "h:mm a"
+    },
+    "dateTimeFormats": {
+     "full": "{1} - {0}",
+     "long": "{1} - {0}",
+     "medium": "{1}, {0}",
+     "short": "{1}, {0}"
+    }
+   }
+  },
+  "tr": {
+   "region": "TR",
+   "defaultNumberingSystem": "latn",
+   "symbols": {
+    "decimal": ",",
+    "group": ".",
+    "list": ";",
+    "percentSign": "%",
+    "plusSign": "+",
+    "minusSign": "-",
+    "approximatelySign": "~",
+    "exponential": "E",
+    "superscriptingExponent": "×",
+    "perMille": "‰",
+    "infinity": "∞",
+    "nan": "NaN",
+    "timeSeparator": ":"
+   },
+   "decimalStandard": "#,##0.###",
+   "currency": {
+    "code": "TRY",
+    "symbol": "₺",
+    "standard": "¤#,##0.00",
+    "accounting": "¤#,##0.00;(¤#,##0.00)"
+   },
+   "dates": {
+    "monthsWide": [
+     "Ocak",
+     "Şubat",
+     "Mart",
+     "Nisan",
+     "Mayıs",
+     "Haziran",
+     "Temmuz",
+     "Ağustos",
+     "Eylül",
+     "Ekim",
+     "Kasım",
+     "Aralık"
+    ],
+    "monthsAbbrev": [
+     "Oca",
+     "Şub",
+     "Mar",
+     "Nis",
+     "May",
+     "Haz",
+     "Tem",
+     "Ağu",
+     "Eyl",
+     "Eki",
+     "Kas",
+     "Ara"
+    ],
+    "monthsNarrow": [
+     "O",
+     "Ş",
+     "M",
+     "N",
+     "M",
+     "H",
+     "T",
+     "A",
+     "E",
+     "E",
+     "K",
+     "A"
+    ],
+    "daysWide": {
+     "sun": "Pazar",
+     "mon": "Pazartesi",
+     "tue": "Salı",
+     "wed": "Çarşamba",
+     "thu": "Perşembe",
+     "fri": "Cuma",
+     "sat": "Cumartesi"
+    },
+    "daysAbbrev": {
+     "sun": "Paz",
+     "mon": "Pzt",
+     "tue": "Sal",
+     "wed": "Çar",
+     "thu": "Per",
+     "fri": "Cum",
+     "sat": "Cmt"
+    },
+    "am": "ÖÖ",
+    "pm": "ÖS",
+    "dateFormats": {
+     "full": "d MMMM y EEEE",
+     "long": "d MMMM y",
+     "medium": "d MMM y",
+     "short": "d.MM.y"
+    },
+    "timeFormats": {
+     "full": "HH:mm:ss zzzz",
+     "long": "HH:mm:ss z",
+     "medium": "HH:mm:ss",
+     "short": "HH:mm"
+    },
+    "dateTimeFormats": {
+     "full": "{1} {0}",
+     "long": "{1} {0}",
+     "medium": "{1} {0}",
+     "short": "{1} {0}"
+    }
+   }
+  },
+  "pl": {
+   "region": "PL",
+   "defaultNumberingSystem": "latn",
+   "symbols": {
+    "decimal": ",",
+    "group": " ",
+    "list": ";",
+    "percentSign": "%",
+    "plusSign": "+",
+    "minusSign": "-",
+    "approximatelySign": "~",
+    "exponential": "E",
+    "superscriptingExponent": "×",
+    "perMille": "‰",
+    "infinity": "∞",
+    "nan": "NaN",
+    "timeSeparator": ":"
+   },
+   "decimalStandard": "#,##0.###",
+   "currency": {
+    "code": "PLN",
+    "symbol": "zł",
+    "standard": "#,##0.00 ¤",
+    "accounting": "#,##0.00 ¤;(#,##0.00 ¤)"
+   },
+   "dates": {
+    "monthsWide": [
+     "stycznia",
+     "lutego",
+     "marca",
+     "kwietnia",
+     "maja",
+     "czerwca",
+     "lipca",
+     "sierpnia",
+     "września",
+     "października",
+     "listopada",
+     "grudnia"
+    ],
+    "monthsAbbrev": [
+     "sty",
+     "lut",
+     "mar",
+     "kwi",
+     "maj",
+     "cze",
+     "lip",
+     "sie",
+     "wrz",
+     "paź",
+     "lis",
+     "gru"
+    ],
+    "monthsNarrow": [
+     "S",
+     "L",
+     "M",
+     "K",
+     "M",
+     "C",
+     "L",
+     "S",
+     "W",
+     "P",
+     "L",
+     "G"
+    ],
+    "daysWide": {
+     "sun": "niedziela",
+     "mon": "poniedziałek",
+     "tue": "wtorek",
+     "wed": "środa",
+     "thu": "czwartek",
+     "fri": "piątek",
+     "sat": "sobota"
+    },
+    "daysAbbrev": {
+     "sun": "niedz.",
+     "mon": "pon.",
+     "tue": "wt.",
+     "wed": "śr.",
+     "thu": "czw.",
+     "fri": "pt.",
+     "sat": "sob."
+    },
+    "am": "AM",
+    "pm": "PM",
+    "dateFormats": {
+     "full": "EEEE, d MMMM y",
+     "long": "d MMMM y",
+     "medium": "d MMM y",
+     "short": "d.MM.y"
+    },
+    "timeFormats": {
+     "full": "HH:mm:ss zzzz",
+     "long": "HH:mm:ss z",
+     "medium": "HH:mm:ss",
+     "short": "HH:mm"
+    },
+    "dateTimeFormats": {
+     "full": "{1} {0}",
+     "long": "{1} {0}",
+     "medium": "{1}, {0}",
+     "short": "{1}, {0}"
+    }
+   }
+  },
+  "cs": {
+   "region": "CZ",
+   "defaultNumberingSystem": "latn",
+   "symbols": {
+    "decimal": ",",
+    "group": " ",
+    "list": ";",
+    "percentSign": "%",
+    "plusSign": "+",
+    "minusSign": "-",
+    "approximatelySign": "~",
+    "exponential": "E",
+    "superscriptingExponent": "×",
+    "perMille": "‰",
+    "infinity": "∞",
+    "nan": "NaN",
+    "timeSeparator": ":"
+   },
+   "decimalStandard": "#,##0.###",
+   "currency": {
+    "code": "CZK",
+    "symbol": "Kč",
+    "standard": "#,##0.00 ¤",
+    "accounting": "#,##0.00 ¤"
+   },
+   "dates": {
+    "monthsWide": [
+     "ledna",
+     "února",
+     "března",
+     "dubna",
+     "května",
+     "června",
+     "července",
+     "srpna",
+     "září",
+     "října",
+     "listopadu",
+     "prosince"
+    ],
+    "monthsAbbrev": [
+     "led",
+     "úno",
+     "bře",
+     "dub",
+     "kvě",
+     "čvn",
+     "čvc",
+     "srp",
+     "zář",
+     "říj",
+     "lis",
+     "pro"
+    ],
+    "monthsNarrow": [
+     "1",
+     "2",
+     "3",
+     "4",
+     "5",
+     "6",
+     "7",
+     "8",
+     "9",
+     "10",
+     "11",
+     "12"
+    ],
+    "daysWide": {
+     "sun": "neděle",
+     "mon": "pondělí",
+     "tue": "úterý",
+     "wed": "středa",
+     "thu": "čtvrtek",
+     "fri": "pátek",
+     "sat": "sobota"
+    },
+    "daysAbbrev": {
+     "sun": "ne",
+     "mon": "po",
+     "tue": "út",
+     "wed": "st",
+     "thu": "čt",
+     "fri": "pá",
+     "sat": "so"
+    },
+    "am": "dop.",
+    "pm": "odp.",
+    "dateFormats": {
+     "full": "EEEE d. MMMM y",
+     "long": "d. MMMM y",
+     "medium": "d. M. y",
+     "short": "dd.MM.yy"
+    },
+    "timeFormats": {
+     "full": "H:mm:ss, zzzz",
+     "long": "H:mm:ss z",
+     "medium": "H:mm:ss",
+     "short": "H:mm"
+    },
+    "dateTimeFormats": {
+     "full": "{1} {0}",
+     "long": "{1} {0}",
+     "medium": "{1} {0}",
+     "short": "{1} {0}"
+    }
+   }
+  },
+  "sv": {
+   "region": "SE",
+   "defaultNumberingSystem": "latn",
+   "symbols": {
+    "decimal": ",",
+    "group": " ",
+    "list": ";",
+    "percentSign": "%",
+    "plusSign": "+",
+    "minusSign": "−",
+    "approximatelySign": "~",
+    "exponential": "×10^",
+    "superscriptingExponent": "×",
+    "perMille": "‰",
+    "infinity": "∞",
+    "nan": "NaN",
+    "timeSeparator": ":"
+   },
+   "decimalStandard": "#,##0.###",
+   "currency": {
+    "code": "SEK",
+    "symbol": "kr",
+    "standard": "#,##0.00 ¤",
+    "accounting": "#,##0.00 ¤"
+   },
+   "dates": {
+    "monthsWide": [
+     "januari",
+     "februari",
+     "mars",
+     "april",
+     "maj",
+     "juni",
+     "juli",
+     "augusti",
+     "september",
+     "oktober",
+     "november",
+     "december"
+    ],
+    "monthsAbbrev": [
+     "jan.",
+     "feb.",
+     "mars",
+     "apr.",
+     "maj",
+     "juni",
+     "juli",
+     "aug.",
+     "sep.",
+     "okt.",
+     "nov.",
+     "dec."
+    ],
+    "monthsNarrow": [
+     "J",
+     "F",
+     "M",
+     "A",
+     "M",
+     "J",
+     "J",
+     "A",
+     "S",
+     "O",
+     "N",
+     "D"
+    ],
+    "daysWide": {
+     "sun": "söndag",
+     "mon": "måndag",
+     "tue": "tisdag",
+     "wed": "onsdag",
+     "thu": "torsdag",
+     "fri": "fredag",
+     "sat": "lördag"
+    },
+    "daysAbbrev": {
+     "sun": "sön",
+     "mon": "mån",
+     "tue": "tis",
+     "wed": "ons",
+     "thu": "tors",
+     "fri": "fre",
+     "sat": "lör"
+    },
+    "am": "fm",
+    "pm": "em",
+    "dateFormats": {
+     "full": "EEEE d MMMM y",
+     "long": "d MMMM y",
+     "medium": "d MMM y",
+     "short": "y-MM-dd"
+    },
+    "timeFormats": {
+     "full": "HH:mm:ss zzzz",
+     "long": "HH:mm:ss z",
+     "medium": "HH:mm:ss",
+     "short": "HH:mm"
+    },
+    "dateTimeFormats": {
+     "full": "{1} {0}",
+     "long": "{1} {0}",
+     "medium": "{1} {0}",
+     "short": "{1} {0}"
+    }
+   }
+  },
+  "fi": {
+   "region": "FI",
+   "defaultNumberingSystem": "latn",
+   "symbols": {
+    "decimal": ",",
+    "group": " ",
+    "list": ";",
+    "percentSign": "%",
+    "plusSign": "+",
+    "minusSign": "−",
+    "approximatelySign": "~",
+    "exponential": "E",
+    "superscriptingExponent": "×",
+    "perMille": "‰",
+    "infinity": "∞",
+    "nan": "epäluku",
+    "timeSeparator": "."
+   },
+   "decimalStandard": "#,##0.###",
+   "currency": {
+    "code": "EUR",
+    "symbol": "€",
+    "standard": "#,##0.00 ¤",
+    "accounting": "#,##0.00 ¤"
+   },
+   "dates": {
+    "monthsWide": [
+     "tammikuuta",
+     "helmikuuta",
+     "maaliskuuta",
+     "huhtikuuta",
+     "toukokuuta",
+     "kesäkuuta",
+     "heinäkuuta",
+     "elokuuta",
+     "syyskuuta",
+     "lokakuuta",
+     "marraskuuta",
+     "joulukuuta"
+    ],
+    "monthsAbbrev": [
+     "tammi",
+     "helmi",
+     "maalis",
+     "huhti",
+     "touko",
+     "kesä",
+     "heinä",
+     "elo",
+     "syys",
+     "loka",
+     "marras",
+     "joulu"
+    ],
+    "monthsNarrow": [
+     "T",
+     "H",
+     "M",
+     "H",
+     "T",
+     "K",
+     "H",
+     "E",
+     "S",
+     "L",
+     "M",
+     "J"
+    ],
+    "daysWide": {
+     "sun": "sunnuntaina",
+     "mon": "maanantaina",
+     "tue": "tiistaina",
+     "wed": "keskiviikkona",
+     "thu": "torstaina",
+     "fri": "perjantaina",
+     "sat": "lauantaina"
+    },
+    "daysAbbrev": {
+     "sun": "su",
+     "mon": "ma",
+     "tue": "ti",
+     "wed": "ke",
+     "thu": "to",
+     "fri": "pe",
+     "sat": "la"
+    },
+    "am": "ap.",
+    "pm": "ip.",
+    "dateFormats": {
+     "full": "cccc d. MMMM y",
+     "long": "d. MMMM y",
+     "medium": "d.M.y",
+     "short": "d.M.y"
+    },
+    "timeFormats": {
+     "full": "H.mm.ss zzzz",
+     "long": "H.mm.ss z",
+     "medium": "H.mm.ss",
+     "short": "H.mm"
+    },
+    "dateTimeFormats": {
+     "full": "{1} {0}",
+     "long": "{1} {0}",
+     "medium": "{1} {0}",
+     "short": "{1} {0}"
+    }
+   }
+  },
+  "hu": {
+   "region": "HU",
+   "defaultNumberingSystem": "latn",
+   "symbols": {
+    "decimal": ",",
+    "group": " ",
+    "list": ";",
+    "percentSign": "%",
+    "plusSign": "+",
+    "minusSign": "-",
+    "approximatelySign": "~",
+    "exponential": "E",
+    "superscriptingExponent": "×",
+    "perMille": "‰",
+    "infinity": "∞",
+    "nan": "NaN",
+    "timeSeparator": ":"
+   },
+   "decimalStandard": "#,##0.###",
+   "currency": {
+    "code": "HUF",
+    "symbol": "Ft",
+    "standard": "#,##0.00 ¤",
+    "accounting": "#,##0.00 ¤"
+   },
+   "dates": {
+    "monthsWide": [
+     "január",
+     "február",
+     "március",
+     "április",
+     "május",
+     "június",
+     "július",
+     "augusztus",
+     "szeptember",
+     "október",
+     "november",
+     "december"
+    ],
+    "monthsAbbrev": [
+     "jan.",
+     "febr.",
+     "márc.",
+     "ápr.",
+     "máj.",
+     "jún.",
+     "júl.",
+     "aug.",
+     "szept.",
+     "okt.",
+     "nov.",
+     "dec."
+    ],
+    "monthsNarrow": [
+     "J",
+     "F",
+     "M",
+     "Á",
+     "M",
+     "J",
+     "J",
+     "A",
+     "Sz",
+     "O",
+     "N",
+     "D"
+    ],
+    "daysWide": {
+     "sun": "vasárnap",
+     "mon": "hétfő",
+     "tue": "kedd",
+     "wed": "szerda",
+     "thu": "csütörtök",
+     "fri": "péntek",
+     "sat": "szombat"
+    },
+    "daysAbbrev": {
+     "sun": "V",
+     "mon": "H",
+     "tue": "K",
+     "wed": "Sze",
+     "thu": "Cs",
+     "fri": "P",
+     "sat": "Szo"
+    },
+    "am": "de.",
+    "pm": "du.",
+    "dateFormats": {
+     "full": "y. MMMM d., EEEE",
+     "long": "y. MMMM d.",
+     "medium": "y. MMM d.",
+     "short": "y. MM. dd."
+    },
+    "timeFormats": {
+     "full": "H:mm:ss zzzz",
+     "long": "H:mm:ss z",
+     "medium": "H:mm:ss",
+     "short": "H:mm"
+    },
+    "dateTimeFormats": {
+     "full": "{1} {0}",
+     "long": "{1} {0}",
+     "medium": "{1} {0}",
+     "short": "{1} {0}"
+    }
+   }
+  },
+  "sk": {
+   "region": "SK",
+   "defaultNumberingSystem": "latn",
+   "symbols": {
+    "decimal": ",",
+    "group": " ",
+    "list": ";",
+    "percentSign": "%",
+    "plusSign": "+",
+    "minusSign": "-",
+    "approximatelySign": "~",
+    "exponential": "e",
+    "superscriptingExponent": "×",
+    "perMille": "‰",
+    "infinity": "∞",
+    "nan": "NaN",
+    "timeSeparator": ":"
+   },
+   "decimalStandard": "#,##0.###",
+   "currency": {
+    "code": "EUR",
+    "symbol": "€",
+    "standard": "#,##0.00 ¤",
+    "accounting": "#,##0.00 ¤;(#,##0.00 ¤)"
+   },
+   "dates": {
+    "monthsWide": [
+     "januára",
+     "februára",
+     "marca",
+     "apríla",
+     "mája",
+     "júna",
+     "júla",
+     "augusta",
+     "septembra",
+     "októbra",
+     "novembra",
+     "decembra"
+    ],
+    "monthsAbbrev": [
+     "jan",
+     "feb",
+     "mar",
+     "apr",
+     "máj",
+     "jún",
+     "júl",
+     "aug",
+     "sep",
+     "okt",
+     "nov",
+     "dec"
+    ],
+    "monthsNarrow": [
+     "j",
+     "f",
+     "m",
+     "a",
+     "m",
+     "j",
+     "j",
+     "a",
+     "s",
+     "o",
+     "n",
+     "d"
+    ],
+    "daysWide": {
+     "sun": "nedeľa",
+     "mon": "pondelok",
+     "tue": "utorok",
+     "wed": "streda",
+     "thu": "štvrtok",
+     "fri": "piatok",
+     "sat": "sobota"
+    },
+    "daysAbbrev": {
+     "sun": "ne",
+     "mon": "po",
+     "tue": "ut",
+     "wed": "st",
+     "thu": "št",
+     "fri": "pi",
+     "sat": "so"
+    },
+    "am": "AM",
+    "pm": "PM",
+    "dateFormats": {
+     "full": "EEEE d. MMMM y",
+     "long": "d. MMMM y",
+     "medium": "d. M. y",
+     "short": "d. M. y"
+    },
+    "timeFormats": {
+     "full": "H:mm:ss zzzz",
+     "long": "H:mm:ss z",
+     "medium": "H:mm:ss",
+     "short": "H:mm"
+    },
+    "dateTimeFormats": {
+     "full": "{1}, {0}",
+     "long": "{1}, {0}",
+     "medium": "{1}, {0}",
+     "short": "{1} {0}"
+    }
+   }
+  },
+  "et": {
+   "region": "EE",
+   "defaultNumberingSystem": "latn",
+   "symbols": {
+    "decimal": ",",
+    "group": " ",
+    "list": ";",
+    "percentSign": "%",
+    "plusSign": "+",
+    "minusSign": "−",
+    "approximatelySign": "≈",
+    "exponential": "×10^",
+    "superscriptingExponent": "×",
+    "perMille": "‰",
+    "infinity": "∞",
+    "nan": "NaN",
+    "timeSeparator": ":"
+   },
+   "decimalStandard": "#,##0.###",
+   "currency": {
+    "code": "EUR",
+    "symbol": "€",
+    "standard": "#,##0.00 ¤",
+    "accounting": "#,##0.00 ¤;(#,##0.00 ¤)"
+   },
+   "dates": {
+    "monthsWide": [
+     "jaanuar",
+     "veebruar",
+     "märts",
+     "aprill",
+     "mai",
+     "juuni",
+     "juuli",
+     "august",
+     "september",
+     "oktoober",
+     "november",
+     "detsember"
+    ],
+    "monthsAbbrev": [
+     "jaan",
+     "veebr",
+     "märts",
+     "apr",
+     "mai",
+     "juuni",
+     "juuli",
+     "aug",
+     "sept",
+     "okt",
+     "nov",
+     "dets"
+    ],
+    "monthsNarrow": [
+     "J",
+     "V",
+     "M",
+     "A",
+     "M",
+     "J",
+     "J",
+     "A",
+     "S",
+     "O",
+     "N",
+     "D"
+    ],
+    "daysWide": {
+     "sun": "pühapäev",
+     "mon": "esmaspäev",
+     "tue": "teisipäev",
+     "wed": "kolmapäev",
+     "thu": "neljapäev",
+     "fri": "reede",
+     "sat": "laupäev"
+    },
+    "daysAbbrev": {
+     "sun": "P",
+     "mon": "E",
+     "tue": "T",
+     "wed": "K",
+     "thu": "N",
+     "fri": "R",
+     "sat": "L"
+    },
+    "am": "AM",
+    "pm": "PM",
+    "dateFormats": {
+     "full": "EEEE, d. MMMM y",
+     "long": "d. MMMM y",
+     "medium": "d. MMM y",
+     "short": "dd.MM.yy"
+    },
+    "timeFormats": {
+     "full": "HH:mm:ss zzzz",
+     "long": "HH:mm:ss z",
+     "medium": "HH:mm:ss",
+     "short": "HH:mm"
+    },
+    "dateTimeFormats": {
+     "full": "{1} {0}",
+     "long": "{1} {0}",
+     "medium": "{1} {0}",
+     "short": "{1} {0}"
+    }
+   }
+  },
+  "lv": {
+   "region": "LV",
+   "defaultNumberingSystem": "latn",
+   "symbols": {
+    "decimal": ",",
+    "group": " ",
+    "list": ";",
+    "percentSign": "%",
+    "plusSign": "+",
+    "minusSign": "-",
+    "approximatelySign": "~",
+    "exponential": "E",
+    "superscriptingExponent": "×",
+    "perMille": "‰",
+    "infinity": "∞",
+    "nan": "NS",
+    "timeSeparator": ":"
+   },
+   "decimalStandard": "#,##0.###",
+   "currency": {
+    "code": "EUR",
+    "symbol": "€",
+    "standard": "#,##0.00 ¤",
+    "accounting": "#,##0.00 ¤"
+   },
+   "dates": {
+    "monthsWide": [
+     "janvāris",
+     "februāris",
+     "marts",
+     "aprīlis",
+     "maijs",
+     "jūnijs",
+     "jūlijs",
+     "augusts",
+     "septembris",
+     "oktobris",
+     "novembris",
+     "decembris"
+    ],
+    "monthsAbbrev": [
+     "janv.",
+     "febr.",
+     "marts",
+     "apr.",
+     "maijs",
+     "jūn.",
+     "jūl.",
+     "aug.",
+     "sept.",
+     "okt.",
+     "nov.",
+     "dec."
+    ],
+    "monthsNarrow": [
+     "J",
+     "F",
+     "M",
+     "A",
+     "M",
+     "J",
+     "J",
+     "A",
+     "S",
+     "O",
+     "N",
+     "D"
+    ],
+    "daysWide": {
+     "sun": "svētdiena",
+     "mon": "pirmdiena",
+     "tue": "otrdiena",
+     "wed": "trešdiena",
+     "thu": "ceturtdiena",
+     "fri": "piektdiena",
+     "sat": "sestdiena"
+    },
+    "daysAbbrev": {
+     "sun": "svētd.",
+     "mon": "pirmd.",
+     "tue": "otrd.",
+     "wed": "trešd.",
+     "thu": "ceturtd.",
+     "fri": "piektd.",
+     "sat": "sestd."
+    },
+    "am": "priekšp.",
+    "pm": "pēcp.",
+    "dateFormats": {
+     "full": "EEEE, y. 'gada' d. MMMM",
+     "long": "y. 'gada' d. MMMM",
+     "medium": "y. 'gada' d. MMM",
+     "short": "dd.MM.yy"
+    },
+    "timeFormats": {
+     "full": "HH:mm:ss zzzz",
+     "long": "HH:mm:ss z",
+     "medium": "HH:mm:ss",
+     "short": "HH:mm"
+    },
+    "dateTimeFormats": {
+     "full": "{1} {0}",
+     "long": "{1} {0}",
+     "medium": "{1} {0}",
+     "short": "{1} {0}"
+    }
+   }
+  },
+  "lt": {
+   "region": "LT",
+   "defaultNumberingSystem": "latn",
+   "symbols": {
+    "decimal": ",",
+    "group": " ",
+    "list": ";",
+    "percentSign": "%",
+    "plusSign": "+",
+    "minusSign": "−",
+    "approximatelySign": "∼",
+    "exponential": "×10^",
+    "superscriptingExponent": "×",
+    "perMille": "‰",
+    "infinity": "∞",
+    "nan": "NaN",
+    "timeSeparator": ":"
+   },
+   "decimalStandard": "#,##0.###",
+   "currency": {
+    "code": "EUR",
+    "symbol": "€",
+    "standard": "#,##0.00 ¤",
+    "accounting": "#,##0.00 ¤"
+   },
+   "dates": {
+    "monthsWide": [
+     "sausio",
+     "vasario",
+     "kovo",
+     "balandžio",
+     "gegužės",
+     "birželio",
+     "liepos",
+     "rugpjūčio",
+     "rugsėjo",
+     "spalio",
+     "lapkričio",
+     "gruodžio"
+    ],
+    "monthsAbbrev": [
+     "saus.",
+     "vas.",
+     "kov.",
+     "bal.",
+     "geg.",
+     "birž.",
+     "liep.",
+     "rugp.",
+     "rugs.",
+     "spal.",
+     "lapkr.",
+     "gruod."
+    ],
+    "monthsNarrow": [
+     "S",
+     "V",
+     "K",
+     "B",
+     "G",
+     "B",
+     "L",
+     "R",
+     "R",
+     "S",
+     "L",
+     "G"
+    ],
+    "daysWide": {
+     "sun": "sekmadienis",
+     "mon": "pirmadienis",
+     "tue": "antradienis",
+     "wed": "trečiadienis",
+     "thu": "ketvirtadienis",
+     "fri": "penktadienis",
+     "sat": "šeštadienis"
+    },
+    "daysAbbrev": {
+     "sun": "sk",
+     "mon": "pr",
+     "tue": "an",
+     "wed": "tr",
+     "thu": "kt",
+     "fri": "pn",
+     "sat": "št"
+    },
+    "am": "priešpiet",
+    "pm": "popiet",
+    "dateFormats": {
+     "full": "y 'm'. MMMM d 'd'., EEEE",
+     "long": "y 'm'. MMMM d 'd'.",
+     "medium": "y-MM-dd",
+     "short": "y-MM-dd"
+    },
+    "timeFormats": {
+     "full": "HH:mm:ss zzzz",
+     "long": "HH:mm:ss z",
+     "medium": "HH:mm:ss",
+     "short": "HH:mm"
+    },
+    "dateTimeFormats": {
+     "full": "{1} {0}",
+     "long": "{1} {0}",
+     "medium": "{1} {0}",
+     "short": "{1} {0}"
+    }
+   }
+  },
+  "da": {
+   "region": "DK",
+   "defaultNumberingSystem": "latn",
+   "symbols": {
+    "decimal": ",",
+    "group": ".",
+    "list": ";",
+    "percentSign": "%",
+    "plusSign": "+",
+    "minusSign": "-",
+    "approximatelySign": "~",
+    "exponential": "E",
+    "superscriptingExponent": "×",
+    "perMille": "‰",
+    "infinity": "∞",
+    "nan": "NaN",
+    "timeSeparator": "."
+   },
+   "decimalStandard": "#,##0.###",
+   "currency": {
+    "code": "DKK",
+    "symbol": "kr.",
+    "standard": "#,##0.00 ¤",
+    "accounting": "#,##0.00 ¤"
+   },
+   "dates": {
+    "monthsWide": [
+     "januar",
+     "februar",
+     "marts",
+     "april",
+     "maj",
+     "juni",
+     "juli",
+     "august",
+     "september",
+     "oktober",
+     "november",
+     "december"
+    ],
+    "monthsAbbrev": [
+     "jan.",
+     "feb.",
+     "mar.",
+     "apr.",
+     "maj",
+     "jun.",
+     "jul.",
+     "aug.",
+     "sep.",
+     "okt.",
+     "nov.",
+     "dec."
+    ],
+    "monthsNarrow": [
+     "J",
+     "F",
+     "M",
+     "A",
+     "M",
+     "J",
+     "J",
+     "A",
+     "S",
+     "O",
+     "N",
+     "D"
+    ],
+    "daysWide": {
+     "sun": "søndag",
+     "mon": "mandag",
+     "tue": "tirsdag",
+     "wed": "onsdag",
+     "thu": "torsdag",
+     "fri": "fredag",
+     "sat": "lørdag"
+    },
+    "daysAbbrev": {
+     "sun": "søn.",
+     "mon": "man.",
+     "tue": "tirs.",
+     "wed": "ons.",
+     "thu": "tors.",
+     "fri": "fre.",
+     "sat": "lør."
+    },
+    "am": "AM",
+    "pm": "PM",
+    "dateFormats": {
+     "full": "EEEE 'den' d. MMMM y",
+     "long": "d. MMMM y",
+     "medium": "d. MMM y",
+     "short": "dd.MM.y"
+    },
+    "timeFormats": {
+     "full": "HH.mm.ss zzzz",
+     "long": "HH.mm.ss z",
+     "medium": "HH.mm.ss",
+     "short": "HH.mm"
+    },
+    "dateTimeFormats": {
+     "full": "{1} {0}",
+     "long": "{1} {0}",
+     "medium": "{1} {0}",
+     "short": "{1} {0}"
+    }
+   }
+  },
+  "nb": {
+   "region": "NO",
+   "defaultNumberingSystem": "latn",
+   "symbols": {
+    "decimal": ",",
+    "group": " ",
+    "list": ";",
+    "percentSign": "%",
+    "plusSign": "+",
+    "minusSign": "−",
+    "approximatelySign": "ca.",
+    "exponential": "E",
+    "superscriptingExponent": "×",
+    "perMille": "‰",
+    "infinity": "∞",
+    "nan": "NaN",
+    "timeSeparator": ":"
+   },
+   "decimalStandard": "#,##0.###",
+   "currency": {
+    "code": "NOK",
+    "symbol": "kr",
+    "standard": "#,##0.00 ¤;-#,##0.00 ¤",
+    "accounting": "¤ #,##0.00;(¤ #,##0.00)"
+   },
+   "dates": {
+    "monthsWide": [
+     "januar",
+     "februar",
+     "mars",
+     "april",
+     "mai",
+     "juni",
+     "juli",
+     "august",
+     "september",
+     "oktober",
+     "november",
+     "desember"
+    ],
+    "monthsAbbrev": [
+     "jan.",
+     "feb.",
+     "mars",
+     "apr.",
+     "mai",
+     "juni",
+     "juli",
+     "aug.",
+     "sep.",
+     "okt.",
+     "nov.",
+     "des."
+    ],
+    "monthsNarrow": [
+     "J",
+     "F",
+     "M",
+     "A",
+     "M",
+     "J",
+     "J",
+     "A",
+     "S",
+     "O",
+     "N",
+     "D"
+    ],
+    "daysWide": {
+     "sun": "søndag",
+     "mon": "mandag",
+     "tue": "tirsdag",
+     "wed": "onsdag",
+     "thu": "torsdag",
+     "fri": "fredag",
+     "sat": "lørdag"
+    },
+    "daysAbbrev": {
+     "sun": "søn.",
+     "mon": "man.",
+     "tue": "tir.",
+     "wed": "ons.",
+     "thu": "tor.",
+     "fri": "fre.",
+     "sat": "lør."
+    },
+    "am": "a.m.",
+    "pm": "p.m.",
+    "dateFormats": {
+     "full": "EEEE d. MMMM y",
+     "long": "d. MMMM y",
+     "medium": "d. MMM y",
+     "short": "dd.MM.y"
+    },
+    "timeFormats": {
+     "full": "HH:mm:ss zzzz",
+     "long": "HH:mm:ss z",
+     "medium": "HH:mm:ss",
+     "short": "HH:mm"
+    },
+    "dateTimeFormats": {
+     "full": "{1}, {0}",
+     "long": "{1}, {0}",
+     "medium": "{1}, {0}",
+     "short": "{1}, {0}"
+    }
+   }
+  },
+  "nn": {
+   "region": "NO",
+   "defaultNumberingSystem": "latn",
+   "symbols": {
+    "decimal": ",",
+    "group": " ",
+    "list": ";",
+    "percentSign": "%",
+    "plusSign": "+",
+    "minusSign": "−",
+    "approximatelySign": "≈",
+    "exponential": "E",
+    "superscriptingExponent": "×",
+    "perMille": "‰",
+    "infinity": "∞",
+    "nan": "NaN",
+    "timeSeparator": ":"
+   },
+   "decimalStandard": "#,##0.###",
+   "currency": {
+    "code": "NOK",
+    "symbol": "kr",
+    "standard": "#,##0.00 ¤;-#,##0.00 ¤",
+    "accounting": "¤ #,##0.00;(¤ #,##0.00)"
+   },
+   "dates": {
+    "monthsWide": [
+     "januar",
+     "februar",
+     "mars",
+     "april",
+     "mai",
+     "juni",
+     "juli",
+     "august",
+     "september",
+     "oktober",
+     "november",
+     "desember"
+    ],
+    "monthsAbbrev": [
+     "jan.",
+     "feb.",
+     "mars",
+     "apr.",
+     "mai",
+     "juni",
+     "juli",
+     "aug.",
+     "sep.",
+     "okt.",
+     "nov.",
+     "des."
+    ],
+    "monthsNarrow": [
+     "J",
+     "F",
+     "M",
+     "A",
+     "M",
+     "J",
+     "J",
+     "A",
+     "S",
+     "O",
+     "N",
+     "D"
+    ],
+    "daysWide": {
+     "sun": "søndag",
+     "mon": "måndag",
+     "tue": "tysdag",
+     "wed": "onsdag",
+     "thu": "torsdag",
+     "fri": "fredag",
+     "sat": "laurdag"
+    },
+    "daysAbbrev": {
+     "sun": "sø.",
+     "mon": "må.",
+     "tue": "ty.",
+     "wed": "on.",
+     "thu": "to.",
+     "fri": "fr.",
+     "sat": "la."
+    },
+    "am": "f.m.",
+    "pm": "e.m.",
+    "dateFormats": {
+     "full": "EEEE d. MMMM y",
+     "long": "d. MMMM y",
+     "medium": "d. MMM y",
+     "short": "dd.MM.y"
+    },
+    "timeFormats": {
+     "full": "HH:mm:ss zzzz",
+     "long": "HH:mm:ss z",
+     "medium": "HH:mm:ss",
+     "short": "HH:mm"
+    },
+    "dateTimeFormats": {
+     "full": "{1} {0}",
+     "long": "{1} 'kl'. {0}",
+     "medium": "{1}, {0}",
+     "short": "{1}, {0}"
+    }
+   }
+  },
+  "ru": {
+   "region": "RU",
+   "defaultNumberingSystem": "latn",
+   "symbols": {
+    "decimal": ",",
+    "group": " ",
+    "list": ";",
+    "percentSign": "%",
+    "plusSign": "+",
+    "minusSign": "-",
+    "approximatelySign": "≈",
+    "exponential": "E",
+    "superscriptingExponent": "×",
+    "perMille": "‰",
+    "infinity": "∞",
+    "nan": "не число",
+    "timeSeparator": ":"
+   },
+   "decimalStandard": "#,##0.###",
+   "currency": {
+    "code": "RUB",
+    "symbol": "₽",
+    "standard": "#,##0.00 ¤",
+    "accounting": "#,##0.00 ¤"
+   },
+   "dates": {
+    "monthsWide": [
+     "января",
+     "февраля",
+     "марта",
+     "апреля",
+     "мая",
+     "июня",
+     "июля",
+     "августа",
+     "сентября",
+     "октября",
+     "ноября",
+     "декабря"
+    ],
+    "monthsAbbrev": [
+     "янв.",
+     "февр.",
+     "мар.",
+     "апр.",
+     "мая",
+     "июн.",
+     "июл.",
+     "авг.",
+     "сент.",
+     "окт.",
+     "нояб.",
+     "дек."
+    ],
+    "monthsNarrow": [
+     "Я",
+     "Ф",
+     "М",
+     "А",
+     "М",
+     "И",
+     "И",
+     "А",
+     "С",
+     "О",
+     "Н",
+     "Д"
+    ],
+    "daysWide": {
+     "sun": "воскресенье",
+     "mon": "понедельник",
+     "tue": "вторник",
+     "wed": "среда",
+     "thu": "четверг",
+     "fri": "пятница",
+     "sat": "суббота"
+    },
+    "daysAbbrev": {
+     "sun": "вс",
+     "mon": "пн",
+     "tue": "вт",
+     "wed": "ср",
+     "thu": "чт",
+     "fri": "пт",
+     "sat": "сб"
+    },
+    "am": "AM",
+    "pm": "PM",
+    "dateFormats": {
+     "full": "EEEE, d MMMM y 'г'.",
+     "long": "d MMMM y 'г'.",
+     "medium": "d MMM y 'г'.",
+     "short": "dd.MM.y"
+    },
+    "timeFormats": {
+     "full": "HH:mm:ss zzzz",
+     "long": "HH:mm:ss z",
+     "medium": "HH:mm:ss",
+     "short": "HH:mm"
+    },
+    "dateTimeFormats": {
+     "full": "{1}, {0}",
+     "long": "{1}, {0}",
+     "medium": "{1}, {0}",
+     "short": "{1}, {0}"
+    }
+   }
+  },
+  "uk": {
+   "region": "UA",
+   "defaultNumberingSystem": "latn",
+   "symbols": {
+    "decimal": ",",
+    "group": " ",
+    "list": ";",
+    "percentSign": "%",
+    "plusSign": "+",
+    "minusSign": "-",
+    "approximatelySign": "~",
+    "exponential": "Е",
+    "superscriptingExponent": "×",
+    "perMille": "‰",
+    "infinity": "∞",
+    "nan": "NaN",
+    "timeSeparator": ":"
+   },
+   "decimalStandard": "#,##0.###",
+   "currency": {
+    "code": "UAH",
+    "symbol": "₴",
+    "standard": "#,##0.00 ¤",
+    "accounting": "#,##0.00 ¤"
+   },
+   "dates": {
+    "monthsWide": [
+     "січня",
+     "лютого",
+     "березня",
+     "квітня",
+     "травня",
+     "червня",
+     "липня",
+     "серпня",
+     "вересня",
+     "жовтня",
+     "листопада",
+     "грудня"
+    ],
+    "monthsAbbrev": [
+     "січ.",
+     "лют.",
+     "бер.",
+     "квіт.",
+     "трав.",
+     "черв.",
+     "лип.",
+     "серп.",
+     "вер.",
+     "жовт.",
+     "лист.",
+     "груд."
+    ],
+    "monthsNarrow": [
+     "С",
+     "Л",
+     "Б",
+     "К",
+     "Т",
+     "Ч",
+     "Л",
+     "С",
+     "В",
+     "Ж",
+     "Л",
+     "Г"
+    ],
+    "daysWide": {
+     "sun": "неділя",
+     "mon": "понеділок",
+     "tue": "вівторок",
+     "wed": "середа",
+     "thu": "четвер",
+     "fri": "пʼятниця",
+     "sat": "субота"
+    },
+    "daysAbbrev": {
+     "sun": "нд",
+     "mon": "пн",
+     "tue": "вт",
+     "wed": "ср",
+     "thu": "чт",
+     "fri": "пт",
+     "sat": "сб"
+    },
+    "am": "дп",
+    "pm": "пп",
+    "dateFormats": {
+     "full": "EEEE, d MMMM y 'р'.",
+     "long": "d MMMM y 'р'.",
+     "medium": "d MMM y 'р'.",
+     "short": "dd.MM.yy"
+    },
+    "timeFormats": {
+     "full": "HH:mm:ss zzzz",
+     "long": "HH:mm:ss z",
+     "medium": "HH:mm:ss",
+     "short": "HH:mm"
+    },
+    "dateTimeFormats": {
+     "full": "{1}, {0}",
+     "long": "{1}, {0}",
+     "medium": "{1}, {0}",
+     "short": "{1}, {0}"
+    }
+   }
+  },
+  "bg": {
+   "region": "BG",
+   "defaultNumberingSystem": "latn",
+   "symbols": {
+    "decimal": ",",
+    "group": " ",
+    "list": ";",
+    "percentSign": "%",
+    "plusSign": "+",
+    "minusSign": "-",
+    "approximatelySign": "~",
+    "exponential": "E",
+    "superscriptingExponent": "×",
+    "perMille": "‰",
+    "infinity": "∞",
+    "nan": "NaN",
+    "timeSeparator": ":"
+   },
+   "decimalStandard": "#,##0.###",
+   "currency": {
+    "code": "EUR",
+    "symbol": "€",
+    "standard": "#,##0.00 ¤",
+    "accounting": "#,##0.00 ¤;(#,##0.00 ¤)"
+   },
+   "dates": {
+    "monthsWide": [
+     "януари",
+     "февруари",
+     "март",
+     "април",
+     "май",
+     "юни",
+     "юли",
+     "август",
+     "септември",
+     "октомври",
+     "ноември",
+     "декември"
+    ],
+    "monthsAbbrev": [
+     "яну",
+     "фев",
+     "март",
+     "апр",
+     "май",
+     "юни",
+     "юли",
+     "авг",
+     "сеп",
+     "окт",
+     "ное",
+     "дек"
+    ],
+    "monthsNarrow": [
+     "я",
+     "ф",
+     "м",
+     "а",
+     "м",
+     "ю",
+     "ю",
+     "а",
+     "с",
+     "о",
+     "н",
+     "д"
+    ],
+    "daysWide": {
+     "sun": "неделя",
+     "mon": "понеделник",
+     "tue": "вторник",
+     "wed": "сряда",
+     "thu": "четвъртък",
+     "fri": "петък",
+     "sat": "събота"
+    },
+    "daysAbbrev": {
+     "sun": "нд",
+     "mon": "пн",
+     "tue": "вт",
+     "wed": "ср",
+     "thu": "чт",
+     "fri": "пт",
+     "sat": "сб"
+    },
+    "am": "am",
+    "pm": "pm",
+    "dateFormats": {
+     "full": "EEEE, d MMMM y 'г'.",
+     "long": "d MMMM y 'г'.",
+     "medium": "d.MM.y 'г'.",
+     "short": "d.MM.yy 'г'."
+    },
+    "timeFormats": {
+     "full": "H:mm:ss 'ч'. zzzz",
+     "long": "H:mm:ss 'ч'. z",
+     "medium": "H:mm:ss",
+     "short": "H:mm"
+    },
+    "dateTimeFormats": {
+     "full": "{1}, {0}",
+     "long": "{1}, {0}",
+     "medium": "{1}, {0}",
+     "short": "{1}, {0}"
+    }
+   }
+  },
+  "id": {
+   "region": "ID",
+   "defaultNumberingSystem": "latn",
+   "symbols": {
+    "decimal": ",",
+    "group": ".",
+    "list": ";",
+    "percentSign": "%",
+    "plusSign": "+",
+    "minusSign": "-",
+    "approximatelySign": "~",
+    "exponential": "E",
+    "superscriptingExponent": "×",
+    "perMille": "‰",
+    "infinity": "∞",
+    "nan": "NaN",
+    "timeSeparator": "."
+   },
+   "decimalStandard": "#,##0.###",
+   "currency": {
+    "code": "IDR",
+    "symbol": "Rp",
+    "standard": "¤#,##0.00",
+    "accounting": "¤#,##0.00"
+   },
+   "dates": {
+    "monthsWide": [
+     "Januari",
+     "Februari",
+     "Maret",
+     "April",
+     "Mei",
+     "Juni",
+     "Juli",
+     "Agustus",
+     "September",
+     "Oktober",
+     "November",
+     "Desember"
+    ],
+    "monthsAbbrev": [
+     "Jan",
+     "Feb",
+     "Mar",
+     "Apr",
+     "Mei",
+     "Jun",
+     "Jul",
+     "Agu",
+     "Sep",
+     "Okt",
+     "Nov",
+     "Des"
+    ],
+    "monthsNarrow": [
+     "J",
+     "F",
+     "M",
+     "A",
+     "M",
+     "J",
+     "J",
+     "A",
+     "S",
+     "O",
+     "N",
+     "D"
+    ],
+    "daysWide": {
+     "sun": "Minggu",
+     "mon": "Senin",
+     "tue": "Selasa",
+     "wed": "Rabu",
+     "thu": "Kamis",
+     "fri": "Jumat",
+     "sat": "Sabtu"
+    },
+    "daysAbbrev": {
+     "sun": "Min",
+     "mon": "Sen",
+     "tue": "Sel",
+     "wed": "Rab",
+     "thu": "Kam",
+     "fri": "Jum",
+     "sat": "Sab"
+    },
+    "am": "AM",
+    "pm": "PM",
+    "dateFormats": {
+     "full": "EEEE, dd MMMM y",
+     "long": "d MMMM y",
+     "medium": "d MMM y",
+     "short": "dd/MM/yy"
+    },
+    "timeFormats": {
+     "full": "HH.mm.ss zzzz",
+     "long": "HH.mm.ss z",
+     "medium": "HH.mm.ss",
+     "short": "HH.mm"
+    },
+    "dateTimeFormats": {
+     "full": "{1} {0}",
+     "long": "{1} {0}",
+     "medium": "{1} {0}",
+     "short": "{1} {0}"
+    }
+   }
+  },
+  "ja": {
+   "region": "JP",
+   "defaultNumberingSystem": "latn",
+   "symbols": {
+    "decimal": ".",
+    "group": ",",
+    "list": ";",
+    "percentSign": "%",
+    "plusSign": "+",
+    "minusSign": "-",
+    "approximatelySign": "約",
+    "exponential": "E",
+    "superscriptingExponent": "×",
+    "perMille": "‰",
+    "infinity": "∞",
+    "nan": "NaN",
+    "timeSeparator": ":"
+   },
+   "decimalStandard": "#,##0.###",
+   "currency": {
+    "code": "JPY",
+    "symbol": "￥",
+    "standard": "¤#,##0.00",
+    "accounting": "¤#,##0.00;(¤#,##0.00)"
+   },
+   "dates": {
+    "monthsWide": [
+     "1月",
+     "2月",
+     "3月",
+     "4月",
+     "5月",
+     "6月",
+     "7月",
+     "8月",
+     "9月",
+     "10月",
+     "11月",
+     "12月"
+    ],
+    "monthsAbbrev": [
+     "1月",
+     "2月",
+     "3月",
+     "4月",
+     "5月",
+     "6月",
+     "7月",
+     "8月",
+     "9月",
+     "10月",
+     "11月",
+     "12月"
+    ],
+    "monthsNarrow": [
+     "1",
+     "2",
+     "3",
+     "4",
+     "5",
+     "6",
+     "7",
+     "8",
+     "9",
+     "10",
+     "11",
+     "12"
+    ],
+    "daysWide": {
+     "sun": "日曜日",
+     "mon": "月曜日",
+     "tue": "火曜日",
+     "wed": "水曜日",
+     "thu": "木曜日",
+     "fri": "金曜日",
+     "sat": "土曜日"
+    },
+    "daysAbbrev": {
+     "sun": "日",
+     "mon": "月",
+     "tue": "火",
+     "wed": "水",
+     "thu": "木",
+     "fri": "金",
+     "sat": "土"
+    },
+    "am": "午前",
+    "pm": "午後",
+    "dateFormats": {
+     "full": "y年M月d日EEEE",
+     "long": "y年M月d日",
+     "medium": "y/MM/dd",
+     "short": "y/MM/dd"
+    },
+    "timeFormats": {
+     "full": "H時mm分ss秒 zzzz",
+     "long": "H:mm:ss z",
+     "medium": "H:mm:ss",
+     "short": "H:mm"
+    },
+    "dateTimeFormats": {
+     "full": "{1} {0}",
+     "long": "{1} {0}",
+     "medium": "{1} {0}",
+     "short": "{1} {0}"
+    }
+   }
+  },
+  "ko": {
+   "region": "KR",
+   "defaultNumberingSystem": "latn",
+   "symbols": {
+    "decimal": ".",
+    "group": ",",
+    "list": ";",
+    "percentSign": "%",
+    "plusSign": "+",
+    "minusSign": "-",
+    "approximatelySign": "~",
+    "exponential": "E",
+    "superscriptingExponent": "×",
+    "perMille": "‰",
+    "infinity": "∞",
+    "nan": "NaN",
+    "timeSeparator": ":"
+   },
+   "decimalStandard": "#,##0.###",
+   "currency": {
+    "code": "KRW",
+    "symbol": "₩",
+    "standard": "¤#,##0.00",
+    "accounting": "¤#,##0.00;(¤#,##0.00)"
+   },
+   "dates": {
+    "monthsWide": [
+     "1월",
+     "2월",
+     "3월",
+     "4월",
+     "5월",
+     "6월",
+     "7월",
+     "8월",
+     "9월",
+     "10월",
+     "11월",
+     "12월"
+    ],
+    "monthsAbbrev": [
+     "1월",
+     "2월",
+     "3월",
+     "4월",
+     "5월",
+     "6월",
+     "7월",
+     "8월",
+     "9월",
+     "10월",
+     "11월",
+     "12월"
+    ],
+    "monthsNarrow": [
+     "1월",
+     "2월",
+     "3월",
+     "4월",
+     "5월",
+     "6월",
+     "7월",
+     "8월",
+     "9월",
+     "10월",
+     "11월",
+     "12월"
+    ],
+    "daysWide": {
+     "sun": "일요일",
+     "mon": "월요일",
+     "tue": "화요일",
+     "wed": "수요일",
+     "thu": "목요일",
+     "fri": "금요일",
+     "sat": "토요일"
+    },
+    "daysAbbrev": {
+     "sun": "일",
+     "mon": "월",
+     "tue": "화",
+     "wed": "수",
+     "thu": "목",
+     "fri": "금",
+     "sat": "토"
+    },
+    "am": "오전",
+    "pm": "오후",
+    "dateFormats": {
+     "full": "y년 MMMM d일 EEEE",
+     "long": "y년 MMMM d일",
+     "medium": "y. M. d.",
+     "short": "yy. M. d."
+    },
+    "timeFormats": {
+     "full": "a h시 m분 s초 zzzz",
+     "long": "a h시 m분 s초 z",
+     "medium": "a h:mm:ss",
+     "short": "a h:mm"
+    },
+    "dateTimeFormats": {
+     "full": "{1} {0}",
+     "long": "{1} {0}",
+     "medium": "{1} {0}",
+     "short": "{1} {0}"
+    }
+   }
+  },
+  "th": {
+   "region": "TH",
+   "defaultNumberingSystem": "latn",
+   "symbols": {
+    "decimal": ".",
+    "group": ",",
+    "list": ";",
+    "percentSign": "%",
+    "plusSign": "+",
+    "minusSign": "-",
+    "approximatelySign": "~",
+    "exponential": "E",
+    "superscriptingExponent": "×",
+    "perMille": "‰",
+    "infinity": "∞",
+    "nan": "NaN",
+    "timeSeparator": ":"
+   },
+   "decimalStandard": "#,##0.###",
+   "currency": {
+    "code": "THB",
+    "symbol": "฿",
+    "standard": "¤#,##0.00",
+    "accounting": "¤#,##0.00;(¤#,##0.00)"
+   },
+   "dates": {
+    "monthsWide": [
+     "มกราคม",
+     "กุมภาพันธ์",
+     "มีนาคม",
+     "เมษายน",
+     "พฤษภาคม",
+     "มิถุนายน",
+     "กรกฎาคม",
+     "สิงหาคม",
+     "กันยายน",
+     "ตุลาคม",
+     "พฤศจิกายน",
+     "ธันวาคม"
+    ],
+    "monthsAbbrev": [
+     "ม.ค.",
+     "ก.พ.",
+     "มี.ค.",
+     "เม.ย.",
+     "พ.ค.",
+     "มิ.ย.",
+     "ก.ค.",
+     "ส.ค.",
+     "ก.ย.",
+     "ต.ค.",
+     "พ.ย.",
+     "ธ.ค."
+    ],
+    "monthsNarrow": [
+     "ม.ค.",
+     "ก.พ.",
+     "มี.ค.",
+     "เม.ย.",
+     "พ.ค.",
+     "มิ.ย.",
+     "ก.ค.",
+     "ส.ค.",
+     "ก.ย.",
+     "ต.ค.",
+     "พ.ย.",
+     "ธ.ค."
+    ],
+    "daysWide": {
+     "sun": "วันอาทิตย์",
+     "mon": "วันจันทร์",
+     "tue": "วันอังคาร",
+     "wed": "วันพุธ",
+     "thu": "วันพฤหัสบดี",
+     "fri": "วันศุกร์",
+     "sat": "วันเสาร์"
+    },
+    "daysAbbrev": {
+     "sun": "อาทิตย์",
+     "mon": "จันทร์",
+     "tue": "อังคาร",
+     "wed": "พุธ",
+     "thu": "พฤหัส",
+     "fri": "ศุกร์",
+     "sat": "เสาร์"
+    },
+    "am": "AM",
+    "pm": "PM",
+    "dateFormats": {
+     "full": "EEEEที่ d MMMM G y",
+     "long": "d MMMM G y",
+     "medium": "d MMM y",
+     "short": "d/M/yy"
+    },
+    "timeFormats": {
+     "full": "H นาฬิกา mm นาที ss วินาที zzzz",
+     "long": "H นาฬิกา mm นาที ss วินาที z",
+     "medium": "HH:mm:ss",
+     "short": "HH:mm"
+    },
+    "dateTimeFormats": {
+     "full": "{1} {0}",
+     "long": "{1} {0}",
+     "medium": "{1} {0}",
+     "short": "{1} {0}"
+    }
+   }
+  },
+  "ms": {
+   "region": "MY",
+   "defaultNumberingSystem": "latn",
+   "symbols": {
+    "decimal": ".",
+    "group": ",",
+    "list": ";",
+    "percentSign": "%",
+    "plusSign": "+",
+    "minusSign": "-",
+    "approximatelySign": "~",
+    "exponential": "E",
+    "superscriptingExponent": "×",
+    "perMille": "‰",
+    "infinity": "∞",
+    "nan": "NaN",
+    "timeSeparator": ":"
+   },
+   "decimalStandard": "#,##0.###",
+   "currency": {
+    "code": "MYR",
+    "symbol": "RM",
+    "standard": "¤#,##0.00",
+    "accounting": "¤#,##0.00;(¤#,##0.00)"
+   },
+   "dates": {
+    "monthsWide": [
+     "Januari",
+     "Februari",
+     "Mac",
+     "April",
+     "Mei",
+     "Jun",
+     "Julai",
+     "Ogos",
+     "September",
+     "Oktober",
+     "November",
+     "Disember"
+    ],
+    "monthsAbbrev": [
+     "Jan",
+     "Feb",
+     "Mac",
+     "Apr",
+     "Mei",
+     "Jun",
+     "Jul",
+     "Ogo",
+     "Sep",
+     "Okt",
+     "Nov",
+     "Dis"
+    ],
+    "monthsNarrow": [
+     "J",
+     "F",
+     "M",
+     "A",
+     "M",
+     "J",
+     "J",
+     "O",
+     "S",
+     "O",
+     "N",
+     "D"
+    ],
+    "daysWide": {
+     "sun": "Ahad",
+     "mon": "Isnin",
+     "tue": "Selasa",
+     "wed": "Rabu",
+     "thu": "Khamis",
+     "fri": "Jumaat",
+     "sat": "Sabtu"
+    },
+    "daysAbbrev": {
+     "sun": "Ahd",
+     "mon": "Isn",
+     "tue": "Sel",
+     "wed": "Rab",
+     "thu": "Kha",
+     "fri": "Jum",
+     "sat": "Sab"
+    },
+    "am": "PG",
+    "pm": "PTG",
+    "dateFormats": {
+     "full": "EEEE, d MMMM y",
+     "long": "d MMMM y",
+     "medium": "d MMM y",
+     "short": "d/MM/yy"
+    },
+    "timeFormats": {
+     "full": "h:mm:ss a zzzz",
+     "long": "h:mm:ss a z",
+     "medium": "h:mm:ss a",
+     "short": "h:mm a"
+    },
+    "dateTimeFormats": {
+     "full": "{1} {0}",
+     "long": "{1} {0}",
+     "medium": "{1}, {0}",
+     "short": "{1}, {0}"
+    }
+   }
+  },
+  "hi": {
+   "region": "IN",
+   "defaultNumberingSystem": "latn",
+   "symbols": {
+    "decimal": ".",
+    "group": ",",
+    "list": ";",
+    "percentSign": "%",
+    "plusSign": "+",
+    "minusSign": "-",
+    "approximatelySign": "~",
+    "exponential": "E",
+    "superscriptingExponent": "×",
+    "perMille": "‰",
+    "infinity": "∞",
+    "nan": "NaN",
+    "timeSeparator": ":"
+   },
+   "decimalStandard": "#,##,##0.###",
+   "currency": {
+    "code": "INR",
+    "symbol": "₹",
+    "standard": "¤#,##,##0.00",
+    "accounting": "¤#,##,##0.00"
+   },
+   "dates": {
+    "monthsWide": [
+     "जनवरी",
+     "फ़रवरी",
+     "मार्च",
+     "अप्रैल",
+     "मई",
+     "जून",
+     "जुलाई",
+     "अगस्त",
+     "सितंबर",
+     "अक्टूबर",
+     "नवंबर",
+     "दिसंबर"
+    ],
+    "monthsAbbrev": [
+     "जन॰",
+     "फ़र॰",
+     "मार्च",
+     "अप्रैल",
+     "मई",
+     "जून",
+     "जुल॰",
+     "अग॰",
+     "सित॰",
+     "अक्टू॰",
+     "नव॰",
+     "दिस॰"
+    ],
+    "monthsNarrow": [
+     "ज",
+     "फ़",
+     "मा",
+     "अ",
+     "म",
+     "जू",
+     "जु",
+     "अ",
+     "सि",
+     "अ",
+     "न",
+     "दि"
+    ],
+    "daysWide": {
+     "sun": "रविवार",
+     "mon": "सोमवार",
+     "tue": "मंगलवार",
+     "wed": "बुधवार",
+     "thu": "गुरुवार",
+     "fri": "शुक्रवार",
+     "sat": "शनिवार"
+    },
+    "daysAbbrev": {
+     "sun": "रवि",
+     "mon": "सोम",
+     "tue": "मंगल",
+     "wed": "बुध",
+     "thu": "गुरु",
+     "fri": "शुक्र",
+     "sat": "शनि"
+    },
+    "am": "am",
+    "pm": "pm",
+    "dateFormats": {
+     "full": "EEEE, d MMMM y",
+     "long": "d MMMM y",
+     "medium": "d MMM y",
+     "short": "d/M/yy"
+    },
+    "timeFormats": {
+     "full": "h:mm:ss a zzzz",
+     "long": "h:mm:ss a z",
+     "medium": "h:mm:ss a",
+     "short": "h:mm a"
+    },
+    "dateTimeFormats": {
+     "full": "{1}, {0}",
+     "long": "{1}, {0}",
+     "medium": "{1}, {0}",
+     "short": "{1}, {0}"
+    }
+   }
+  },
+  "bn": {
+   "region": "BD",
+   "defaultNumberingSystem": "beng",
+   "symbols": {
+    "decimal": ".",
+    "group": ",",
+    "list": ";",
+    "percentSign": "%",
+    "plusSign": "+",
+    "minusSign": "-",
+    "approximatelySign": "~",
+    "exponential": "E",
+    "superscriptingExponent": "×",
+    "perMille": "‰",
+    "infinity": "∞",
+    "nan": "NaN",
+    "timeSeparator": ":"
+   },
+   "decimalStandard": "#,##,##0.###",
+   "currency": {
+    "code": "BDT",
+    "symbol": "৳",
+    "standard": "#,##,##0.00¤",
+    "accounting": "#,##,##0.00¤;(#,##,##0.00¤)"
+   },
+   "dates": {
+    "monthsWide": [
+     "জানুয়ারি",
+     "ফেব্রুয়ারি",
+     "মার্চ",
+     "এপ্রিল",
+     "মে",
+     "জুন",
+     "জুলাই",
+     "আগস্ট",
+     "সেপ্টেম্বর",
+     "অক্টোবর",
+     "নভেম্বর",
+     "ডিসেম্বর"
+    ],
+    "monthsAbbrev": [
+     "জানু",
+     "ফেব",
+     "মার্চ",
+     "এপ্রি",
+     "মে",
+     "জুন",
+     "জুল",
+     "আগ",
+     "সেপ",
+     "অক্টো",
+     "নভে",
+     "ডিসে"
+    ],
+    "monthsNarrow": [
+     "জা",
+     "ফে",
+     "মা",
+     "এ",
+     "মে",
+     "জুন",
+     "জু",
+     "আ",
+     "সে",
+     "অ",
+     "ন",
+     "ডি"
+    ],
+    "daysWide": {
+     "sun": "রবিবার",
+     "mon": "সোমবার",
+     "tue": "মঙ্গলবার",
+     "wed": "বুধবার",
+     "thu": "বৃহস্পতিবার",
+     "fri": "শুক্রবার",
+     "sat": "শনিবার"
+    },
+    "daysAbbrev": {
+     "sun": "রবি",
+     "mon": "সোম",
+     "tue": "মঙ্গল",
+     "wed": "বুধ",
+     "thu": "বৃহস্পতি",
+     "fri": "শুক্র",
+     "sat": "শনি"
+    },
+    "am": "AM",
+    "pm": "PM",
+    "dateFormats": {
+     "full": "EEEE, d MMMM, y",
+     "long": "d MMMM, y",
+     "medium": "d MMM, y",
+     "short": "d/M/yy"
+    },
+    "timeFormats": {
+     "full": "h:mm:ss a zzzz",
+     "long": "h:mm:ss a z",
+     "medium": "h:mm:ss a",
+     "short": "h:mm a"
+    },
+    "dateTimeFormats": {
+     "full": "{1} {0}",
+     "long": "{1} {0}",
+     "medium": "{1} {0}",
+     "short": "{1} {0}"
+    }
+   }
+  },
+  "ta": {
+   "region": "IN",
+   "defaultNumberingSystem": "latn",
+   "symbols": {
+    "decimal": ".",
+    "group": ",",
+    "list": ";",
+    "percentSign": "%",
+    "plusSign": "+",
+    "minusSign": "-",
+    "approximatelySign": "~",
+    "exponential": "E",
+    "superscriptingExponent": "×",
+    "perMille": "‰",
+    "infinity": "∞",
+    "nan": "NaN",
+    "timeSeparator": ":"
+   },
+   "decimalStandard": "#,##,##0.###",
+   "currency": {
+    "code": "INR",
+    "symbol": "₹",
+    "standard": "¤#,##,##0.00",
+    "accounting": "¤#,##0.00;(¤#,##0.00)"
+   },
+   "dates": {
+    "monthsWide": [
+     "ஜனவரி",
+     "பிப்ரவரி",
+     "மார்ச்",
+     "ஏப்ரல்",
+     "மே",
+     "ஜூன்",
+     "ஜூலை",
+     "ஆகஸ்ட்",
+     "செப்டம்பர்",
+     "அக்டோபர்",
+     "நவம்பர்",
+     "டிசம்பர்"
+    ],
+    "monthsAbbrev": [
+     "ஜன.",
+     "பிப்.",
+     "மார்.",
+     "ஏப்.",
+     "மே",
+     "ஜூன்",
+     "ஜூலை",
+     "ஆக.",
+     "செப்.",
+     "அக்.",
+     "நவ.",
+     "டிச."
+    ],
+    "monthsNarrow": [
+     "ஜ",
+     "பி",
+     "மா",
+     "ஏ",
+     "மே",
+     "ஜூ",
+     "ஜூ",
+     "ஆ",
+     "செ",
+     "அ",
+     "ந",
+     "டி"
+    ],
+    "daysWide": {
+     "sun": "ஞாயிறு",
+     "mon": "திங்கள்",
+     "tue": "செவ்வாய்",
+     "wed": "புதன்",
+     "thu": "வியாழன்",
+     "fri": "வெள்ளி",
+     "sat": "சனி"
+    },
+    "daysAbbrev": {
+     "sun": "ஞாயி.",
+     "mon": "திங்.",
+     "tue": "செவ்.",
+     "wed": "புத.",
+     "thu": "வியா.",
+     "fri": "வெள்.",
+     "sat": "சனி"
+    },
+    "am": "AM",
+    "pm": "PM",
+    "dateFormats": {
+     "full": "EEEE, d MMMM, y",
+     "long": "d MMMM, y",
+     "medium": "d MMM, y",
+     "short": "d/M/yy"
+    },
+    "timeFormats": {
+     "full": "h:mm:ss a zzzz",
+     "long": "h:mm:ss a z",
+     "medium": "h:mm:ss a",
+     "short": "h:mm a"
+    },
+    "dateTimeFormats": {
+     "full": "{1}, {0}",
+     "long": "{1}, {0}",
+     "medium": "{1}, {0}",
+     "short": "{1}, {0}"
+    }
+   }
+  },
+  "te": {
+   "region": "IN",
+   "defaultNumberingSystem": "latn",
+   "symbols": {
+    "decimal": ".",
+    "group": ",",
+    "list": ";",
+    "percentSign": "%",
+    "plusSign": "+",
+    "minusSign": "-",
+    "approximatelySign": "~",
+    "exponential": "E",
+    "superscriptingExponent": "×",
+    "perMille": "‰",
+    "infinity": "∞",
+    "nan": "NaN",
+    "timeSeparator": ":"
+   },
+   "decimalStandard": "#,##,##0.###",
+   "currency": {
+    "code": "INR",
+    "symbol": "₹",
+    "standard": "¤#,##,##0.00",
+    "accounting": "¤#,##0.00;(¤#,##0.00)"
+   },
+   "dates": {
+    "monthsWide": [
+     "జనవరి",
+     "ఫిబ్రవరి",
+     "మార్చి",
+     "ఏప్రిల్",
+     "మే",
+     "జూన్",
+     "జులై",
+     "ఆగస్టు",
+     "సెప్టెంబర్",
+     "అక్టోబర్",
+     "నవంబర్",
+     "డిసెంబర్"
+    ],
+    "monthsAbbrev": [
+     "జన",
+     "ఫిబ్ర",
+     "మార్చి",
+     "ఏప్రి",
+     "మే",
+     "జూన్",
+     "జులై",
+     "ఆగ",
+     "సెప్టెం",
+     "అక్టో",
+     "నవం",
+     "డిసెం"
+    ],
+    "monthsNarrow": [
+     "జ",
+     "ఫి",
+     "మా",
+     "ఏ",
+     "మే",
+     "జూ",
+     "జు",
+     "ఆ",
+     "సె",
+     "అ",
+     "న",
+     "డి"
+    ],
+    "daysWide": {
+     "sun": "ఆదివారం",
+     "mon": "సోమవారం",
+     "tue": "మంగళవారం",
+     "wed": "బుధవారం",
+     "thu": "గురువారం",
+     "fri": "శుక్రవారం",
+     "sat": "శనివారం"
+    },
+    "daysAbbrev": {
+     "sun": "ఆది",
+     "mon": "సోమ",
+     "tue": "మంగళ",
+     "wed": "బుధ",
+     "thu": "గురు",
+     "fri": "శుక్ర",
+     "sat": "శని"
+    },
+    "am": "AM",
+    "pm": "PM",
+    "dateFormats": {
+     "full": "d, MMMM y, EEEE",
+     "long": "d MMMM, y",
+     "medium": "d MMM, y",
+     "short": "dd-MM-yy"
+    },
+    "timeFormats": {
+     "full": "h:mm:ss a zzzz",
+     "long": "h:mm:ss a z",
+     "medium": "h:mm:ss a",
+     "short": "h:mm a"
+    },
+    "dateTimeFormats": {
+     "full": "{1} {0}",
+     "long": "{1} {0}",
+     "medium": "{1} {0}",
+     "short": "{1} {0}"
+    }
+   }
+  },
+  "mr": {
+   "region": "IN",
+   "defaultNumberingSystem": "deva",
+   "symbols": {
+    "decimal": ".",
+    "group": ",",
+    "list": ";",
+    "percentSign": "%",
+    "plusSign": "+",
+    "minusSign": "-",
+    "approximatelySign": "~",
+    "exponential": "E",
+    "superscriptingExponent": "×",
+    "perMille": "‰",
+    "infinity": "∞",
+    "nan": "NaN",
+    "timeSeparator": ":"
+   },
+   "decimalStandard": "#,##,##0.###",
+   "currency": {
+    "code": "INR",
+    "symbol": "₹",
+    "standard": "¤#,##0.00",
+    "accounting": "¤#,##0.00;(¤#,##0.00)"
+   },
+   "dates": {
+    "monthsWide": [
+     "जानेवारी",
+     "फेब्रुवारी",
+     "मार्च",
+     "एप्रिल",
+     "मे",
+     "जून",
+     "जुलै",
+     "ऑगस्ट",
+     "सप्टेंबर",
+     "ऑक्टोबर",
+     "नोव्हेंबर",
+     "डिसेंबर"
+    ],
+    "monthsAbbrev": [
+     "जाने",
+     "फेब्रु",
+     "मार्च",
+     "एप्रि",
+     "मे",
+     "जून",
+     "जुलै",
+     "ऑग",
+     "सप्टें",
+     "ऑक्टो",
+     "नोव्हें",
+     "डिसें"
+    ],
+    "monthsNarrow": [
+     "जा",
+     "फे",
+     "मा",
+     "ए",
+     "मे",
+     "जू",
+     "जु",
+     "ऑ",
+     "स",
+     "ऑ",
+     "नो",
+     "डि"
+    ],
+    "daysWide": {
+     "sun": "रविवार",
+     "mon": "सोमवार",
+     "tue": "मंगळवार",
+     "wed": "बुधवार",
+     "thu": "गुरुवार",
+     "fri": "शुक्रवार",
+     "sat": "शनिवार"
+    },
+    "daysAbbrev": {
+     "sun": "रवि",
+     "mon": "सोम",
+     "tue": "मंगळ",
+     "wed": "बुध",
+     "thu": "गुरु",
+     "fri": "शुक्र",
+     "sat": "शनि"
+    },
+    "am": "AM",
+    "pm": "PM",
+    "dateFormats": {
+     "full": "EEEE, d MMMM, y",
+     "long": "d MMMM, y",
+     "medium": "d MMM, y",
+     "short": "d/M/yy"
+    },
+    "timeFormats": {
+     "full": "h:mm:ss a zzzz",
+     "long": "h:mm:ss a z",
+     "medium": "h:mm:ss a",
+     "short": "h:mm a"
+    },
+    "dateTimeFormats": {
+     "full": "{1}, {0}",
+     "long": "{1}, {0}",
+     "medium": "{1}, {0}",
+     "short": "{1}, {0}"
+    }
+   }
+  },
+  "gu": {
+   "region": "IN",
+   "defaultNumberingSystem": "latn",
+   "symbols": {
+    "decimal": ".",
+    "group": ",",
+    "list": ";",
+    "percentSign": "%",
+    "plusSign": "+",
+    "minusSign": "-",
+    "approximatelySign": "~",
+    "exponential": "E",
+    "superscriptingExponent": "×",
+    "perMille": "‰",
+    "infinity": "∞",
+    "nan": "NaN",
+    "timeSeparator": ":"
+   },
+   "decimalStandard": "#,##,##0.###",
+   "currency": {
+    "code": "INR",
+    "symbol": "₹",
+    "standard": "¤#,##,##0.00",
+    "accounting": "¤#,##,##0.00;(¤#,##,##0.00)"
+   },
+   "dates": {
+    "monthsWide": [
+     "જાન્યુઆરી",
+     "ફેબ્રુઆરી",
+     "માર્ચ",
+     "એપ્રિલ",
+     "મે",
+     "જૂન",
+     "જુલાઈ",
+     "ઑગસ્ટ",
+     "સપ્ટેમ્બર",
+     "ઑક્ટોબર",
+     "નવેમ્બર",
+     "ડિસેમ્બર"
+    ],
+    "monthsAbbrev": [
+     "જાન્યુ",
+     "ફેબ્રુ",
+     "માર્ચ",
+     "એપ્રિલ",
+     "મે",
+     "જૂન",
+     "જુલાઈ",
+     "ઑગસ્ટ",
+     "સપ્ટે",
+     "ઑક્ટો",
+     "નવે",
+     "ડિસે"
+    ],
+    "monthsNarrow": [
+     "જા",
+     "ફે",
+     "મા",
+     "એ",
+     "મે",
+     "જૂ",
+     "જુ",
+     "ઑ",
+     "સ",
+     "ઑ",
+     "ન",
+     "ડિ"
+    ],
+    "daysWide": {
+     "sun": "રવિવાર",
+     "mon": "સોમવાર",
+     "tue": "મંગળવાર",
+     "wed": "બુધવાર",
+     "thu": "ગુરુવાર",
+     "fri": "શુક્રવાર",
+     "sat": "શનિવાર"
+    },
+    "daysAbbrev": {
+     "sun": "રવિ",
+     "mon": "સોમ",
+     "tue": "મંગળ",
+     "wed": "બુધ",
+     "thu": "ગુરુ",
+     "fri": "શુક્ર",
+     "sat": "શનિ"
+    },
+    "am": "AM",
+    "pm": "PM",
+    "dateFormats": {
+     "full": "EEEE, d MMMM, y",
+     "long": "d MMMM, y",
+     "medium": "d MMM, y",
+     "short": "d/M/yy"
+    },
+    "timeFormats": {
+     "full": "hh:mm:ss a zzzz",
+     "long": "hh:mm:ss a z",
+     "medium": "hh:mm:ss a",
+     "short": "hh:mm a"
+    },
+    "dateTimeFormats": {
+     "full": "{1} {0}",
+     "long": "{1} {0}",
+     "medium": "{1} {0}",
+     "short": "{1} {0}"
+    }
+   }
+  },
+  "kn": {
+   "region": "IN",
+   "defaultNumberingSystem": "latn",
+   "symbols": {
+    "decimal": ".",
+    "group": ",",
+    "list": ";",
+    "percentSign": "%",
+    "plusSign": "+",
+    "minusSign": "-",
+    "approximatelySign": "~",
+    "exponential": "E",
+    "superscriptingExponent": "×",
+    "perMille": "‰",
+    "infinity": "∞",
+    "nan": "NaN",
+    "timeSeparator": ":"
+   },
+   "decimalStandard": "#,##0.###",
+   "currency": {
+    "code": "INR",
+    "symbol": "₹",
+    "standard": "¤#,##0.00",
+    "accounting": "¤#,##0.00;(¤#,##0.00)"
+   },
+   "dates": {
+    "monthsWide": [
+     "ಜನವರಿ",
+     "ಫೆಬ್ರವರಿ",
+     "ಮಾರ್ಚ್",
+     "ಏಪ್ರಿಲ್",
+     "ಮೇ",
+     "ಜೂನ್",
+     "ಜುಲೈ",
+     "ಆಗಸ್ಟ್",
+     "ಸೆಪ್ಟೆಂಬರ್",
+     "ಅಕ್ಟೋಬರ್",
+     "ನವೆಂಬರ್",
+     "ಡಿಸೆಂಬರ್"
+    ],
+    "monthsAbbrev": [
+     "ಜನ",
+     "ಫೆಬ್ರ",
+     "ಮಾರ್ಚ್",
+     "ಏಪ್ರಿ",
+     "ಮೇ",
+     "ಜೂನ್",
+     "ಜುಲೈ",
+     "ಆಗ",
+     "ಸೆಪ್ಟೆಂ",
+     "ಅಕ್ಟೋ",
+     "ನವೆಂ",
+     "ಡಿಸೆಂ"
+    ],
+    "monthsNarrow": [
+     "ಜ",
+     "ಫೆ",
+     "ಮಾ",
+     "ಏ",
+     "ಮೇ",
+     "ಜೂ",
+     "ಜು",
+     "ಆ",
+     "ಸೆ",
+     "ಅ",
+     "ನ",
+     "ಡಿ"
+    ],
+    "daysWide": {
+     "sun": "ಭಾನುವಾರ",
+     "mon": "ಸೋಮವಾರ",
+     "tue": "ಮಂಗಳವಾರ",
+     "wed": "ಬುಧವಾರ",
+     "thu": "ಗುರುವಾರ",
+     "fri": "ಶುಕ್ರವಾರ",
+     "sat": "ಶನಿವಾರ"
+    },
+    "daysAbbrev": {
+     "sun": "ಭಾನು",
+     "mon": "ಸೋಮ",
+     "tue": "ಮಂಗಳ",
+     "wed": "ಬುಧ",
+     "thu": "ಗುರು",
+     "fri": "ಶುಕ್ರ",
+     "sat": "ಶನಿ"
+    },
+    "am": "AM",
+    "pm": "PM",
+    "dateFormats": {
+     "full": "EEEE, MMMM d, y",
+     "long": "MMMM d, y",
+     "medium": "MMM d, y",
+     "short": "d/M/yy"
+    },
+    "timeFormats": {
+     "full": "hh:mm:ss a zzzz",
+     "long": "hh:mm:ss a z",
+     "medium": "hh:mm:ss a",
+     "short": "hh:mm a"
+    },
+    "dateTimeFormats": {
+     "full": "{1} {0}",
+     "long": "{1} {0}",
+     "medium": "{1} {0}",
+     "short": "{1} {0}"
+    }
+   }
+  },
+  "ml": {
+   "region": "IN",
+   "defaultNumberingSystem": "latn",
+   "symbols": {
+    "decimal": ".",
+    "group": ",",
+    "list": ";",
+    "percentSign": "%",
+    "plusSign": "+",
+    "minusSign": "-",
+    "approximatelySign": "~",
+    "exponential": "E",
+    "superscriptingExponent": "×",
+    "perMille": "‰",
+    "infinity": "∞",
+    "nan": "NaN",
+    "timeSeparator": ":"
+   },
+   "decimalStandard": "#,##,##0.###",
+   "currency": {
+    "code": "INR",
+    "symbol": "₹",
+    "standard": "¤#,##0.00",
+    "accounting": "¤#,##0.00;(¤#,##0.00)"
+   },
+   "dates": {
+    "monthsWide": [
+     "ജനുവരി",
+     "ഫെബ്രുവരി",
+     "മാർച്ച്",
+     "ഏപ്രിൽ",
+     "മേയ്",
+     "ജൂൺ",
+     "ജൂലൈ",
+     "ഓഗസ്റ്റ്",
+     "സെപ്റ്റംബർ",
+     "ഒക്‌ടോബർ",
+     "നവംബർ",
+     "ഡിസംബർ"
+    ],
+    "monthsAbbrev": [
+     "ജനു",
+     "ഫെബ്രു",
+     "മാർ",
+     "ഏപ്രി",
+     "മേയ്",
+     "ജൂൺ",
+     "ജൂലൈ",
+     "ഓഗ",
+     "സെപ്റ്റം",
+     "ഒക്ടോ",
+     "നവം",
+     "ഡിസം"
+    ],
+    "monthsNarrow": [
+     "ജ",
+     "ഫെ",
+     "മാ",
+     "ഏ",
+     "മെ",
+     "ജൂൺ",
+     "ജൂ",
+     "ഓ",
+     "സെ",
+     "ഒ",
+     "ന",
+     "ഡി"
+    ],
+    "daysWide": {
+     "sun": "ഞായറാഴ്‌ച",
+     "mon": "തിങ്കളാഴ്‌ച",
+     "tue": "ചൊവ്വാഴ്ച",
+     "wed": "ബുധനാഴ്‌ച",
+     "thu": "വ്യാഴാഴ്‌ച",
+     "fri": "വെള്ളിയാഴ്‌ച",
+     "sat": "ശനിയാഴ്‌ച"
+    },
+    "daysAbbrev": {
+     "sun": "ഞായർ",
+     "mon": "തിങ്കൾ",
+     "tue": "ചൊവ്വ",
+     "wed": "ബുധൻ",
+     "thu": "വ്യാഴം",
+     "fri": "വെള്ളി",
+     "sat": "ശനി"
+    },
+    "am": "AM",
+    "pm": "PM",
+    "dateFormats": {
+     "full": "y MMMM d, EEEE",
+     "long": "y MMMM d",
+     "medium": "y MMM d",
+     "short": "d/M/yy"
+    },
+    "timeFormats": {
+     "full": "zzzz h:mm:ss a",
+     "long": "z h:mm:ss a",
+     "medium": "h:mm:ss a",
+     "short": "h:mm a"
+    },
+    "dateTimeFormats": {
+     "full": "{1}, {0}",
+     "long": "{1}, {0}",
+     "medium": "{1}, {0}",
+     "short": "{1}, {0}"
+    }
+   }
+  },
+  "ar": {
+   "region": "EG",
+   "defaultNumberingSystem": "latn",
+   "symbols": {
+    "decimal": ".",
+    "group": ",",
+    "list": ";",
+    "percentSign": "‎%‎",
+    "plusSign": "‎+",
+    "minusSign": "‎-",
+    "approximatelySign": "~",
+    "exponential": "E",
+    "superscriptingExponent": "×",
+    "perMille": "‰",
+    "infinity": "∞",
+    "nan": "ليس رقمًا",
+    "timeSeparator": ":"
+   },
+   "decimalStandard": "#,##0.###",
+   "currency": {
+    "code": "EGP",
+    "symbol": "E£",
+    "standard": "‏#,##0.00 ¤;‏-#,##0.00 ¤",
+    "accounting": "؜#,##0.00¤;(؜#,##0.00¤)"
+   },
+   "dates": {
+    "monthsWide": [
+     "يناير",
+     "فبراير",
+     "مارس",
+     "أبريل",
+     "مايو",
+     "يونيو",
+     "يوليو",
+     "أغسطس",
+     "سبتمبر",
+     "أكتوبر",
+     "نوفمبر",
+     "ديسمبر"
+    ],
+    "monthsAbbrev": [
+     "يناير",
+     "فبراير",
+     "مارس",
+     "أبريل",
+     "مايو",
+     "يونيو",
+     "يوليو",
+     "أغسطس",
+     "سبتمبر",
+     "أكتوبر",
+     "نوفمبر",
+     "ديسمبر"
+    ],
+    "monthsNarrow": [
+     "ي",
+     "ف",
+     "م",
+     "أ",
+     "و",
+     "ن",
+     "ل",
+     "غ",
+     "س",
+     "ك",
+     "ب",
+     "د"
+    ],
+    "daysWide": {
+     "sun": "الأحد",
+     "mon": "الاثنين",
+     "tue": "الثلاثاء",
+     "wed": "الأربعاء",
+     "thu": "الخميس",
+     "fri": "الجمعة",
+     "sat": "السبت"
+    },
+    "daysAbbrev": {
+     "sun": "الأحد",
+     "mon": "الاثنين",
+     "tue": "الثلاثاء",
+     "wed": "الأربعاء",
+     "thu": "الخميس",
+     "fri": "الجمعة",
+     "sat": "السبت"
+    },
+    "am": "ص",
+    "pm": "م",
+    "dateFormats": {
+     "full": "EEEE، d MMMM y",
+     "long": "d MMMM y",
+     "medium": "dd‏/MM‏/y",
+     "short": "d‏/M‏/y"
+    },
+    "timeFormats": {
+     "full": "h:mm:ss a zzzz",
+     "long": "h:mm:ss a z",
+     "medium": "h:mm:ss a",
+     "short": "h:mm a"
+    },
+    "dateTimeFormats": {
+     "full": "{1}، {0}",
+     "long": "{1}، {0}",
+     "medium": "{1}، {0}",
+     "short": "{1}، {0}"
+    }
+   }
+  },
+  "he": {
+   "region": "IL",
+   "defaultNumberingSystem": "latn",
+   "symbols": {
+    "decimal": ".",
+    "group": ",",
+    "list": ";",
+    "percentSign": "%",
+    "plusSign": "‎+",
+    "minusSign": "‎-",
+    "approximatelySign": "~",
+    "exponential": "E",
+    "superscriptingExponent": "×",
+    "perMille": "‰",
+    "infinity": "∞",
+    "nan": "NaN",
+    "timeSeparator": ":"
+   },
+   "decimalStandard": "#,##0.###",
+   "currency": {
+    "code": "ILS",
+    "symbol": "₪",
+    "standard": "‏#,##0.00 ‏¤;‏-#,##0.00 ‏¤",
+    "accounting": "‏#,##0.00 ‏¤;‏-#,##0.00 ‏¤"
+   },
+   "dates": {
+    "monthsWide": [
+     "ינואר",
+     "פברואר",
+     "מרץ",
+     "אפריל",
+     "מאי",
+     "יוני",
+     "יולי",
+     "אוגוסט",
+     "ספטמבר",
+     "אוקטובר",
+     "נובמבר",
+     "דצמבר"
+    ],
+    "monthsAbbrev": [
+     "ינו׳",
+     "פבר׳",
+     "מרץ",
+     "אפר׳",
+     "מאי",
+     "יוני",
+     "יולי",
+     "אוג׳",
+     "ספט׳",
+     "אוק׳",
+     "נוב׳",
+     "דצמ׳"
+    ],
+    "monthsNarrow": [
+     "1",
+     "2",
+     "3",
+     "4",
+     "5",
+     "6",
+     "7",
+     "8",
+     "9",
+     "10",
+     "11",
+     "12"
+    ],
+    "daysWide": {
+     "sun": "יום ראשון",
+     "mon": "יום שני",
+     "tue": "יום שלישי",
+     "wed": "יום רביעי",
+     "thu": "יום חמישי",
+     "fri": "יום שישי",
+     "sat": "יום שבת"
+    },
+    "daysAbbrev": {
+     "sun": "יום א׳",
+     "mon": "יום ב׳",
+     "tue": "יום ג׳",
+     "wed": "יום ד׳",
+     "thu": "יום ה׳",
+     "fri": "יום ו׳",
+     "sat": "שבת"
+    },
+    "am": "AM",
+    "pm": "PM",
+    "dateFormats": {
+     "full": "EEEE, d בMMMM y",
+     "long": "d בMMMM y",
+     "medium": "d בMMM y",
+     "short": "d.M.y"
+    },
+    "timeFormats": {
+     "full": "H:mm:ss zzzz",
+     "long": "H:mm:ss z",
+     "medium": "H:mm:ss",
+     "short": "H:mm"
+    },
+    "dateTimeFormats": {
+     "full": "{1}, {0}",
+     "long": "{1}, {0}",
+     "medium": "{1}, {0}",
+     "short": "{1}, {0}"
+    }
+   }
+  },
+  "vi": {
+   "region": "VN",
+   "defaultNumberingSystem": "latn",
+   "symbols": {
+    "decimal": ",",
+    "group": ".",
+    "list": ";",
+    "percentSign": "%",
+    "plusSign": "+",
+    "minusSign": "-",
+    "approximatelySign": "~",
+    "exponential": "E",
+    "superscriptingExponent": "×",
+    "perMille": "‰",
+    "infinity": "∞",
+    "nan": "NaN",
+    "timeSeparator": ":"
+   },
+   "decimalStandard": "#,##0.###",
+   "currency": {
+    "code": "VND",
+    "symbol": "₫",
+    "standard": "#,##0.00 ¤",
+    "accounting": "#,##0.00 ¤"
+   },
+   "dates": {
+    "monthsWide": [
+     "tháng 1",
+     "tháng 2",
+     "tháng 3",
+     "tháng 4",
+     "tháng 5",
+     "tháng 6",
+     "tháng 7",
+     "tháng 8",
+     "tháng 9",
+     "tháng 10",
+     "tháng 11",
+     "tháng 12"
+    ],
+    "monthsAbbrev": [
+     "thg 1",
+     "thg 2",
+     "thg 3",
+     "thg 4",
+     "thg 5",
+     "thg 6",
+     "thg 7",
+     "thg 8",
+     "thg 9",
+     "thg 10",
+     "thg 11",
+     "thg 12"
+    ],
+    "monthsNarrow": [
+     "1",
+     "2",
+     "3",
+     "4",
+     "5",
+     "6",
+     "7",
+     "8",
+     "9",
+     "10",
+     "11",
+     "12"
+    ],
+    "daysWide": {
+     "sun": "Chủ Nhật",
+     "mon": "Thứ Hai",
+     "tue": "Thứ Ba",
+     "wed": "Thứ Tư",
+     "thu": "Thứ Năm",
+     "fri": "Thứ Sáu",
+     "sat": "Thứ Bảy"
+    },
+    "daysAbbrev": {
+     "sun": "CN",
+     "mon": "Thứ 2",
+     "tue": "Thứ 3",
+     "wed": "Thứ 4",
+     "thu": "Thứ 5",
+     "fri": "Thứ 6",
+     "sat": "Thứ 7"
+    },
+    "am": "SA",
+    "pm": "CH",
+    "dateFormats": {
+     "full": "EEEE, d MMMM, y",
+     "long": "d MMMM, y",
+     "medium": "d MMM, y",
+     "short": "d/M/yy"
+    },
+    "timeFormats": {
+     "full": "HH:mm:ss zzzz",
+     "long": "HH:mm:ss z",
+     "medium": "HH:mm:ss",
+     "short": "HH:mm"
+    },
+    "dateTimeFormats": {
+     "full": "{0} {1}",
+     "long": "{0} {1}",
+     "medium": "{0} {1}",
+     "short": "{0} {1}"
+    }
+   }
+  },
+  "is": {
+   "region": "IS",
+   "defaultNumberingSystem": "latn",
+   "symbols": {
+    "decimal": ",",
+    "group": ".",
+    "list": ";",
+    "percentSign": "%",
+    "plusSign": "+",
+    "minusSign": "-",
+    "approximatelySign": "~",
+    "exponential": "E",
+    "superscriptingExponent": "×",
+    "perMille": "‰",
+    "infinity": "∞",
+    "nan": "NaN",
+    "timeSeparator": ":"
+   },
+   "decimalStandard": "#,##0.###",
+   "currency": {
+    "code": "ISK",
+    "symbol": "kr.",
+    "standard": "#,##0.00 ¤",
+    "accounting": "#,##0.00 ¤"
+   },
+   "dates": {
+    "monthsWide": [
+     "janúar",
+     "febrúar",
+     "mars",
+     "apríl",
+     "maí",
+     "júní",
+     "júlí",
+     "ágúst",
+     "september",
+     "október",
+     "nóvember",
+     "desember"
+    ],
+    "monthsAbbrev": [
+     "jan.",
+     "feb.",
+     "mar.",
+     "apr.",
+     "maí",
+     "jún.",
+     "júl.",
+     "ágú.",
+     "sep.",
+     "okt.",
+     "nóv.",
+     "des."
+    ],
+    "monthsNarrow": [
+     "J",
+     "F",
+     "M",
+     "A",
+     "M",
+     "J",
+     "J",
+     "Á",
+     "S",
+     "O",
+     "N",
+     "D"
+    ],
+    "daysWide": {
+     "sun": "sunnudagur",
+     "mon": "mánudagur",
+     "tue": "þriðjudagur",
+     "wed": "miðvikudagur",
+     "thu": "fimmtudagur",
+     "fri": "föstudagur",
+     "sat": "laugardagur"
+    },
+    "daysAbbrev": {
+     "sun": "sun.",
+     "mon": "mán.",
+     "tue": "þri.",
+     "wed": "mið.",
+     "thu": "fim.",
+     "fri": "fös.",
+     "sat": "lau."
+    },
+    "am": "f.h.",
+    "pm": "e.h.",
+    "dateFormats": {
+     "full": "EEEE, d. MMMM y",
+     "long": "d. MMMM y",
+     "medium": "d. MMM y",
+     "short": "d.M.y"
+    },
+    "timeFormats": {
+     "full": "HH:mm:ss zzzz",
+     "long": "HH:mm:ss z",
+     "medium": "HH:mm:ss",
+     "short": "HH:mm"
+    },
+    "dateTimeFormats": {
+     "full": "{1}, {0}",
+     "long": "{1}, {0}",
+     "medium": "{1}, {0}",
+     "short": "{1}, {0}"
+    }
+   }
+  },
+  "zh": {
+   "region": "CN",
+   "defaultNumberingSystem": "latn",
+   "symbols": {
+    "decimal": ".",
+    "group": ",",
+    "list": ";",
+    "percentSign": "%",
+    "plusSign": "+",
+    "minusSign": "-",
+    "approximatelySign": "~",
+    "exponential": "E",
+    "superscriptingExponent": "×",
+    "perMille": "‰",
+    "infinity": "∞",
+    "nan": "NaN",
+    "timeSeparator": ":"
+   },
+   "decimalStandard": "#,##0.###",
+   "currency": {
+    "code": "CNY",
+    "symbol": "¥",
+    "standard": "¤#,##0.00",
+    "accounting": "¤#,##0.00;(¤#,##0.00)"
+   },
+   "dates": {
+    "monthsWide": [
+     "一月",
+     "二月",
+     "三月",
+     "四月",
+     "五月",
+     "六月",
+     "七月",
+     "八月",
+     "九月",
+     "十月",
+     "十一月",
+     "十二月"
+    ],
+    "monthsAbbrev": [
+     "1月",
+     "2月",
+     "3月",
+     "4月",
+     "5月",
+     "6月",
+     "7月",
+     "8月",
+     "9月",
+     "10月",
+     "11月",
+     "12月"
+    ],
+    "monthsNarrow": [
+     "1",
+     "2",
+     "3",
+     "4",
+     "5",
+     "6",
+     "7",
+     "8",
+     "9",
+     "10",
+     "11",
+     "12"
+    ],
+    "daysWide": {
+     "sun": "星期日",
+     "mon": "星期一",
+     "tue": "星期二",
+     "wed": "星期三",
+     "thu": "星期四",
+     "fri": "星期五",
+     "sat": "星期六"
+    },
+    "daysAbbrev": {
+     "sun": "周日",
+     "mon": "周一",
+     "tue": "周二",
+     "wed": "周三",
+     "thu": "周四",
+     "fri": "周五",
+     "sat": "周六"
+    },
+    "am": "上午",
+    "pm": "下午",
+    "dateFormats": {
+     "full": "y年M月d日EEEE",
+     "long": "y年M月d日",
+     "medium": "y年M月d日",
+     "short": "y/M/d"
+    },
+    "timeFormats": {
+     "full": "zzzz HH:mm:ss",
+     "long": "z HH:mm:ss",
+     "medium": "HH:mm:ss",
+     "short": "HH:mm"
+    },
+    "dateTimeFormats": {
+     "full": "{1} {0}",
+     "long": "{1} {0}",
+     "medium": "{1} {0}",
+     "short": "{1} {0}"
+    }
+   }
+  },
+  "zh-Hant": {
+   "region": "TW",
+   "defaultNumberingSystem": "latn",
+   "symbols": {
+    "decimal": ".",
+    "group": ",",
+    "list": ";",
+    "percentSign": "%",
+    "plusSign": "+",
+    "minusSign": "-",
+    "approximatelySign": "~",
+    "exponential": "E",
+    "superscriptingExponent": "×",
+    "perMille": "‰",
+    "infinity": "∞",
+    "nan": "非數值",
+    "timeSeparator": ":"
+   },
+   "decimalStandard": "#,##0.###",
+   "currency": {
+    "code": "TWD",
+    "symbol": "$",
+    "standard": "¤#,##0.00",
+    "accounting": "¤#,##0.00;(¤#,##0.00)"
+   },
+   "dates": {
+    "monthsWide": [
+     "1月",
+     "2月",
+     "3月",
+     "4月",
+     "5月",
+     "6月",
+     "7月",
+     "8月",
+     "9月",
+     "10月",
+     "11月",
+     "12月"
+    ],
+    "monthsAbbrev": [
+     "1月",
+     "2月",
+     "3月",
+     "4月",
+     "5月",
+     "6月",
+     "7月",
+     "8月",
+     "9月",
+     "10月",
+     "11月",
+     "12月"
+    ],
+    "monthsNarrow": [
+     "1",
+     "2",
+     "3",
+     "4",
+     "5",
+     "6",
+     "7",
+     "8",
+     "9",
+     "10",
+     "11",
+     "12"
+    ],
+    "daysWide": {
+     "sun": "星期日",
+     "mon": "星期一",
+     "tue": "星期二",
+     "wed": "星期三",
+     "thu": "星期四",
+     "fri": "星期五",
+     "sat": "星期六"
+    },
+    "daysAbbrev": {
+     "sun": "週日",
+     "mon": "週一",
+     "tue": "週二",
+     "wed": "週三",
+     "thu": "週四",
+     "fri": "週五",
+     "sat": "週六"
+    },
+    "am": "上午",
+    "pm": "下午",
+    "dateFormats": {
+     "full": "y年M月d日 EEEE",
+     "long": "y年M月d日",
+     "medium": "y年M月d日",
+     "short": "y/M/d"
+    },
+    "timeFormats": {
+     "full": "Bh:mm:ss [zzzz]",
+     "long": "Bh:mm:ss [z]",
+     "medium": "Bh:mm:ss",
+     "short": "Bh:mm"
+    },
+    "dateTimeFormats": {
+     "full": "{1} {0}",
+     "long": "{1} {0}",
+     "medium": "{1} {0}",
+     "short": "{1} {0}"
+    }
+   }
+  },
+  "de-AT": {
+   "region": "AT",
+   "defaultNumberingSystem": "latn",
+   "symbols": {
+    "decimal": ",",
+    "group": " ",
+    "list": ";",
+    "percentSign": "%",
+    "plusSign": "+",
+    "minusSign": "-",
+    "approximatelySign": "≈",
+    "exponential": "E",
+    "superscriptingExponent": "·",
+    "perMille": "‰",
+    "infinity": "∞",
+    "nan": "NaN",
+    "timeSeparator": ":"
+   },
+   "decimalStandard": "#,##0.###",
+   "currency": {
+    "code": "EUR",
+    "symbol": "€",
+    "standard": "¤ #,##0.00",
+    "accounting": "¤ #,##0.00"
+   },
+   "dates": {
+    "monthsWide": [
+     "Jänner",
+     "Februar",
+     "März",
+     "April",
+     "Mai",
+     "Juni",
+     "Juli",
+     "August",
+     "September",
+     "Oktober",
+     "November",
+     "Dezember"
+    ],
+    "monthsAbbrev": [
+     "Jän.",
+     "Feb.",
+     "März",
+     "Apr.",
+     "Mai",
+     "Juni",
+     "Juli",
+     "Aug.",
+     "Sep.",
+     "Okt.",
+     "Nov.",
+     "Dez."
+    ],
+    "monthsNarrow": [
+     "J",
+     "F",
+     "M",
+     "A",
+     "M",
+     "J",
+     "J",
+     "A",
+     "S",
+     "O",
+     "N",
+     "D"
+    ],
+    "daysWide": {
+     "sun": "Sonntag",
+     "mon": "Montag",
+     "tue": "Dienstag",
+     "wed": "Mittwoch",
+     "thu": "Donnerstag",
+     "fri": "Freitag",
+     "sat": "Samstag"
+    },
+    "daysAbbrev": {
+     "sun": "So.",
+     "mon": "Mo.",
+     "tue": "Di.",
+     "wed": "Mi.",
+     "thu": "Do.",
+     "fri": "Fr.",
+     "sat": "Sa."
+    },
+    "am": "AM",
+    "pm": "PM",
+    "dateFormats": {
+     "full": "EEEE, d. MMMM y",
+     "long": "d. MMMM y",
+     "medium": "dd.MM.y",
+     "short": "dd.MM.yy"
+    },
+    "timeFormats": {
+     "full": "HH:mm:ss zzzz",
+     "long": "HH:mm:ss z",
+     "medium": "HH:mm:ss",
+     "short": "HH:mm"
+    },
+    "dateTimeFormats": {
+     "full": "{1}, {0}",
+     "long": "{1}, {0}",
+     "medium": "{1}, {0}",
+     "short": "{1}, {0}"
+    }
+   }
+  },
+  "de-CH": {
+   "region": "CH",
+   "defaultNumberingSystem": "latn",
+   "symbols": {
+    "decimal": ".",
+    "group": "'",
+    "list": ";",
+    "percentSign": "%",
+    "plusSign": "+",
+    "minusSign": "-",
+    "approximatelySign": "≈",
+    "exponential": "E",
+    "superscriptingExponent": "·",
+    "perMille": "‰",
+    "infinity": "∞",
+    "nan": "NaN",
+    "timeSeparator": ":"
+   },
+   "decimalStandard": "#,##0.###",
+   "currency": {
+    "code": "CHF",
+    "symbol": "CHF",
+    "standard": "¤ #,##0.00;¤-#,##0.00",
+    "accounting": "¤ #,##0.00;¤-#,##0.00"
+   },
+   "dates": {
+    "monthsWide": [
+     "Januar",
+     "Februar",
+     "März",
+     "April",
+     "Mai",
+     "Juni",
+     "Juli",
+     "August",
+     "September",
+     "Oktober",
+     "November",
+     "Dezember"
+    ],
+    "monthsAbbrev": [
+     "Jan.",
+     "Feb.",
+     "März",
+     "Apr.",
+     "Mai",
+     "Juni",
+     "Juli",
+     "Aug.",
+     "Sept.",
+     "Okt.",
+     "Nov.",
+     "Dez."
+    ],
+    "monthsNarrow": [
+     "J",
+     "F",
+     "M",
+     "A",
+     "M",
+     "J",
+     "J",
+     "A",
+     "S",
+     "O",
+     "N",
+     "D"
+    ],
+    "daysWide": {
+     "sun": "Sonntag",
+     "mon": "Montag",
+     "tue": "Dienstag",
+     "wed": "Mittwoch",
+     "thu": "Donnerstag",
+     "fri": "Freitag",
+     "sat": "Samstag"
+    },
+    "daysAbbrev": {
+     "sun": "So.",
+     "mon": "Mo.",
+     "tue": "Di.",
+     "wed": "Mi.",
+     "thu": "Do.",
+     "fri": "Fr.",
+     "sat": "Sa."
+    },
+    "am": "AM",
+    "pm": "PM",
+    "dateFormats": {
+     "full": "EEEE, d. MMMM y",
+     "long": "d. MMMM y",
+     "medium": "dd.MM.y",
+     "short": "dd.MM.yy"
+    },
+    "timeFormats": {
+     "full": "HH:mm:ss zzzz",
+     "long": "HH:mm:ss z",
+     "medium": "HH:mm:ss",
+     "short": "HH:mm"
+    },
+    "dateTimeFormats": {
+     "full": "{1}, {0}",
+     "long": "{1}, {0}",
+     "medium": "{1}, {0}",
+     "short": "{1}, {0}"
+    }
+   }
+  },
+  "de-LU": {
+   "region": "LU",
+   "defaultNumberingSystem": "latn",
+   "symbols": {
+    "decimal": ",",
+    "group": ".",
+    "list": ";",
+    "percentSign": "%",
+    "plusSign": "+",
+    "minusSign": "-",
+    "approximatelySign": "≈",
+    "exponential": "E",
+    "superscriptingExponent": "·",
+    "perMille": "‰",
+    "infinity": "∞",
+    "nan": "NaN",
+    "timeSeparator": ":"
+   },
+   "decimalStandard": "#,##0.###",
+   "currency": {
+    "code": "EUR",
+    "symbol": "€",
+    "standard": "#,##0.00 ¤",
+    "accounting": "#,##0.00 ¤"
+   },
+   "dates": {
+    "monthsWide": [
+     "Januar",
+     "Februar",
+     "März",
+     "April",
+     "Mai",
+     "Juni",
+     "Juli",
+     "August",
+     "September",
+     "Oktober",
+     "November",
+     "Dezember"
+    ],
+    "monthsAbbrev": [
+     "Jan.",
+     "Feb.",
+     "März",
+     "Apr.",
+     "Mai",
+     "Juni",
+     "Juli",
+     "Aug.",
+     "Sept.",
+     "Okt.",
+     "Nov.",
+     "Dez."
+    ],
+    "monthsNarrow": [
+     "J",
+     "F",
+     "M",
+     "A",
+     "M",
+     "J",
+     "J",
+     "A",
+     "S",
+     "O",
+     "N",
+     "D"
+    ],
+    "daysWide": {
+     "sun": "Sonntag",
+     "mon": "Montag",
+     "tue": "Dienstag",
+     "wed": "Mittwoch",
+     "thu": "Donnerstag",
+     "fri": "Freitag",
+     "sat": "Samstag"
+    },
+    "daysAbbrev": {
+     "sun": "So.",
+     "mon": "Mo.",
+     "tue": "Di.",
+     "wed": "Mi.",
+     "thu": "Do.",
+     "fri": "Fr.",
+     "sat": "Sa."
+    },
+    "am": "AM",
+    "pm": "PM",
+    "dateFormats": {
+     "full": "EEEE, d. MMMM y",
+     "long": "d. MMMM y",
+     "medium": "dd.MM.y",
+     "short": "dd.MM.yy"
+    },
+    "timeFormats": {
+     "full": "HH:mm:ss zzzz",
+     "long": "HH:mm:ss z",
+     "medium": "HH:mm:ss",
+     "short": "HH:mm"
+    },
+    "dateTimeFormats": {
+     "full": "{1}, {0}",
+     "long": "{1}, {0}",
+     "medium": "{1}, {0}",
+     "short": "{1}, {0}"
+    }
+   }
+  },
+  "en-GB": {
+   "region": "GB",
+   "defaultNumberingSystem": "latn",
+   "symbols": {
+    "decimal": ".",
+    "group": ",",
+    "list": ";",
+    "percentSign": "%",
+    "plusSign": "+",
+    "minusSign": "-",
+    "approximatelySign": "~",
+    "exponential": "E",
+    "superscriptingExponent": "×",
+    "perMille": "‰",
+    "infinity": "∞",
+    "nan": "NaN",
+    "timeSeparator": ":"
+   },
+   "decimalStandard": "#,##0.###",
+   "currency": {
+    "code": "GBP",
+    "symbol": "£",
+    "standard": "¤#,##0.00",
+    "accounting": "¤#,##0.00;(¤#,##0.00)"
+   },
+   "dates": {
+    "monthsWide": [
+     "January",
+     "February",
+     "March",
+     "April",
+     "May",
+     "June",
+     "July",
+     "August",
+     "September",
+     "October",
+     "November",
+     "December"
+    ],
+    "monthsAbbrev": [
+     "Jan",
+     "Feb",
+     "Mar",
+     "Apr",
+     "May",
+     "Jun",
+     "Jul",
+     "Aug",
+     "Sept",
+     "Oct",
+     "Nov",
+     "Dec"
+    ],
+    "monthsNarrow": [
+     "J",
+     "F",
+     "M",
+     "A",
+     "M",
+     "J",
+     "J",
+     "A",
+     "S",
+     "O",
+     "N",
+     "D"
+    ],
+    "daysWide": {
+     "sun": "Sunday",
+     "mon": "Monday",
+     "tue": "Tuesday",
+     "wed": "Wednesday",
+     "thu": "Thursday",
+     "fri": "Friday",
+     "sat": "Saturday"
+    },
+    "daysAbbrev": {
+     "sun": "Sun",
+     "mon": "Mon",
+     "tue": "Tue",
+     "wed": "Wed",
+     "thu": "Thu",
+     "fri": "Fri",
+     "sat": "Sat"
+    },
+    "am": "am",
+    "pm": "pm",
+    "dateFormats": {
+     "full": "EEEE, d MMMM y",
+     "long": "d MMMM y",
+     "medium": "d MMM y",
+     "short": "dd/MM/y"
+    },
+    "timeFormats": {
+     "full": "HH:mm:ss zzzz",
+     "long": "HH:mm:ss z",
+     "medium": "HH:mm:ss",
+     "short": "HH:mm"
+    },
+    "dateTimeFormats": {
+     "full": "{1}, {0}",
+     "long": "{1}, {0}",
+     "medium": "{1}, {0}",
+     "short": "{1}, {0}"
+    }
+   }
+  },
+  "en-CA": {
+   "region": "CA",
+   "defaultNumberingSystem": "latn",
+   "symbols": {
+    "decimal": ".",
+    "group": ",",
+    "list": ";",
+    "percentSign": "%",
+    "plusSign": "+",
+    "minusSign": "-",
+    "approximatelySign": "~",
+    "exponential": "E",
+    "superscriptingExponent": "×",
+    "perMille": "‰",
+    "infinity": "∞",
+    "nan": "NaN",
+    "timeSeparator": ":"
+   },
+   "decimalStandard": "#,##0.###",
+   "currency": {
+    "code": "CAD",
+    "symbol": "$",
+    "standard": "¤#,##0.00",
+    "accounting": "¤#,##0.00;(¤#,##0.00)"
+   },
+   "dates": {
+    "monthsWide": [
+     "January",
+     "February",
+     "March",
+     "April",
+     "May",
+     "June",
+     "July",
+     "August",
+     "September",
+     "October",
+     "November",
+     "December"
+    ],
+    "monthsAbbrev": [
+     "Jan",
+     "Feb",
+     "Mar",
+     "Apr",
+     "May",
+     "Jun",
+     "Jul",
+     "Aug",
+     "Sep",
+     "Oct",
+     "Nov",
+     "Dec"
+    ],
+    "monthsNarrow": [
+     "J",
+     "F",
+     "M",
+     "A",
+     "M",
+     "J",
+     "J",
+     "A",
+     "S",
+     "O",
+     "N",
+     "D"
+    ],
+    "daysWide": {
+     "sun": "Sunday",
+     "mon": "Monday",
+     "tue": "Tuesday",
+     "wed": "Wednesday",
+     "thu": "Thursday",
+     "fri": "Friday",
+     "sat": "Saturday"
+    },
+    "daysAbbrev": {
+     "sun": "Sun",
+     "mon": "Mon",
+     "tue": "Tue",
+     "wed": "Wed",
+     "thu": "Thu",
+     "fri": "Fri",
+     "sat": "Sat"
+    },
+    "am": "a.m.",
+    "pm": "p.m.",
+    "dateFormats": {
+     "full": "EEEE, MMMM d, y",
+     "long": "MMMM d, y",
+     "medium": "MMM d, y",
+     "short": "y-MM-dd"
+    },
+    "timeFormats": {
+     "full": "h:mm:ss a zzzz",
+     "long": "h:mm:ss a z",
+     "medium": "h:mm:ss a",
+     "short": "h:mm a"
+    },
+    "dateTimeFormats": {
+     "full": "{1}, {0}",
+     "long": "{1}, {0}",
+     "medium": "{1}, {0}",
+     "short": "{1}, {0}"
+    }
+   }
+  },
+  "en-IE": {
+   "region": "IE",
+   "defaultNumberingSystem": "latn",
+   "symbols": {
+    "decimal": ".",
+    "group": ",",
+    "list": ";",
+    "percentSign": "%",
+    "plusSign": "+",
+    "minusSign": "-",
+    "approximatelySign": "~",
+    "exponential": "E",
+    "superscriptingExponent": "×",
+    "perMille": "‰",
+    "infinity": "∞",
+    "nan": "NaN",
+    "timeSeparator": ":"
+   },
+   "decimalStandard": "#,##0.###",
+   "currency": {
+    "code": "EUR",
+    "symbol": "€",
+    "standard": "¤#,##0.00",
+    "accounting": "¤#,##0.00;(¤#,##0.00)"
+   },
+   "dates": {
+    "monthsWide": [
+     "January",
+     "February",
+     "March",
+     "April",
+     "May",
+     "June",
+     "July",
+     "August",
+     "September",
+     "October",
+     "November",
+     "December"
+    ],
+    "monthsAbbrev": [
+     "Jan",
+     "Feb",
+     "Mar",
+     "Apr",
+     "May",
+     "Jun",
+     "Jul",
+     "Aug",
+     "Sept",
+     "Oct",
+     "Nov",
+     "Dec"
+    ],
+    "monthsNarrow": [
+     "J",
+     "F",
+     "M",
+     "A",
+     "M",
+     "J",
+     "J",
+     "A",
+     "S",
+     "O",
+     "N",
+     "D"
+    ],
+    "daysWide": {
+     "sun": "Sunday",
+     "mon": "Monday",
+     "tue": "Tuesday",
+     "wed": "Wednesday",
+     "thu": "Thursday",
+     "fri": "Friday",
+     "sat": "Saturday"
+    },
+    "daysAbbrev": {
+     "sun": "Sun",
+     "mon": "Mon",
+     "tue": "Tue",
+     "wed": "Wed",
+     "thu": "Thu",
+     "fri": "Fri",
+     "sat": "Sat"
+    },
+    "am": "am",
+    "pm": "pm",
+    "dateFormats": {
+     "full": "EEEE d MMMM y",
+     "long": "d MMMM y",
+     "medium": "d MMM y",
+     "short": "dd/MM/y"
+    },
+    "timeFormats": {
+     "full": "HH:mm:ss zzzz",
+     "long": "HH:mm:ss z",
+     "medium": "HH:mm:ss",
+     "short": "HH:mm"
+    },
+    "dateTimeFormats": {
+     "full": "{1}, {0}",
+     "long": "{1}, {0}",
+     "medium": "{1}, {0}",
+     "short": "{1}, {0}"
+    }
+   }
+  },
+  "en-MT": {
+   "region": "MT",
+   "defaultNumberingSystem": "latn",
+   "symbols": {
+    "decimal": ".",
+    "group": ",",
+    "list": ";",
+    "percentSign": "%",
+    "plusSign": "+",
+    "minusSign": "-",
+    "approximatelySign": "~",
+    "exponential": "E",
+    "superscriptingExponent": "×",
+    "perMille": "‰",
+    "infinity": "∞",
+    "nan": "NaN",
+    "timeSeparator": ":"
+   },
+   "decimalStandard": "#,##0.###",
+   "currency": {
+    "code": "EUR",
+    "symbol": "€",
+    "standard": "¤#,##0.00",
+    "accounting": "¤#,##0.00;(¤#,##0.00)"
+   },
+   "dates": {
+    "monthsWide": [
+     "January",
+     "February",
+     "March",
+     "April",
+     "May",
+     "June",
+     "July",
+     "August",
+     "September",
+     "October",
+     "November",
+     "December"
+    ],
+    "monthsAbbrev": [
+     "Jan",
+     "Feb",
+     "Mar",
+     "Apr",
+     "May",
+     "Jun",
+     "Jul",
+     "Aug",
+     "Sept",
+     "Oct",
+     "Nov",
+     "Dec"
+    ],
+    "monthsNarrow": [
+     "J",
+     "F",
+     "M",
+     "A",
+     "M",
+     "J",
+     "J",
+     "A",
+     "S",
+     "O",
+     "N",
+     "D"
+    ],
+    "daysWide": {
+     "sun": "Sunday",
+     "mon": "Monday",
+     "tue": "Tuesday",
+     "wed": "Wednesday",
+     "thu": "Thursday",
+     "fri": "Friday",
+     "sat": "Saturday"
+    },
+    "daysAbbrev": {
+     "sun": "Sun",
+     "mon": "Mon",
+     "tue": "Tue",
+     "wed": "Wed",
+     "thu": "Thu",
+     "fri": "Fri",
+     "sat": "Sat"
+    },
+    "am": "am",
+    "pm": "pm",
+    "dateFormats": {
+     "full": "EEEE, d MMMM y",
+     "long": "dd MMMM y",
+     "medium": "dd MMM y",
+     "short": "dd/MM/y"
+    },
+    "timeFormats": {
+     "full": "HH:mm:ss zzzz",
+     "long": "HH:mm:ss z",
+     "medium": "HH:mm:ss",
+     "short": "HH:mm"
+    },
+    "dateTimeFormats": {
+     "full": "{1}, {0}",
+     "long": "{1}, {0}",
+     "medium": "{1}, {0}",
+     "short": "{1}, {0}"
+    }
+   }
+  },
+  "en-AU": {
+   "region": "AU",
+   "defaultNumberingSystem": "latn",
+   "symbols": {
+    "decimal": ".",
+    "group": ",",
+    "list": ";",
+    "percentSign": "%",
+    "plusSign": "+",
+    "minusSign": "-",
+    "approximatelySign": "~",
+    "exponential": "e",
+    "superscriptingExponent": "×",
+    "perMille": "‰",
+    "infinity": "∞",
+    "nan": "NaN",
+    "timeSeparator": ":"
+   },
+   "decimalStandard": "#,##0.###",
+   "currency": {
+    "code": "AUD",
+    "symbol": "$",
+    "standard": "¤#,##0.00",
+    "accounting": "¤#,##0.00;(¤#,##0.00)"
+   },
+   "dates": {
+    "monthsWide": [
+     "January",
+     "February",
+     "March",
+     "April",
+     "May",
+     "June",
+     "July",
+     "August",
+     "September",
+     "October",
+     "November",
+     "December"
+    ],
+    "monthsAbbrev": [
+     "Jan",
+     "Feb",
+     "Mar",
+     "Apr",
+     "May",
+     "June",
+     "July",
+     "Aug",
+     "Sept",
+     "Oct",
+     "Nov",
+     "Dec"
+    ],
+    "monthsNarrow": [
+     "J",
+     "F",
+     "M",
+     "A",
+     "M",
+     "J",
+     "J",
+     "A",
+     "S",
+     "O",
+     "N",
+     "D"
+    ],
+    "daysWide": {
+     "sun": "Sunday",
+     "mon": "Monday",
+     "tue": "Tuesday",
+     "wed": "Wednesday",
+     "thu": "Thursday",
+     "fri": "Friday",
+     "sat": "Saturday"
+    },
+    "daysAbbrev": {
+     "sun": "Sun",
+     "mon": "Mon",
+     "tue": "Tue",
+     "wed": "Wed",
+     "thu": "Thu",
+     "fri": "Fri",
+     "sat": "Sat"
+    },
+    "am": "am",
+    "pm": "pm",
+    "dateFormats": {
+     "full": "EEEE, d MMMM y",
+     "long": "d MMMM y",
+     "medium": "d MMM y",
+     "short": "d/M/yy"
+    },
+    "timeFormats": {
+     "full": "h:mm:ss a zzzz",
+     "long": "h:mm:ss a z",
+     "medium": "h:mm:ss a",
+     "short": "h:mm a"
+    },
+    "dateTimeFormats": {
+     "full": "{1}, {0}",
+     "long": "{1}, {0}",
+     "medium": "{1}, {0}",
+     "short": "{1}, {0}"
+    }
+   }
+  },
+  "en-NZ": {
+   "region": "NZ",
+   "defaultNumberingSystem": "latn",
+   "symbols": {
+    "decimal": ".",
+    "group": ",",
+    "list": ";",
+    "percentSign": "%",
+    "plusSign": "+",
+    "minusSign": "-",
+    "approximatelySign": "~",
+    "exponential": "E",
+    "superscriptingExponent": "×",
+    "perMille": "‰",
+    "infinity": "∞",
+    "nan": "NaN",
+    "timeSeparator": ":"
+   },
+   "decimalStandard": "#,##0.###",
+   "currency": {
+    "code": "NZD",
+    "symbol": "$",
+    "standard": "¤#,##0.00",
+    "accounting": "¤#,##0.00;(¤#,##0.00)"
+   },
+   "dates": {
+    "monthsWide": [
+     "January",
+     "February",
+     "March",
+     "April",
+     "May",
+     "June",
+     "July",
+     "August",
+     "September",
+     "October",
+     "November",
+     "December"
+    ],
+    "monthsAbbrev": [
+     "Jan",
+     "Feb",
+     "Mar",
+     "Apr",
+     "May",
+     "Jun",
+     "Jul",
+     "Aug",
+     "Sept",
+     "Oct",
+     "Nov",
+     "Dec"
+    ],
+    "monthsNarrow": [
+     "J",
+     "F",
+     "M",
+     "A",
+     "M",
+     "J",
+     "J",
+     "A",
+     "S",
+     "O",
+     "N",
+     "D"
+    ],
+    "daysWide": {
+     "sun": "Sunday",
+     "mon": "Monday",
+     "tue": "Tuesday",
+     "wed": "Wednesday",
+     "thu": "Thursday",
+     "fri": "Friday",
+     "sat": "Saturday"
+    },
+    "daysAbbrev": {
+     "sun": "Sun",
+     "mon": "Mon",
+     "tue": "Tue",
+     "wed": "Wed",
+     "thu": "Thu",
+     "fri": "Fri",
+     "sat": "Sat"
+    },
+    "am": "am",
+    "pm": "pm",
+    "dateFormats": {
+     "full": "EEEE, d MMMM y",
+     "long": "d MMMM y",
+     "medium": "d MMM y",
+     "short": "dd/MM/y"
+    },
+    "timeFormats": {
+     "full": "h:mm:ss a zzzz",
+     "long": "h:mm:ss a z",
+     "medium": "h:mm:ss a",
+     "short": "h:mm a"
+    },
+    "dateTimeFormats": {
+     "full": "{1}, {0}",
+     "long": "{1}, {0}",
+     "medium": "{1}, {0}",
+     "short": "{1}, {0}"
+    }
+   }
+  },
+  "en-ZA": {
+   "region": "ZA",
+   "defaultNumberingSystem": "latn",
+   "symbols": {
+    "decimal": ",",
+    "group": " ",
+    "list": ";",
+    "percentSign": "%",
+    "plusSign": "+",
+    "minusSign": "-",
+    "approximatelySign": "~",
+    "exponential": "E",
+    "superscriptingExponent": "×",
+    "perMille": "‰",
+    "infinity": "∞",
+    "nan": "NaN",
+    "timeSeparator": ":"
+   },
+   "decimalStandard": "#,##0.###",
+   "currency": {
+    "code": "ZAR",
+    "symbol": "R",
+    "standard": "¤#,##0.00",
+    "accounting": "¤#,##0.00;(¤#,##0.00)"
+   },
+   "dates": {
+    "monthsWide": [
+     "January",
+     "February",
+     "March",
+     "April",
+     "May",
+     "June",
+     "July",
+     "August",
+     "September",
+     "October",
+     "November",
+     "December"
+    ],
+    "monthsAbbrev": [
+     "Jan",
+     "Feb",
+     "Mar",
+     "Apr",
+     "May",
+     "Jun",
+     "Jul",
+     "Aug",
+     "Sept",
+     "Oct",
+     "Nov",
+     "Dec"
+    ],
+    "monthsNarrow": [
+     "J",
+     "F",
+     "M",
+     "A",
+     "M",
+     "J",
+     "J",
+     "A",
+     "S",
+     "O",
+     "N",
+     "D"
+    ],
+    "daysWide": {
+     "sun": "Sunday",
+     "mon": "Monday",
+     "tue": "Tuesday",
+     "wed": "Wednesday",
+     "thu": "Thursday",
+     "fri": "Friday",
+     "sat": "Saturday"
+    },
+    "daysAbbrev": {
+     "sun": "Sun",
+     "mon": "Mon",
+     "tue": "Tue",
+     "wed": "Wed",
+     "thu": "Thu",
+     "fri": "Fri",
+     "sat": "Sat"
+    },
+    "am": "am",
+    "pm": "pm",
+    "dateFormats": {
+     "full": "EEEE, dd MMMM y",
+     "long": "dd MMMM y",
+     "medium": "dd MMM y",
+     "short": "y/MM/dd"
+    },
+    "timeFormats": {
+     "full": "HH:mm:ss zzzz",
+     "long": "HH:mm:ss z",
+     "medium": "HH:mm:ss",
+     "short": "HH:mm"
+    },
+    "dateTimeFormats": {
+     "full": "{1}, {0}",
+     "long": "{1}, {0}",
+     "medium": "{1}, {0}",
+     "short": "{1}, {0}"
+    }
+   }
+  },
+  "en-SG": {
+   "region": "SG",
+   "defaultNumberingSystem": "latn",
+   "symbols": {
+    "decimal": ".",
+    "group": ",",
+    "list": ";",
+    "percentSign": "%",
+    "plusSign": "+",
+    "minusSign": "-",
+    "approximatelySign": "~",
+    "exponential": "E",
+    "superscriptingExponent": "×",
+    "perMille": "‰",
+    "infinity": "∞",
+    "nan": "NaN",
+    "timeSeparator": ":"
+   },
+   "decimalStandard": "#,##0.###",
+   "currency": {
+    "code": "SGD",
+    "symbol": "$",
+    "standard": "¤#,##0.00",
+    "accounting": "¤#,##0.00;(¤#,##0.00)"
+   },
+   "dates": {
+    "monthsWide": [
+     "January",
+     "February",
+     "March",
+     "April",
+     "May",
+     "June",
+     "July",
+     "August",
+     "September",
+     "October",
+     "November",
+     "December"
+    ],
+    "monthsAbbrev": [
+     "Jan",
+     "Feb",
+     "Mar",
+     "Apr",
+     "May",
+     "Jun",
+     "Jul",
+     "Aug",
+     "Sept",
+     "Oct",
+     "Nov",
+     "Dec"
+    ],
+    "monthsNarrow": [
+     "J",
+     "F",
+     "M",
+     "A",
+     "M",
+     "J",
+     "J",
+     "A",
+     "S",
+     "O",
+     "N",
+     "D"
+    ],
+    "daysWide": {
+     "sun": "Sunday",
+     "mon": "Monday",
+     "tue": "Tuesday",
+     "wed": "Wednesday",
+     "thu": "Thursday",
+     "fri": "Friday",
+     "sat": "Saturday"
+    },
+    "daysAbbrev": {
+     "sun": "Sun",
+     "mon": "Mon",
+     "tue": "Tue",
+     "wed": "Wed",
+     "thu": "Thu",
+     "fri": "Fri",
+     "sat": "Sat"
+    },
+    "am": "am",
+    "pm": "pm",
+    "dateFormats": {
+     "full": "EEEE, d MMMM y",
+     "long": "d MMMM y",
+     "medium": "d MMM y",
+     "short": "d/M/yy"
+    },
+    "timeFormats": {
+     "full": "h:mm:ss a zzzz",
+     "long": "h:mm:ss a z",
+     "medium": "h:mm:ss a",
+     "short": "h:mm a"
+    },
+    "dateTimeFormats": {
+     "full": "{1}, {0}",
+     "long": "{1}, {0}",
+     "medium": "{1}, {0}",
+     "short": "{1}, {0}"
+    }
+   }
+  },
+  "en-HK": {
+   "region": "HK",
+   "defaultNumberingSystem": "latn",
+   "symbols": {
+    "decimal": ".",
+    "group": ",",
+    "list": ";",
+    "percentSign": "%",
+    "plusSign": "+",
+    "minusSign": "-",
+    "approximatelySign": "~",
+    "exponential": "E",
+    "superscriptingExponent": "×",
+    "perMille": "‰",
+    "infinity": "∞",
+    "nan": "NaN",
+    "timeSeparator": ":"
+   },
+   "decimalStandard": "#,##0.###",
+   "currency": {
+    "code": "HKD",
+    "symbol": "$",
+    "standard": "¤#,##0.00",
+    "accounting": "¤#,##0.00;(¤#,##0.00)"
+   },
+   "dates": {
+    "monthsWide": [
+     "January",
+     "February",
+     "March",
+     "April",
+     "May",
+     "June",
+     "July",
+     "August",
+     "September",
+     "October",
+     "November",
+     "December"
+    ],
+    "monthsAbbrev": [
+     "Jan",
+     "Feb",
+     "Mar",
+     "Apr",
+     "May",
+     "Jun",
+     "Jul",
+     "Aug",
+     "Sept",
+     "Oct",
+     "Nov",
+     "Dec"
+    ],
+    "monthsNarrow": [
+     "J",
+     "F",
+     "M",
+     "A",
+     "M",
+     "J",
+     "J",
+     "A",
+     "S",
+     "O",
+     "N",
+     "D"
+    ],
+    "daysWide": {
+     "sun": "Sunday",
+     "mon": "Monday",
+     "tue": "Tuesday",
+     "wed": "Wednesday",
+     "thu": "Thursday",
+     "fri": "Friday",
+     "sat": "Saturday"
+    },
+    "daysAbbrev": {
+     "sun": "Sun",
+     "mon": "Mon",
+     "tue": "Tue",
+     "wed": "Wed",
+     "thu": "Thu",
+     "fri": "Fri",
+     "sat": "Sat"
+    },
+    "am": "am",
+    "pm": "pm",
+    "dateFormats": {
+     "full": "EEEE, d MMMM y",
+     "long": "d MMMM y",
+     "medium": "d MMM y",
+     "short": "d/M/y"
+    },
+    "timeFormats": {
+     "full": "h:mm:ss a zzzz",
+     "long": "h:mm:ss a z",
+     "medium": "h:mm:ss a",
+     "short": "h:mm a"
+    },
+    "dateTimeFormats": {
+     "full": "{1}, {0}",
+     "long": "{1}, {0}",
+     "medium": "{1}, {0}",
+     "short": "{1}, {0}"
+    }
+   }
+  },
+  "en-PH": {
+   "region": "PH",
+   "defaultNumberingSystem": "latn",
+   "symbols": {
+    "decimal": ".",
+    "group": ",",
+    "list": ";",
+    "percentSign": "%",
+    "plusSign": "+",
+    "minusSign": "-",
+    "approximatelySign": "~",
+    "exponential": "E",
+    "superscriptingExponent": "×",
+    "perMille": "‰",
+    "infinity": "∞",
+    "nan": "NaN",
+    "timeSeparator": ":"
+   },
+   "decimalStandard": "#,##0.###",
+   "currency": {
+    "code": "PHP",
+    "symbol": "₱",
+    "standard": "¤#,##0.00",
+    "accounting": "¤#,##0.00;(¤#,##0.00)"
+   },
+   "dates": {
+    "monthsWide": [
+     "January",
+     "February",
+     "March",
+     "April",
+     "May",
+     "June",
+     "July",
+     "August",
+     "September",
+     "October",
+     "November",
+     "December"
+    ],
+    "monthsAbbrev": [
+     "Jan",
+     "Feb",
+     "Mar",
+     "Apr",
+     "May",
+     "Jun",
+     "Jul",
+     "Aug",
+     "Sep",
+     "Oct",
+     "Nov",
+     "Dec"
+    ],
+    "monthsNarrow": [
+     "J",
+     "F",
+     "M",
+     "A",
+     "M",
+     "J",
+     "J",
+     "A",
+     "S",
+     "O",
+     "N",
+     "D"
+    ],
+    "daysWide": {
+     "sun": "Sunday",
+     "mon": "Monday",
+     "tue": "Tuesday",
+     "wed": "Wednesday",
+     "thu": "Thursday",
+     "fri": "Friday",
+     "sat": "Saturday"
+    },
+    "daysAbbrev": {
+     "sun": "Sun",
+     "mon": "Mon",
+     "tue": "Tue",
+     "wed": "Wed",
+     "thu": "Thu",
+     "fri": "Fri",
+     "sat": "Sat"
+    },
+    "am": "AM",
+    "pm": "PM",
+    "dateFormats": {
+     "full": "EEEE, MMMM d, y",
+     "long": "MMMM d, y",
+     "medium": "MMM d, y",
+     "short": "M/d/yy"
+    },
+    "timeFormats": {
+     "full": "h:mm:ss a zzzz",
+     "long": "h:mm:ss a z",
+     "medium": "h:mm:ss a",
+     "short": "h:mm a"
+    },
+    "dateTimeFormats": {
+     "full": "{1}, {0}",
+     "long": "{1}, {0}",
+     "medium": "{1}, {0}",
+     "short": "{1}, {0}"
+    }
+   }
+  },
+  "en-IN": {
+   "region": "IN",
+   "defaultNumberingSystem": "latn",
+   "symbols": {
+    "decimal": ".",
+    "group": ",",
+    "list": ";",
+    "percentSign": "%",
+    "plusSign": "+",
+    "minusSign": "-",
+    "approximatelySign": "~",
+    "exponential": "E",
+    "superscriptingExponent": "×",
+    "perMille": "‰",
+    "infinity": "∞",
+    "nan": "NaN",
+    "timeSeparator": ":"
+   },
+   "decimalStandard": "#,##,##0.###",
+   "currency": {
+    "code": "INR",
+    "symbol": "₹",
+    "standard": "¤#,##,##0.00",
+    "accounting": "¤#,##0.00;(¤#,##0.00)"
+   },
+   "dates": {
+    "monthsWide": [
+     "January",
+     "February",
+     "March",
+     "April",
+     "May",
+     "June",
+     "July",
+     "August",
+     "September",
+     "October",
+     "November",
+     "December"
+    ],
+    "monthsAbbrev": [
+     "Jan",
+     "Feb",
+     "Mar",
+     "Apr",
+     "May",
+     "Jun",
+     "Jul",
+     "Aug",
+     "Sept",
+     "Oct",
+     "Nov",
+     "Dec"
+    ],
+    "monthsNarrow": [
+     "J",
+     "F",
+     "M",
+     "A",
+     "M",
+     "J",
+     "J",
+     "A",
+     "S",
+     "O",
+     "N",
+     "D"
+    ],
+    "daysWide": {
+     "sun": "Sunday",
+     "mon": "Monday",
+     "tue": "Tuesday",
+     "wed": "Wednesday",
+     "thu": "Thursday",
+     "fri": "Friday",
+     "sat": "Saturday"
+    },
+    "daysAbbrev": {
+     "sun": "Sun",
+     "mon": "Mon",
+     "tue": "Tue",
+     "wed": "Wed",
+     "thu": "Thu",
+     "fri": "Fri",
+     "sat": "Sat"
+    },
+    "am": "am",
+    "pm": "pm",
+    "dateFormats": {
+     "full": "EEEE, d MMMM y",
+     "long": "d MMMM y",
+     "medium": "d MMM y",
+     "short": "dd/MM/yy"
+    },
+    "timeFormats": {
+     "full": "h:mm:ss a zzzz",
+     "long": "h:mm:ss a z",
+     "medium": "h:mm:ss a",
+     "short": "h:mm a"
+    },
+    "dateTimeFormats": {
+     "full": "{1}, {0}",
+     "long": "{1}, {0}",
+     "medium": "{1}, {0}",
+     "short": "{1}, {0}"
+    }
+   }
+  },
+  "fr-BE": {
+   "region": "BE",
+   "defaultNumberingSystem": "latn",
+   "symbols": {
+    "decimal": ",",
+    "group": " ",
+    "list": ";",
+    "percentSign": "%",
+    "plusSign": "+",
+    "minusSign": "-",
+    "approximatelySign": "≃",
+    "exponential": "E",
+    "superscriptingExponent": "×",
+    "perMille": "‰",
+    "infinity": "∞",
+    "nan": "NaN",
+    "timeSeparator": ":"
+   },
+   "decimalStandard": "#,##0.###",
+   "currency": {
+    "code": "EUR",
+    "symbol": "€",
+    "standard": "#,##0.00 ¤",
+    "accounting": "#,##0.00 ¤;(#,##0.00 ¤)"
+   },
+   "dates": {
+    "monthsWide": [
+     "janvier",
+     "février",
+     "mars",
+     "avril",
+     "mai",
+     "juin",
+     "juillet",
+     "août",
+     "septembre",
+     "octobre",
+     "novembre",
+     "décembre"
+    ],
+    "monthsAbbrev": [
+     "janv.",
+     "févr.",
+     "mars",
+     "avr.",
+     "mai",
+     "juin",
+     "juil.",
+     "août",
+     "sept.",
+     "oct.",
+     "nov.",
+     "déc."
+    ],
+    "monthsNarrow": [
+     "J",
+     "F",
+     "M",
+     "A",
+     "M",
+     "J",
+     "J",
+     "A",
+     "S",
+     "O",
+     "N",
+     "D"
+    ],
+    "daysWide": {
+     "sun": "dimanche",
+     "mon": "lundi",
+     "tue": "mardi",
+     "wed": "mercredi",
+     "thu": "jeudi",
+     "fri": "vendredi",
+     "sat": "samedi"
+    },
+    "daysAbbrev": {
+     "sun": "dim.",
+     "mon": "lun.",
+     "tue": "mar.",
+     "wed": "mer.",
+     "thu": "jeu.",
+     "fri": "ven.",
+     "sat": "sam."
+    },
+    "am": "AM",
+    "pm": "PM",
+    "dateFormats": {
+     "full": "EEEE d MMMM y",
+     "long": "d MMMM y",
+     "medium": "d MMM y",
+     "short": "d/MM/yy"
+    },
+    "timeFormats": {
+     "full": "H 'h' mm 'min' ss 's' zzzz",
+     "long": "HH:mm:ss z",
+     "medium": "HH:mm:ss",
+     "short": "HH:mm"
+    },
+    "dateTimeFormats": {
+     "full": "{1}, {0}",
+     "long": "{1}, {0}",
+     "medium": "{1}, {0}",
+     "short": "{1} {0}"
+    }
+   }
+  },
+  "fr-CH": {
+   "region": "CH",
+   "defaultNumberingSystem": "latn",
+   "symbols": {
+    "decimal": ",",
+    "group": "'",
+    "list": ";",
+    "percentSign": "%",
+    "plusSign": "+",
+    "minusSign": "-",
+    "approximatelySign": "≃",
+    "exponential": "E",
+    "superscriptingExponent": "×",
+    "perMille": "‰",
+    "infinity": "∞",
+    "nan": "NaN",
+    "timeSeparator": ":"
+   },
+   "decimalStandard": "#,##0.###",
+   "currency": {
+    "code": "CHF",
+    "symbol": "CHF",
+    "standard": "#,##0.00 ¤",
+    "accounting": "#,##0.00 ¤;(#,##0.00 ¤)"
+   },
+   "dates": {
+    "monthsWide": [
+     "janvier",
+     "février",
+     "mars",
+     "avril",
+     "mai",
+     "juin",
+     "juillet",
+     "août",
+     "septembre",
+     "octobre",
+     "novembre",
+     "décembre"
+    ],
+    "monthsAbbrev": [
+     "janv.",
+     "févr.",
+     "mars",
+     "avr.",
+     "mai",
+     "juin",
+     "juil.",
+     "août",
+     "sept.",
+     "oct.",
+     "nov.",
+     "déc."
+    ],
+    "monthsNarrow": [
+     "J",
+     "F",
+     "M",
+     "A",
+     "M",
+     "J",
+     "J",
+     "A",
+     "S",
+     "O",
+     "N",
+     "D"
+    ],
+    "daysWide": {
+     "sun": "dimanche",
+     "mon": "lundi",
+     "tue": "mardi",
+     "wed": "mercredi",
+     "thu": "jeudi",
+     "fri": "vendredi",
+     "sat": "samedi"
+    },
+    "daysAbbrev": {
+     "sun": "dim.",
+     "mon": "lun.",
+     "tue": "mar.",
+     "wed": "mer.",
+     "thu": "jeu.",
+     "fri": "ven.",
+     "sat": "sam."
+    },
+    "am": "AM",
+    "pm": "PM",
+    "dateFormats": {
+     "full": "EEEE, d MMMM y",
+     "long": "d MMMM y",
+     "medium": "d MMM y",
+     "short": "dd.MM.yy"
+    },
+    "timeFormats": {
+     "full": "HH.mm:ss 'h' zzzz",
+     "long": "HH:mm:ss z",
+     "medium": "HH:mm:ss",
+     "short": "HH:mm"
+    },
+    "dateTimeFormats": {
+     "full": "{1}, {0}",
+     "long": "{1}, {0}",
+     "medium": "{1}, {0}",
+     "short": "{1} {0}"
+    }
+   }
+  },
+  "fr-CA": {
+   "region": "CA",
+   "defaultNumberingSystem": "latn",
+   "symbols": {
+    "decimal": ",",
+    "group": " ",
+    "list": ";",
+    "percentSign": "%",
+    "plusSign": "+",
+    "minusSign": "-",
+    "approximatelySign": "≈",
+    "exponential": "E",
+    "superscriptingExponent": "×",
+    "perMille": "‰",
+    "infinity": "∞",
+    "nan": "NaN",
+    "timeSeparator": ":"
+   },
+   "decimalStandard": "#,##0.###",
+   "currency": {
+    "code": "CAD",
+    "symbol": "$",
+    "standard": "#,##0.00 ¤",
+    "accounting": "#,##0.00 ¤;(#,##0.00 ¤)"
+   },
+   "dates": {
+    "monthsWide": [
+     "janvier",
+     "février",
+     "mars",
+     "avril",
+     "mai",
+     "juin",
+     "juillet",
+     "août",
+     "septembre",
+     "octobre",
+     "novembre",
+     "décembre"
+    ],
+    "monthsAbbrev": [
+     "janv.",
+     "févr.",
+     "mars",
+     "avr.",
+     "mai",
+     "juin",
+     "juill.",
+     "août",
+     "sept.",
+     "oct.",
+     "nov.",
+     "déc."
+    ],
+    "monthsNarrow": [
+     "J",
+     "F",
+     "M",
+     "A",
+     "M",
+     "J",
+     "J",
+     "A",
+     "S",
+     "O",
+     "N",
+     "D"
+    ],
+    "daysWide": {
+     "sun": "dimanche",
+     "mon": "lundi",
+     "tue": "mardi",
+     "wed": "mercredi",
+     "thu": "jeudi",
+     "fri": "vendredi",
+     "sat": "samedi"
+    },
+    "daysAbbrev": {
+     "sun": "dim.",
+     "mon": "lun.",
+     "tue": "mar.",
+     "wed": "mer.",
+     "thu": "jeu.",
+     "fri": "ven.",
+     "sat": "sam."
+    },
+    "am": "a.m.",
+    "pm": "p.m.",
+    "dateFormats": {
+     "full": "EEEE d MMMM y",
+     "long": "d MMMM y",
+     "medium": "d MMM y",
+     "short": "y-MM-dd"
+    },
+    "timeFormats": {
+     "full": "HH 'h' mm 'min' ss 's' zzzz",
+     "long": "HH 'h' mm 'min' ss 's' z",
+     "medium": "HH 'h' mm 'min' ss 's'",
+     "short": "HH 'h' mm"
+    },
+    "dateTimeFormats": {
+     "full": "{1}, {0}",
+     "long": "{1}, {0}",
+     "medium": "{1}, {0}",
+     "short": "{1} {0}"
+    }
+   }
+  },
+  "fr-LU": {
+   "region": "LU",
+   "defaultNumberingSystem": "latn",
+   "symbols": {
+    "decimal": ",",
+    "group": ".",
+    "list": ";",
+    "percentSign": "%",
+    "plusSign": "+",
+    "minusSign": "-",
+    "approximatelySign": "≃",
+    "exponential": "E",
+    "superscriptingExponent": "×",
+    "perMille": "‰",
+    "infinity": "∞",
+    "nan": "NaN",
+    "timeSeparator": ":"
+   },
+   "decimalStandard": "#,##0.###",
+   "currency": {
+    "code": "EUR",
+    "symbol": "€",
+    "standard": "#,##0.00 ¤",
+    "accounting": "#,##0.00 ¤;(#,##0.00 ¤)"
+   },
+   "dates": {
+    "monthsWide": [
+     "janvier",
+     "février",
+     "mars",
+     "avril",
+     "mai",
+     "juin",
+     "juillet",
+     "août",
+     "septembre",
+     "octobre",
+     "novembre",
+     "décembre"
+    ],
+    "monthsAbbrev": [
+     "janv.",
+     "févr.",
+     "mars",
+     "avr.",
+     "mai",
+     "juin",
+     "juil.",
+     "août",
+     "sept.",
+     "oct.",
+     "nov.",
+     "déc."
+    ],
+    "monthsNarrow": [
+     "J",
+     "F",
+     "M",
+     "A",
+     "M",
+     "J",
+     "J",
+     "A",
+     "S",
+     "O",
+     "N",
+     "D"
+    ],
+    "daysWide": {
+     "sun": "dimanche",
+     "mon": "lundi",
+     "tue": "mardi",
+     "wed": "mercredi",
+     "thu": "jeudi",
+     "fri": "vendredi",
+     "sat": "samedi"
+    },
+    "daysAbbrev": {
+     "sun": "dim.",
+     "mon": "lun.",
+     "tue": "mar.",
+     "wed": "mer.",
+     "thu": "jeu.",
+     "fri": "ven.",
+     "sat": "sam."
+    },
+    "am": "AM",
+    "pm": "PM",
+    "dateFormats": {
+     "full": "EEEE d MMMM y",
+     "long": "d MMMM y",
+     "medium": "d MMM y",
+     "short": "dd/MM/y"
+    },
+    "timeFormats": {
+     "full": "HH:mm:ss zzzz",
+     "long": "HH:mm:ss z",
+     "medium": "HH:mm:ss",
+     "short": "HH:mm"
+    },
+    "dateTimeFormats": {
+     "full": "{1}, {0}",
+     "long": "{1}, {0}",
+     "medium": "{1}, {0}",
+     "short": "{1} {0}"
+    }
+   }
+  },
+  "es-MX": {
+   "region": "MX",
+   "defaultNumberingSystem": "latn",
+   "symbols": {
+    "decimal": ".",
+    "group": ",",
+    "list": ";",
+    "percentSign": "%",
+    "plusSign": "+",
+    "minusSign": "-",
+    "approximatelySign": "~",
+    "exponential": "E",
+    "superscriptingExponent": "×",
+    "perMille": "‰",
+    "infinity": "∞",
+    "nan": "NaN",
+    "timeSeparator": ":"
+   },
+   "decimalStandard": "#,##0.###",
+   "currency": {
+    "code": "MXN",
+    "symbol": "$",
+    "standard": "¤#,##0.00",
+    "accounting": "¤#,##0.00"
+   },
+   "dates": {
+    "monthsWide": [
+     "enero",
+     "febrero",
+     "marzo",
+     "abril",
+     "mayo",
+     "junio",
+     "julio",
+     "agosto",
+     "septiembre",
+     "octubre",
+     "noviembre",
+     "diciembre"
+    ],
+    "monthsAbbrev": [
+     "ene",
+     "feb",
+     "mar",
+     "abr",
+     "may",
+     "jun",
+     "jul",
+     "ago",
+     "sep",
+     "oct",
+     "nov",
+     "dic"
+    ],
+    "monthsNarrow": [
+     "E",
+     "F",
+     "M",
+     "A",
+     "M",
+     "J",
+     "J",
+     "A",
+     "S",
+     "O",
+     "N",
+     "D"
+    ],
+    "daysWide": {
+     "sun": "domingo",
+     "mon": "lunes",
+     "tue": "martes",
+     "wed": "miércoles",
+     "thu": "jueves",
+     "fri": "viernes",
+     "sat": "sábado"
+    },
+    "daysAbbrev": {
+     "sun": "dom",
+     "mon": "lun",
+     "tue": "mar",
+     "wed": "mié",
+     "thu": "jue",
+     "fri": "vie",
+     "sat": "sáb"
+    },
+    "am": "a.m.",
+    "pm": "p.m.",
+    "dateFormats": {
+     "full": "EEEE, d 'de' MMMM 'de' y",
+     "long": "d 'de' MMMM 'de' y",
+     "medium": "d MMM y",
+     "short": "dd/MM/yy"
+    },
+    "timeFormats": {
+     "full": "h:mm:ss a zzzz",
+     "long": "h:mm:ss a z",
+     "medium": "h:mm:ss a",
+     "short": "h:mm a"
+    },
+    "dateTimeFormats": {
+     "full": "{1}, {0}",
+     "long": "{1}, {0}",
+     "medium": "{1}, {0}",
+     "short": "{1}, {0}"
+    }
+   }
+  },
+  "es-CO": {
+   "region": "CO",
+   "defaultNumberingSystem": "latn",
+   "symbols": {
+    "decimal": ",",
+    "group": ".",
+    "list": ";",
+    "percentSign": "%",
+    "plusSign": "+",
+    "minusSign": "-",
+    "approximatelySign": "~",
+    "exponential": "E",
+    "superscriptingExponent": "×",
+    "perMille": "‰",
+    "infinity": "∞",
+    "nan": "NaN",
+    "timeSeparator": ":"
+   },
+   "decimalStandard": "#,##0.###",
+   "currency": {
+    "code": "COP",
+    "symbol": "$",
+    "standard": "¤ #,##0.00",
+    "accounting": "¤ #,##0.00"
+   },
+   "dates": {
+    "monthsWide": [
+     "enero",
+     "febrero",
+     "marzo",
+     "abril",
+     "mayo",
+     "junio",
+     "julio",
+     "agosto",
+     "septiembre",
+     "octubre",
+     "noviembre",
+     "diciembre"
+    ],
+    "monthsAbbrev": [
+     "ene",
+     "feb",
+     "mar",
+     "abr",
+     "may",
+     "jun",
+     "jul",
+     "ago",
+     "sept",
+     "oct",
+     "nov",
+     "dic"
+    ],
+    "monthsNarrow": [
+     "E",
+     "F",
+     "M",
+     "A",
+     "M",
+     "J",
+     "J",
+     "A",
+     "S",
+     "O",
+     "N",
+     "D"
+    ],
+    "daysWide": {
+     "sun": "domingo",
+     "mon": "lunes",
+     "tue": "martes",
+     "wed": "miércoles",
+     "thu": "jueves",
+     "fri": "viernes",
+     "sat": "sábado"
+    },
+    "daysAbbrev": {
+     "sun": "dom",
+     "mon": "lun",
+     "tue": "mar",
+     "wed": "mié",
+     "thu": "jue",
+     "fri": "vie",
+     "sat": "sáb"
+    },
+    "am": "a. m.",
+    "pm": "p. m.",
+    "dateFormats": {
+     "full": "EEEE, d 'de' MMMM 'de' y",
+     "long": "d 'de' MMMM 'de' y",
+     "medium": "d/MM/y",
+     "short": "d/MM/yy"
+    },
+    "timeFormats": {
+     "full": "h:mm:ss a zzzz",
+     "long": "h:mm:ss a z",
+     "medium": "h:mm:ss a",
+     "short": "h:mm a"
+    },
+    "dateTimeFormats": {
+     "full": "{1}, {0}",
+     "long": "{1}, {0}",
+     "medium": "{1}, {0}",
+     "short": "{1}, {0}"
+    }
+   }
+  },
+  "es-CL": {
+   "region": "CL",
+   "defaultNumberingSystem": "latn",
+   "symbols": {
+    "decimal": ",",
+    "group": ".",
+    "list": ";",
+    "percentSign": "%",
+    "plusSign": "+",
+    "minusSign": "-",
+    "approximatelySign": "~",
+    "exponential": "E",
+    "superscriptingExponent": "×",
+    "perMille": "‰",
+    "infinity": "∞",
+    "nan": "NaN",
+    "timeSeparator": ":"
+   },
+   "decimalStandard": "#,##0.###",
+   "currency": {
+    "code": "CLP",
+    "symbol": "$",
+    "standard": "¤#,##0.00;¤-#,##0.00",
+    "accounting": "¤#,##0.00;¤-#,##0.00"
+   },
+   "dates": {
+    "monthsWide": [
+     "enero",
+     "febrero",
+     "marzo",
+     "abril",
+     "mayo",
+     "junio",
+     "julio",
+     "agosto",
+     "septiembre",
+     "octubre",
+     "noviembre",
+     "diciembre"
+    ],
+    "monthsAbbrev": [
+     "ene",
+     "feb",
+     "mar",
+     "abr",
+     "may",
+     "jun",
+     "jul",
+     "ago",
+     "sept",
+     "oct",
+     "nov",
+     "dic"
+    ],
+    "monthsNarrow": [
+     "E",
+     "F",
+     "M",
+     "A",
+     "M",
+     "J",
+     "J",
+     "A",
+     "S",
+     "O",
+     "N",
+     "D"
+    ],
+    "daysWide": {
+     "sun": "domingo",
+     "mon": "lunes",
+     "tue": "martes",
+     "wed": "miércoles",
+     "thu": "jueves",
+     "fri": "viernes",
+     "sat": "sábado"
+    },
+    "daysAbbrev": {
+     "sun": "dom",
+     "mon": "lun",
+     "tue": "mar",
+     "wed": "mié",
+     "thu": "jue",
+     "fri": "vie",
+     "sat": "sáb"
+    },
+    "am": "a. m.",
+    "pm": "p. m.",
+    "dateFormats": {
+     "full": "EEEE, d 'de' MMMM 'de' y",
+     "long": "d 'de' MMMM 'de' y",
+     "medium": "dd-MM-y",
+     "short": "dd-MM-yy"
+    },
+    "timeFormats": {
+     "full": "h:mm:ss a zzzz",
+     "long": "h:mm:ss a z",
+     "medium": "h:mm:ss a",
+     "short": "h:mm a"
+    },
+    "dateTimeFormats": {
+     "full": "{1}, {0}",
+     "long": "{1}, {0}",
+     "medium": "{1}, {0}",
+     "short": "{1}, {0}"
+    }
+   }
+  },
+  "es-AR": {
+   "region": "AR",
+   "defaultNumberingSystem": "latn",
+   "symbols": {
+    "decimal": ",",
+    "group": ".",
+    "list": ";",
+    "percentSign": "%",
+    "plusSign": "+",
+    "minusSign": "-",
+    "approximatelySign": "~",
+    "exponential": "E",
+    "superscriptingExponent": "×",
+    "perMille": "‰",
+    "infinity": "∞",
+    "nan": "NaN",
+    "timeSeparator": ":"
+   },
+   "decimalStandard": "#,##0.###",
+   "currency": {
+    "code": "ARS",
+    "symbol": "$",
+    "standard": "¤ #,##0.00",
+    "accounting": "¤ #,##0.00;(¤ #,##0.00)"
+   },
+   "dates": {
+    "monthsWide": [
+     "enero",
+     "febrero",
+     "marzo",
+     "abril",
+     "mayo",
+     "junio",
+     "julio",
+     "agosto",
+     "septiembre",
+     "octubre",
+     "noviembre",
+     "diciembre"
+    ],
+    "monthsAbbrev": [
+     "ene",
+     "feb",
+     "mar",
+     "abr",
+     "may",
+     "jun",
+     "jul",
+     "ago",
+     "sept",
+     "oct",
+     "nov",
+     "dic"
+    ],
+    "monthsNarrow": [
+     "E",
+     "F",
+     "M",
+     "A",
+     "M",
+     "J",
+     "J",
+     "A",
+     "S",
+     "O",
+     "N",
+     "D"
+    ],
+    "daysWide": {
+     "sun": "domingo",
+     "mon": "lunes",
+     "tue": "martes",
+     "wed": "miércoles",
+     "thu": "jueves",
+     "fri": "viernes",
+     "sat": "sábado"
+    },
+    "daysAbbrev": {
+     "sun": "dom",
+     "mon": "lun",
+     "tue": "mar",
+     "wed": "mié",
+     "thu": "jue",
+     "fri": "vie",
+     "sat": "sáb"
+    },
+    "am": "a. m.",
+    "pm": "p. m.",
+    "dateFormats": {
+     "full": "EEEE, d 'de' MMMM 'de' y",
+     "long": "d 'de' MMMM 'de' y",
+     "medium": "d MMM y",
+     "short": "d/M/yy"
+    },
+    "timeFormats": {
+     "full": "h:mm:ss a zzzz",
+     "long": "h:mm:ss a z",
+     "medium": "h:mm:ss a",
+     "short": "h:mm a"
+    },
+    "dateTimeFormats": {
+     "full": "{1}, {0}",
+     "long": "{1}, {0}",
+     "medium": "{1}, {0}",
+     "short": "{1}, {0}"
+    }
+   }
+  },
+  "es-US": {
+   "region": "US",
+   "defaultNumberingSystem": "latn",
+   "symbols": {
+    "decimal": ".",
+    "group": ",",
+    "list": ";",
+    "percentSign": "%",
+    "plusSign": "+",
+    "minusSign": "-",
+    "approximatelySign": "~",
+    "exponential": "E",
+    "superscriptingExponent": "×",
+    "perMille": "‰",
+    "infinity": "∞",
+    "nan": "NaN",
+    "timeSeparator": ":"
+   },
+   "decimalStandard": "#,##0.###",
+   "currency": {
+    "code": "USD",
+    "symbol": "$",
+    "standard": "¤#,##0.00",
+    "accounting": "¤#,##0.00"
+   },
+   "dates": {
+    "monthsWide": [
+     "enero",
+     "febrero",
+     "marzo",
+     "abril",
+     "mayo",
+     "junio",
+     "julio",
+     "agosto",
+     "septiembre",
+     "octubre",
+     "noviembre",
+     "diciembre"
+    ],
+    "monthsAbbrev": [
+     "ene",
+     "feb",
+     "mar",
+     "abr",
+     "may",
+     "jun",
+     "jul",
+     "ago",
+     "sept",
+     "oct",
+     "nov",
+     "dic"
+    ],
+    "monthsNarrow": [
+     "E",
+     "F",
+     "M",
+     "A",
+     "M",
+     "J",
+     "J",
+     "A",
+     "S",
+     "O",
+     "N",
+     "D"
+    ],
+    "daysWide": {
+     "sun": "domingo",
+     "mon": "lunes",
+     "tue": "martes",
+     "wed": "miércoles",
+     "thu": "jueves",
+     "fri": "viernes",
+     "sat": "sábado"
+    },
+    "daysAbbrev": {
+     "sun": "dom",
+     "mon": "lun",
+     "tue": "mar",
+     "wed": "mié",
+     "thu": "jue",
+     "fri": "vie",
+     "sat": "sáb"
+    },
+    "am": "a.m.",
+    "pm": "p.m.",
+    "dateFormats": {
+     "full": "EEEE, d 'de' MMMM 'de' y",
+     "long": "d 'de' MMMM 'de' y",
+     "medium": "d MMM y",
+     "short": "d/M/y"
+    },
+    "timeFormats": {
+     "full": "h:mm:ss a zzzz",
+     "long": "h:mm:ss a z",
+     "medium": "h:mm:ss a",
+     "short": "h:mm a"
+    },
+    "dateTimeFormats": {
+     "full": "{1}, {0}",
+     "long": "{1}, {0}",
+     "medium": "{1}, {0}",
+     "short": "{1}, {0}"
+    }
+   }
+  },
+  "pt-PT": {
+   "region": "PT",
+   "defaultNumberingSystem": "latn",
+   "symbols": {
+    "decimal": ",",
+    "group": " ",
+    "list": ";",
+    "percentSign": "%",
+    "plusSign": "+",
+    "minusSign": "-",
+    "approximatelySign": "~",
+    "exponential": "E",
+    "superscriptingExponent": "×",
+    "perMille": "‰",
+    "infinity": "∞",
+    "nan": "NaN",
+    "timeSeparator": ":"
+   },
+   "decimalStandard": "#,##0.###",
+   "currency": {
+    "code": "EUR",
+    "symbol": "€",
+    "standard": "#,##0.00 ¤",
+    "accounting": "#,##0.00 ¤;(#,##0.00 ¤)"
+   },
+   "dates": {
+    "monthsWide": [
+     "janeiro",
+     "fevereiro",
+     "março",
+     "abril",
+     "maio",
+     "junho",
+     "julho",
+     "agosto",
+     "setembro",
+     "outubro",
+     "novembro",
+     "dezembro"
+    ],
+    "monthsAbbrev": [
+     "jan.",
+     "fev.",
+     "mar.",
+     "abr.",
+     "mai.",
+     "jun.",
+     "jul.",
+     "ago.",
+     "set.",
+     "out.",
+     "nov.",
+     "dez."
+    ],
+    "monthsNarrow": [
+     "J",
+     "F",
+     "M",
+     "A",
+     "M",
+     "J",
+     "J",
+     "A",
+     "S",
+     "O",
+     "N",
+     "D"
+    ],
+    "daysWide": {
+     "sun": "domingo",
+     "mon": "segunda-feira",
+     "tue": "terça-feira",
+     "wed": "quarta-feira",
+     "thu": "quinta-feira",
+     "fri": "sexta-feira",
+     "sat": "sábado"
+    },
+    "daysAbbrev": {
+     "sun": "domingo",
+     "mon": "segunda",
+     "tue": "terça",
+     "wed": "quarta",
+     "thu": "quinta",
+     "fri": "sexta",
+     "sat": "sábado"
+    },
+    "am": "a.m.",
+    "pm": "p.m.",
+    "dateFormats": {
+     "full": "EEEE, d 'de' MMMM 'de' y",
+     "long": "d 'de' MMMM 'de' y",
+     "medium": "dd/MM/y",
+     "short": "dd/MM/yy"
+    },
+    "timeFormats": {
+     "full": "HH:mm:ss zzzz",
+     "long": "HH:mm:ss z",
+     "medium": "HH:mm:ss",
+     "short": "HH:mm"
+    },
+    "dateTimeFormats": {
+     "full": "{1}, {0}",
+     "long": "{1}, {0}",
+     "medium": "{1}, {0}",
+     "short": "{1}, {0}"
+    }
+   }
+  },
+  "it-CH": {
+   "region": "CH",
+   "defaultNumberingSystem": "latn",
+   "symbols": {
+    "decimal": ".",
+    "group": "'",
+    "list": ";",
+    "percentSign": "%",
+    "plusSign": "+",
+    "minusSign": "-",
+    "approximatelySign": "~",
+    "exponential": "E",
+    "superscriptingExponent": "×",
+    "perMille": "‰",
+    "infinity": "∞",
+    "nan": "NaN",
+    "timeSeparator": ":"
+   },
+   "decimalStandard": "#,##0.###",
+   "currency": {
+    "code": "CHF",
+    "symbol": "CHF",
+    "standard": "¤ #,##0.00;¤-#,##0.00",
+    "accounting": "¤ #,##0.00;¤-#,##0.00"
+   },
+   "dates": {
+    "monthsWide": [
+     "gennaio",
+     "febbraio",
+     "marzo",
+     "aprile",
+     "maggio",
+     "giugno",
+     "luglio",
+     "agosto",
+     "settembre",
+     "ottobre",
+     "novembre",
+     "dicembre"
+    ],
+    "monthsAbbrev": [
+     "gen",
+     "feb",
+     "mar",
+     "apr",
+     "mag",
+     "giu",
+     "lug",
+     "ago",
+     "set",
+     "ott",
+     "nov",
+     "dic"
+    ],
+    "monthsNarrow": [
+     "G",
+     "F",
+     "M",
+     "A",
+     "M",
+     "G",
+     "L",
+     "A",
+     "S",
+     "O",
+     "N",
+     "D"
+    ],
+    "daysWide": {
+     "sun": "domenica",
+     "mon": "lunedì",
+     "tue": "martedì",
+     "wed": "mercoledì",
+     "thu": "giovedì",
+     "fri": "venerdì",
+     "sat": "sabato"
+    },
+    "daysAbbrev": {
+     "sun": "dom",
+     "mon": "lun",
+     "tue": "mar",
+     "wed": "mer",
+     "thu": "gio",
+     "fri": "ven",
+     "sat": "sab"
+    },
+    "am": "AM",
+    "pm": "PM",
+    "dateFormats": {
+     "full": "EEEE, d MMMM y",
+     "long": "d MMMM y",
+     "medium": "d MMM y",
+     "short": "dd.MM.yy"
+    },
+    "timeFormats": {
+     "full": "HH:mm:ss zzzz",
+     "long": "HH:mm:ss z",
+     "medium": "HH:mm:ss",
+     "short": "HH:mm"
+    },
+    "dateTimeFormats": {
+     "full": "{1} {0}",
+     "long": "{1} {0}",
+     "medium": "{1}, {0}",
+     "short": "{1}, {0}"
+    }
+   }
+  },
+  "nl-BE": {
+   "region": "BE",
+   "defaultNumberingSystem": "latn",
+   "symbols": {
+    "decimal": ",",
+    "group": ".",
+    "list": ";",
+    "percentSign": "%",
+    "plusSign": "+",
+    "minusSign": "-",
+    "approximatelySign": "~",
+    "exponential": "E",
+    "superscriptingExponent": "×",
+    "perMille": "‰",
+    "infinity": "∞",
+    "nan": "NaN",
+    "timeSeparator": ":"
+   },
+   "decimalStandard": "#,##0.###",
+   "currency": {
+    "code": "EUR",
+    "symbol": "€",
+    "standard": "¤ #,##0.00;¤ -#,##0.00",
+    "accounting": "¤ #,##0.00;(¤ #,##0.00)"
+   },
+   "dates": {
+    "monthsWide": [
+     "januari",
+     "februari",
+     "maart",
+     "april",
+     "mei",
+     "juni",
+     "juli",
+     "augustus",
+     "september",
+     "oktober",
+     "november",
+     "december"
+    ],
+    "monthsAbbrev": [
+     "jan",
+     "feb",
+     "mrt",
+     "apr",
+     "mei",
+     "jun",
+     "jul",
+     "aug",
+     "sep",
+     "okt",
+     "nov",
+     "dec"
+    ],
+    "monthsNarrow": [
+     "J",
+     "F",
+     "M",
+     "A",
+     "M",
+     "J",
+     "J",
+     "A",
+     "S",
+     "O",
+     "N",
+     "D"
+    ],
+    "daysWide": {
+     "sun": "zondag",
+     "mon": "maandag",
+     "tue": "dinsdag",
+     "wed": "woensdag",
+     "thu": "donderdag",
+     "fri": "vrijdag",
+     "sat": "zaterdag"
+    },
+    "daysAbbrev": {
+     "sun": "zo",
+     "mon": "ma",
+     "tue": "di",
+     "wed": "wo",
+     "thu": "do",
+     "fri": "vr",
+     "sat": "za"
+    },
+    "am": "a.m.",
+    "pm": "p.m.",
+    "dateFormats": {
+     "full": "EEEE d MMMM y",
+     "long": "d MMMM y",
+     "medium": "d MMM y",
+     "short": "d/MM/y"
+    },
+    "timeFormats": {
+     "full": "HH:mm:ss zzzz",
+     "long": "HH:mm:ss z",
+     "medium": "HH:mm:ss",
+     "short": "HH:mm"
+    },
+    "dateTimeFormats": {
+     "full": "{1}, {0}",
+     "long": "{1}, {0}",
+     "medium": "{1}, {0}",
+     "short": "{1}, {0}"
+    }
+   }
+  },
+  "el-CY": {
+   "region": "CY",
+   "defaultNumberingSystem": "latn",
+   "symbols": {
+    "decimal": ",",
+    "group": ".",
+    "list": ";",
+    "percentSign": "%",
+    "plusSign": "+",
+    "minusSign": "-",
+    "approximatelySign": "~",
+    "exponential": "e",
+    "superscriptingExponent": "×",
+    "perMille": "‰",
+    "infinity": "∞",
+    "nan": "NaN",
+    "timeSeparator": ":"
+   },
+   "decimalStandard": "#,##0.###",
+   "currency": {
+    "code": "EUR",
+    "symbol": "€",
+    "standard": "#,##0.00 ¤",
+    "accounting": "#,##0.00 ¤"
+   },
+   "dates": {
+    "monthsWide": [
+     "Ιανουαρίου",
+     "Φεβρουαρίου",
+     "Μαρτίου",
+     "Απριλίου",
+     "Μαΐου",
+     "Ιουνίου",
+     "Ιουλίου",
+     "Αυγούστου",
+     "Σεπτεμβρίου",
+     "Οκτωβρίου",
+     "Νοεμβρίου",
+     "Δεκεμβρίου"
+    ],
+    "monthsAbbrev": [
+     "Ιαν",
+     "Φεβ",
+     "Μαρ",
+     "Απρ",
+     "Μαΐ",
+     "Ιουν",
+     "Ιουλ",
+     "Αυγ",
+     "Σεπ",
+     "Οκτ",
+     "Νοε",
+     "Δεκ"
+    ],
+    "monthsNarrow": [
+     "Ι",
+     "Φ",
+     "Μ",
+     "Α",
+     "Μ",
+     "Ι",
+     "Ι",
+     "Α",
+     "Σ",
+     "Ο",
+     "Ν",
+     "Δ"
+    ],
+    "daysWide": {
+     "sun": "Κυριακή",
+     "mon": "Δευτέρα",
+     "tue": "Τρίτη",
+     "wed": "Τετάρτη",
+     "thu": "Πέμπτη",
+     "fri": "Παρασκευή",
+     "sat": "Σάββατο"
+    },
+    "daysAbbrev": {
+     "sun": "Κυρ",
+     "mon": "Δευ",
+     "tue": "Τρί",
+     "wed": "Τετ",
+     "thu": "Πέμ",
+     "fri": "Παρ",
+     "sat": "Σάβ"
+    },
+    "am": "π.μ.",
+    "pm": "μ.μ.",
+    "dateFormats": {
+     "full": "EEEE d MMMM y",
+     "long": "d MMMM y",
+     "medium": "d MMM y",
+     "short": "d/M/yy"
+    },
+    "timeFormats": {
+     "full": "h:mm:ss a zzzz",
+     "long": "h:mm:ss a z",
+     "medium": "h:mm:ss a",
+     "short": "h:mm a"
+    },
+    "dateTimeFormats": {
+     "full": "{1} - {0}",
+     "long": "{1} - {0}",
+     "medium": "{1}, {0}",
+     "short": "{1}, {0}"
+    }
+   }
+  },
+  "ar-SA": {
+   "region": "SA",
+   "defaultNumberingSystem": "arab",
+   "symbols": {
+    "decimal": ".",
+    "group": ",",
+    "list": ";",
+    "percentSign": "٪",
+    "plusSign": "‎+",
+    "minusSign": "‎-",
+    "approximatelySign": "~",
+    "exponential": "E",
+    "superscriptingExponent": "×",
+    "perMille": "‰",
+    "infinity": "∞",
+    "nan": "ليس رقمًا",
+    "timeSeparator": ":"
+   },
+   "decimalStandard": "#,##0.###",
+   "currency": {
+    "code": "SAR",
+    "symbol": "ر.س.‏",
+    "standard": "‏#,##0.00 ¤;‏-#,##0.00 ¤",
+    "accounting": "؜#,##0.00¤;(؜#,##0.00¤)"
+   },
+   "dates": {
+    "monthsWide": [
+     "يناير",
+     "فبراير",
+     "مارس",
+     "أبريل",
+     "مايو",
+     "يونيو",
+     "يوليو",
+     "أغسطس",
+     "سبتمبر",
+     "أكتوبر",
+     "نوفمبر",
+     "ديسمبر"
+    ],
+    "monthsAbbrev": [
+     "يناير",
+     "فبراير",
+     "مارس",
+     "أبريل",
+     "مايو",
+     "يونيو",
+     "يوليو",
+     "أغسطس",
+     "سبتمبر",
+     "أكتوبر",
+     "نوفمبر",
+     "ديسمبر"
+    ],
+    "monthsNarrow": [
+     "ي",
+     "ف",
+     "م",
+     "أ",
+     "و",
+     "ن",
+     "ل",
+     "غ",
+     "س",
+     "ك",
+     "ب",
+     "د"
+    ],
+    "daysWide": {
+     "sun": "الأحد",
+     "mon": "الاثنين",
+     "tue": "الثلاثاء",
+     "wed": "الأربعاء",
+     "thu": "الخميس",
+     "fri": "الجمعة",
+     "sat": "السبت"
+    },
+    "daysAbbrev": {
+     "sun": "الأحد",
+     "mon": "الاثنين",
+     "tue": "الثلاثاء",
+     "wed": "الأربعاء",
+     "thu": "الخميس",
+     "fri": "الجمعة",
+     "sat": "السبت"
+    },
+    "am": "ص",
+    "pm": "م",
+    "dateFormats": {
+     "full": "EEEE، d MMMM y",
+     "long": "d MMMM y",
+     "medium": "dd‏/MM‏/y",
+     "short": "d‏/M‏/y"
+    },
+    "timeFormats": {
+     "full": "h:mm:ss a zzzz",
+     "long": "h:mm:ss a z",
+     "medium": "h:mm:ss a",
+     "short": "h:mm a"
+    },
+    "dateTimeFormats": {
+     "full": "{1}، {0}",
+     "long": "{1}، {0}",
+     "medium": "{1}، {0}",
+     "short": "{1}، {0}"
+    }
+   }
+  },
+  "ar-AE": {
+   "region": "AE",
+   "defaultNumberingSystem": "latn",
+   "symbols": {
+    "decimal": ".",
+    "group": ",",
+    "list": ";",
+    "percentSign": "‎%‎",
+    "plusSign": "‎+",
+    "minusSign": "‎-",
+    "approximatelySign": "~",
+    "exponential": "E",
+    "superscriptingExponent": "×",
+    "perMille": "‰",
+    "infinity": "∞",
+    "nan": "ليس رقمًا",
+    "timeSeparator": ":"
+   },
+   "decimalStandard": "#,##0.###",
+   "currency": {
+    "code": "AED",
+    "symbol": "د.إ.‏",
+    "standard": "‏#,##0.00 ¤;‏-#,##0.00 ¤",
+    "accounting": "؜#,##0.00¤;(؜#,##0.00¤)"
+   },
+   "dates": {
+    "monthsWide": [
+     "يناير",
+     "فبراير",
+     "مارس",
+     "أبريل",
+     "مايو",
+     "يونيو",
+     "يوليو",
+     "أغسطس",
+     "سبتمبر",
+     "أكتوبر",
+     "نوفمبر",
+     "ديسمبر"
+    ],
+    "monthsAbbrev": [
+     "يناير",
+     "فبراير",
+     "مارس",
+     "أبريل",
+     "مايو",
+     "يونيو",
+     "يوليو",
+     "أغسطس",
+     "سبتمبر",
+     "أكتوبر",
+     "نوفمبر",
+     "ديسمبر"
+    ],
+    "monthsNarrow": [
+     "ي",
+     "ف",
+     "م",
+     "أ",
+     "و",
+     "ن",
+     "ل",
+     "غ",
+     "س",
+     "ك",
+     "ب",
+     "د"
+    ],
+    "daysWide": {
+     "sun": "الأحد",
+     "mon": "الاثنين",
+     "tue": "الثلاثاء",
+     "wed": "الأربعاء",
+     "thu": "الخميس",
+     "fri": "الجمعة",
+     "sat": "السبت"
+    },
+    "daysAbbrev": {
+     "sun": "الأحد",
+     "mon": "الاثنين",
+     "tue": "الثلاثاء",
+     "wed": "الأربعاء",
+     "thu": "الخميس",
+     "fri": "الجمعة",
+     "sat": "السبت"
+    },
+    "am": "ص",
+    "pm": "م",
+    "dateFormats": {
+     "full": "EEEE، d MMMM y",
+     "long": "d MMMM y",
+     "medium": "dd‏/MM‏/y",
+     "short": "d‏/M‏/y"
+    },
+    "timeFormats": {
+     "full": "h:mm:ss a zzzz",
+     "long": "h:mm:ss a z",
+     "medium": "h:mm:ss a",
+     "short": "h:mm a"
+    },
+    "dateTimeFormats": {
+     "full": "{1}، {0}",
+     "long": "{1}، {0}",
+     "medium": "{1}، {0}",
+     "short": "{1}، {0}"
+    }
+   }
+  },
+  "ar-EG": {
+   "region": "EG",
+   "defaultNumberingSystem": "arab",
+   "symbols": {
+    "decimal": ".",
+    "group": ",",
+    "list": ";",
+    "percentSign": "‎%‎",
+    "plusSign": "‎+",
+    "minusSign": "‎-",
+    "approximatelySign": "~",
+    "exponential": "E",
+    "superscriptingExponent": "×",
+    "perMille": "‰",
+    "infinity": "∞",
+    "nan": "ليس رقمًا",
+    "timeSeparator": ":"
+   },
+   "decimalStandard": "#,##0.###",
+   "currency": {
+    "code": "EGP",
+    "symbol": "E£",
+    "standard": "‏#,##0.00 ¤;‏-#,##0.00 ¤",
+    "accounting": "؜#,##0.00¤;(؜#,##0.00¤)"
+   },
+   "dates": {
+    "monthsWide": [
+     "يناير",
+     "فبراير",
+     "مارس",
+     "أبريل",
+     "مايو",
+     "يونيو",
+     "يوليو",
+     "أغسطس",
+     "سبتمبر",
+     "أكتوبر",
+     "نوفمبر",
+     "ديسمبر"
+    ],
+    "monthsAbbrev": [
+     "يناير",
+     "فبراير",
+     "مارس",
+     "أبريل",
+     "مايو",
+     "يونيو",
+     "يوليو",
+     "أغسطس",
+     "سبتمبر",
+     "أكتوبر",
+     "نوفمبر",
+     "ديسمبر"
+    ],
+    "monthsNarrow": [
+     "ي",
+     "ف",
+     "م",
+     "أ",
+     "و",
+     "ن",
+     "ل",
+     "غ",
+     "س",
+     "ك",
+     "ب",
+     "د"
+    ],
+    "daysWide": {
+     "sun": "الأحد",
+     "mon": "الاثنين",
+     "tue": "الثلاثاء",
+     "wed": "الأربعاء",
+     "thu": "الخميس",
+     "fri": "الجمعة",
+     "sat": "السبت"
+    },
+    "daysAbbrev": {
+     "sun": "الأحد",
+     "mon": "الاثنين",
+     "tue": "الثلاثاء",
+     "wed": "الأربعاء",
+     "thu": "الخميس",
+     "fri": "الجمعة",
+     "sat": "السبت"
+    },
+    "am": "ص",
+    "pm": "م",
+    "dateFormats": {
+     "full": "EEEE، d MMMM y",
+     "long": "d MMMM y",
+     "medium": "dd‏/MM‏/y",
+     "short": "d‏/M‏/y"
+    },
+    "timeFormats": {
+     "full": "h:mm:ss a zzzz",
+     "long": "h:mm:ss a z",
+     "medium": "h:mm:ss a",
+     "short": "h:mm a"
+    },
+    "dateTimeFormats": {
+     "full": "{1}، {0}",
+     "long": "{1}، {0}",
+     "medium": "{1}، {0}",
+     "short": "{1}، {0}"
+    }
+   }
+  },
+  "zh-Hant-HK": {
+   "region": "HK",
+   "defaultNumberingSystem": "latn",
+   "symbols": {
+    "decimal": ".",
+    "group": ",",
+    "list": ";",
+    "percentSign": "%",
+    "plusSign": "+",
+    "minusSign": "-",
+    "approximatelySign": "~",
+    "exponential": "E",
+    "superscriptingExponent": "×",
+    "perMille": "‰",
+    "infinity": "∞",
+    "nan": "非數值",
+    "timeSeparator": ":"
+   },
+   "decimalStandard": "#,##0.###",
+   "currency": {
+    "code": "HKD",
+    "symbol": "$",
+    "standard": "¤#,##0.00",
+    "accounting": "¤#,##0.00;(¤#,##0.00)"
+   },
+   "dates": {
+    "monthsWide": [
+     "1月",
+     "2月",
+     "3月",
+     "4月",
+     "5月",
+     "6月",
+     "7月",
+     "8月",
+     "9月",
+     "10月",
+     "11月",
+     "12月"
+    ],
+    "monthsAbbrev": [
+     "1月",
+     "2月",
+     "3月",
+     "4月",
+     "5月",
+     "6月",
+     "7月",
+     "8月",
+     "9月",
+     "10月",
+     "11月",
+     "12月"
+    ],
+    "monthsNarrow": [
+     "1",
+     "2",
+     "3",
+     "4",
+     "5",
+     "6",
+     "7",
+     "8",
+     "9",
+     "10",
+     "11",
+     "12"
+    ],
+    "daysWide": {
+     "sun": "星期日",
+     "mon": "星期一",
+     "tue": "星期二",
+     "wed": "星期三",
+     "thu": "星期四",
+     "fri": "星期五",
+     "sat": "星期六"
+    },
+    "daysAbbrev": {
+     "sun": "週日",
+     "mon": "週一",
+     "tue": "週二",
+     "wed": "週三",
+     "thu": "週四",
+     "fri": "週五",
+     "sat": "週六"
+    },
+    "am": "上午",
+    "pm": "下午",
+    "dateFormats": {
+     "full": "y年M月d日EEEE",
+     "long": "y年M月d日",
+     "medium": "y年M月d日",
+     "short": "d/M/y"
+    },
+    "timeFormats": {
+     "full": "ah:mm:ss [zzzz]",
+     "long": "ah:mm:ss [z]",
+     "medium": "ah:mm:ss",
+     "short": "ah:mm"
+    },
+    "dateTimeFormats": {
+     "full": "{1} {0}",
+     "long": "{1} {0}",
+     "medium": "{1} {0}",
+     "short": "{1} {0}"
+    }
+   }
+  }
+ },
+ "languageAliases": {
+  "en": "en",
+  "de": "de",
+  "fr": "fr",
+  "es": "es",
+  "pt": "pt",
+  "it": "it",
+  "nl": "nl",
+  "ro": "ro",
+  "hr": "hr",
+  "sl": "sl",
+  "el": "el",
+  "tr": "tr",
+  "pl": "pl",
+  "cs": "cs",
+  "sv": "sv",
+  "fi": "fi",
+  "hu": "hu",
+  "sk": "sk",
+  "et": "et",
+  "lv": "lv",
+  "lt": "lt",
+  "da": "da",
+  "nb": "nb",
+  "nn": "nn",
+  "ru": "ru",
+  "uk": "uk",
+  "bg": "bg",
+  "id": "id",
+  "ja": "ja",
+  "ko": "ko",
+  "th": "th",
+  "ms": "ms",
+  "hi": "hi",
+  "bn": "bn",
+  "ta": "ta",
+  "te": "te",
+  "mr": "mr",
+  "gu": "gu",
+  "kn": "kn",
+  "ml": "ml",
+  "ar": "ar",
+  "he": "he",
+  "vi": "vi",
+  "is": "is",
+  "zh": "zh"
+ },
+ "localeAliases": {
+  "en-IN": "en-IN",
+  "en-GB": "en-GB",
+  "en-CA": "en-CA",
+  "en-IE": "en-IE",
+  "en-MT": "en-MT",
+  "en-AU": "en-AU",
+  "en-NZ": "en-NZ",
+  "en-ZA": "en-ZA",
+  "en-SG": "en-SG",
+  "en-HK": "en-HK",
+  "en-PH": "en-PH",
+  "de-AT": "de-AT",
+  "de-CH": "de-CH",
+  "de-LU": "de-LU",
+  "fr-CH": "fr-CH",
+  "fr-LU": "fr-LU",
+  "fr-CA": "fr-CA",
+  "fr-BE": "fr-BE",
+  "es-US": "es-US",
+  "es-MX": "es-MX",
+  "es-CO": "es-CO",
+  "es-CL": "es-CL",
+  "es-AR": "es-AR",
+  "pt-PT": "pt-PT",
+  "it-CH": "it-CH",
+  "nl-BE": "nl-BE",
+  "el-CY": "el-CY",
+  "ar-EG": "ar-EG",
+  "ar-SA": "ar-SA",
+  "ar-AE": "ar-AE",
+  "zh-US": "zh-Hant",
+  "zh-ID": "zh-Hant",
+  "zh-TH": "zh-Hant",
+  "zh-VN": "zh-Hant",
+  "zh-TW": "zh-Hant",
+  "zh-GB": "zh-Hant",
+  "zh-AU": "zh-Hant",
+  "zh-HK": "zh-Hant-HK",
+  "zh-PH": "zh-Hant"
+ },
+ "regionAliases": {
+  "US": "en",
+  "DE": "de",
+  "FR": "fr",
+  "ES": "es",
+  "BR": "pt",
+  "IT": "it",
+  "NL": "nl",
+  "RO": "ro",
+  "HR": "hr",
+  "SI": "sl",
+  "GR": "el",
+  "TR": "tr",
+  "PL": "pl",
+  "CZ": "cs",
+  "SE": "sv",
+  "FI": "fi",
+  "HU": "hu",
+  "SK": "sk",
+  "EE": "et",
+  "LV": "lv",
+  "LT": "lt",
+  "DK": "da",
+  "NO": "nb",
+  "RU": "ru",
+  "UA": "uk",
+  "BG": "bg",
+  "ID": "id",
+  "JP": "ja",
+  "KR": "ko",
+  "TH": "th",
+  "MY": "ms",
+  "IN": "hi",
+  "BD": "bn",
+  "EG": "ar",
+  "IL": "he",
+  "VN": "vi",
+  "IS": "is",
+  "CN": "zh",
+  "TW": "zh-Hant",
+  "AT": "de-AT",
+  "CH": "de-CH",
+  "LU": "de-LU",
+  "GB": "en-GB",
+  "CA": "en-CA",
+  "IE": "en-IE",
+  "MT": "en-MT",
+  "AU": "en-AU",
+  "NZ": "en-NZ",
+  "ZA": "en-ZA",
+  "SG": "en-SG",
+  "HK": "en-HK",
+  "PH": "en-PH",
+  "BE": "fr-BE",
+  "MX": "es-MX",
+  "CO": "es-CO",
+  "CL": "es-CL",
+  "AR": "es-AR",
+  "PT": "pt-PT",
+  "CY": "el-CY",
+  "SA": "ar-SA",
+  "AE": "ar-AE"
+ }
+}
