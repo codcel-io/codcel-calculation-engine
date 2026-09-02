@@ -30,8 +30,22 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 
 - **`ValueFormat` gained `region` and `timezone`.** Both default to empty and the
   struct is `#[serde(default)]`, so existing FFI and JNI JSON payloads still
-  deserialise. Code constructing `ValueFormat` with a struct literal and no
-  `..Default::default()` needs the two new fields.
+  deserialise.
+
+  Code constructing a `ValueFormat` with an exhaustive struct literal will not
+  compile. Fix it by naming only the fields that differ from the default and
+  finishing with `..Default::default()`:
+
+  ```rust
+  ValueFormat {
+      currency_symbol: String::new(),
+      ..Default::default()
+  }
+  ```
+
+  Prefer that over adding the two fields to the list. `Default` is a plain
+  literal, so it stays independent of the host locale and of `CODCEL_*`
+  variables, and the call site survives the next field addition.
 
 ### Added
 
