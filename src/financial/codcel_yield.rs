@@ -97,8 +97,8 @@ mod tests {
             + Duration::days(serial)
     }
 
-    // Expected values below are Excel's own cached results, taken from
-    // codcel-tests/financial-all.xlsx sheet "Yield" (column E).
+    // Expected values below are Excel's own cached results for the formula shown
+    // against each case.
 
     #[test]
     fn test_yield_basic() {

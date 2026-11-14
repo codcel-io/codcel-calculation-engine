@@ -33,9 +33,9 @@ pub fn codcel_npv(rate: f64, cash_flows: Vec<f64>) -> Result<f64, Box<dyn Error 
 mod tests {
     use super::*;
 
-    // Expected values below are Excel's own cached results, taken from
-    // codcel-tests/financial-all.xlsx sheet "Npv". NPV is closed form, so the tolerance
-    // is tighter than the 1e-6 used for the iterative solvers.
+    // Expected values below are Excel's own cached results for the formula shown
+    // against each case. NPV is closed form, so the tolerance is tighter than the 1e-6
+    // used for the iterative solvers.
 
     #[test]
     fn test_npv_basic_indiv() {

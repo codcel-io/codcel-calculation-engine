@@ -43,7 +43,7 @@ Add the crate to your `Cargo.toml`:
 
 ```toml
 [dependencies]
-codcel-calculation-engine = "0.1.9"
+codcel-calculation-engine = "0.1.10"
 ```
 
 Use a function directly:

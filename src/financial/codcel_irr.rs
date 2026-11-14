@@ -98,8 +98,8 @@ mod tests {
         );
     }
 
-    // Expected values below are Excel's own cached results, taken from
-    // codcel-tests/financial-all.xlsx sheet "Irr" (cells B52-B71).
+    // Expected values below are Excel's own cached results for the formula shown
+    // against each case.
 
     #[test]
     fn test_irr_basic_cell_refs() {

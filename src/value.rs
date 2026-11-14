@@ -3325,11 +3325,8 @@ pub fn flatten_value_to_vec_f64(
 }
 
 fn is_pure_string(value: &str) -> bool {
-    // Check if the string value can be converted to a number or boolean
-    if value.parse::<f64>().is_ok() || value.parse::<bool>().is_ok() {
-        return false;
-    }
-    true
+    // A pure string can't be converted to a number or boolean
+    value.parse::<f64>().is_err() && value.parse::<bool>().is_err()
 }
 
 // TODO: THIS NEEDS TO CONSIDER strict_type_conversion

@@ -71,9 +71,9 @@ pub fn codcel_m_irr(
 mod tests {
     use super::*;
 
-    // Expected values below are Excel's own cached results, taken from
-    // codcel-tests/financial-all.xlsx sheet "MIrr". This is a closed-form function, so
-    // the tolerance is tighter than the 1e-6 used for the iterative solvers.
+    // Expected values below are Excel's own cached results for the formula shown
+    // against each case. This is a closed-form function, so the tolerance is tighter
+    // than the 1e-6 used for the iterative solvers.
 
     #[test]
     fn test_m_irr_mirr_basic_range() {

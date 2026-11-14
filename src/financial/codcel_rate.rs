@@ -99,8 +99,8 @@ mod tests {
         assert!((result - 0.1306623862918077).abs() < 1e-6);
     }
 
-    // Expected values below are Excel's own cached results, taken from
-    // codcel-tests/financial-all.xlsx sheet "Rate" (cells B112-B141).
+    // Expected values below are Excel's own cached results for the formula shown
+    // against each case.
 
     #[test]
     fn test_rate_basic_loan() {

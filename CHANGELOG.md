@@ -5,9 +5,27 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 
 # Changelog
 
-## Unreleased
+## 0.1.10
 
 ### Breaking
+
+- **Date conversions take `DateSemantics` instead of a `bool`.**
+  `date_time_base::excel_to_date_time`, `date_time_base::date_time_to_excel`,
+  `date_time_base::force_string_to_date_time`, `codcel_date_value` and
+  `codcel_forecast_ets_seasonality` used to take `apply_lotus_bug: bool` (or no
+  flag at all, for `codcel_date_value`). They now take a `DateSemantics`, from
+  the new `date_system` module. Pass `value_format.date_semantics()` where you
+  previously passed `value_format.allow_lotus_1_2_3_1900_date_bug`, or
+  `DateSemantics::EXCEL_1900` for a literal `true`.
+
+  A named type rather than a `bool` makes every call site say which convention
+  it means. There is deliberately no `From<bool>`. The engine works in the 1900
+  serial system only; a 1904-epoch workbook is rebased as it is read, before
+  any value reaches this crate, so the 1462-day shift cannot be applied twice.
+
+- **`date_and_time::datetime_to_excel_serial` is removed.** It hardcoded the
+  Lotus 1-2-3 leap-year bug. Use `date_time_base::date_time_to_excel` with an
+  explicit `DateSemantics`.
 
 - **`NOW()` and `TODAY()` return local wall-clock time, not UTC.**
 
@@ -49,6 +67,25 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 
 ### Added
 
+- **`ISLOGICAL` and `PERCENTOF`.**
+
+- **`HSTACK` and `VSTACK`** now combine arrays the way Excel does. The previous
+  `VSTACK` also printed its input to stdout.
+
+- **`compensated_sum`**: Neumaier summation, now used by `SUM` and the other
+  functions that add up a range, so long columns of mixed-magnitude values no
+  longer drift from Excel's total.
+
+- **`date_system::DateSemantics`**, with `EXCEL_1900` (the default, matching
+  Excel) and `ASTRONOMICAL_1900`. `ValueFormat::date_semantics()` derives one
+  from `allow_lotus_1_2_3_1900_date_bug`.
+
+- **`ValueFormat::with_calculation_flags_from`**, which copies the rounding,
+  date-system and timezone settings from a project's format onto a format
+  derived from a request's language. Every transport that builds a per-request
+  format from `Accept-Language` needs it: those settings belong to the
+  workbook, not to the reader.
+
 - **CLDR locale data** in `codcel_calculation_engine::locale`: the thirteen CLDR
   number symbols, month and weekday names, AM/PM markers, date and time patterns,
   and currency patterns for 77 locales, generated from Unicode CLDR 48.2.1.
@@ -89,8 +126,39 @@ SPDX-License-Identifier: MIT OR Apache-2.0
   reaches for it, so generated wasm crates are built without it. `NOW` and
   `TODAY` still read the browser's local clock without it.
 
+### Changed
+
+- **`IRR`, `MIRR`, `NPV`, `ODDFYIELD`, `ODDLYIELD`, `PMT`, `RATE`, `XIRR`, `XNPV`
+  and `YIELD`** were reworked. The rate-solving functions share one root finder
+  that accepts an answer only when the residual is small, not merely when the
+  step is, so they agree with Excel on inputs where Newton's method used to
+  stop early or wander.
+
+- **`VLOOKUP` and `HLOOKUP`** follow Excel more closely. Exact-match mode
+  supports `*`, `?` and `~` wildcards, matches case-insensitively and treats `2`
+  and `2.0` as equal while never matching numbers to text. Approximate mode
+  binary-searches a sorted first column and falls back to a full scan when the
+  column holds errors, mixed types or empty rows. `#VALUE!`, `#REF!` and `#N/A`
+  are returned in the cases Excel returns them.
+
+- **The normal-distribution family shares one implementation.** `NORM.S.DIST`,
+  `NORMSDIST`, `NORM.DIST`, `NORMDIST`, `NORM.S.INV`, `NORMSINV`, `NORM.INV`,
+  `NORMINV`, `PHI`, `GAUSS`, `LOGNORM.DIST`, `LOGNORMDIST`, `LOGNORM.INV`,
+  `LOGINV`, `CONFIDENCE`, `CONFIDENCE.NORM`, `Z.TEST` and `ZTEST` now agree with
+  each other to the last bit.
+
+- **The crate denies `clippy::unwrap_used`, `clippy::expect_used` and
+  `clippy::panic`**, and production code contains none of them. A malformed
+  input now returns an error instead of aborting the host process.
+
 ### Fixed
 
+- `DATEDIF` with unit `"MD"` panicked when the end date fell in January and the
+  day had to roll back into December.
+- `PERCENTILE`, `PERCENTILE.INC`, `PERCENTILE.EXC`, `PERCENTRANK.INC`,
+  `PERCENTRANK.EXC`, `QUARTILE.INC`, `QUARTILE.EXC` and the `FORECAST` family
+  panicked when the range contained `NaN`, the in-band representation of an
+  Excel error. They now sort with a total order.
 - The month and weekday name tables were hardcoded English, contradicting the doc
   comment in `text/codcel_text.rs` that promised localized names.
 - `mmmmm` returned the first character of the full month name. It now uses CLDR's

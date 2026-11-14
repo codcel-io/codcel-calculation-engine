@@ -34,6 +34,17 @@ jobs:
             exit 1
           fi
 
+      # A public repo must not cite a private one. The expected values come from
+      # Excel and every test carries its own formula, so a path into an internal
+      # repository is a dangling reference for every reader outside the org.
+      # `git grep` reads tracked files only, so an untracked file cannot satisfy it.
+      - name: No references to private repositories
+        run: |
+          if git grep -nE 'codcel-(tests|desktop|calamine)' -- '*.rs' '*.md' '*.toml'; then
+            echo "::error::A private repository is referenced from a public repo."
+            exit 1
+          fi
+
       - uses: dtolnay/rust-toolchain@stable
         with:
           components: rustfmt, clippy

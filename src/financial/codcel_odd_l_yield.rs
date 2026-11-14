@@ -193,8 +193,8 @@ mod tests {
             + Duration::days(serial)
     }
 
-    // Expected values below are Excel's own cached results, taken from
-    // codcel-tests/financial-all.xlsx sheet "OddLYield" (column E).
+    // Expected values below are Excel's own cached results for the formula shown
+    // against each case.
 
     #[test]
     fn test_odd_l_yield_semi_b_0() {

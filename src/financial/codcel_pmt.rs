@@ -59,9 +59,9 @@ pub fn codcel_pmt(
 mod tests {
     use super::*;
 
-    // Expected values below are Excel's own cached results, taken from
-    // codcel-tests/financial-all.xlsx sheet "PMT". This is a closed-form function, so
-    // the tolerance is tighter than the 1e-6 used for the iterative solvers.
+    // Expected values below are Excel's own cached results for the formula shown
+    // against each case. This is a closed-form function, so the tolerance is tighter
+    // than the 1e-6 used for the iterative solvers.
 
     #[test]
     fn test_pmt_basic_3_arg() {

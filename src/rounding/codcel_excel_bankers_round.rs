@@ -39,7 +39,6 @@ pub fn codcel_excel_bankers_round(value: f64, decimal_places: i32) -> f64 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use std::f64;
 
     // Helper function to assert floating point equality with a small epsilon
     fn assert_approx_eq(a: f64, b: f64) {

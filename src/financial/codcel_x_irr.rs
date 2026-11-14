@@ -132,9 +132,8 @@ mod tests {
         );
     }
 
-    // Expected values below are Excel's own cached results, taken from
-    // codcel-tests/financial-all.xlsx sheet "Xirr" (cells E1-E30). Serials 45292 and 45658
-    // are 2024-01-01 and 2025-01-01.
+    // Expected values below are Excel's own cached results for the formula shown
+    // against each case. Serials 45292 and 45658 are 2024-01-01 and 2025-01-01.
 
     #[test]
     fn test_x_irr_basic() {

@@ -66,9 +66,9 @@ mod tests {
             + Duration::days(serial)
     }
 
-    // Expected values below are Excel's own cached results, taken from
-    // codcel-tests/financial-all.xlsx sheet "Xnpv". XNPV is closed form, so the tolerance is
-    // tighter than the 1e-6 used for the iterative solvers.
+    // Expected values below are Excel's own cached results for the formula shown
+    // against each case. XNPV is closed form, so the tolerance is tighter than the 1e-6
+    // used for the iterative solvers.
 
     #[test]
     fn test_x_npv_xnv_basic() {
