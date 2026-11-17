@@ -11,15 +11,37 @@ use std::error::Error;
 /// - `decimal_places`: the number of digits to round to.
 ///
 /// Returns the rounded value (rounds away from zero at midpoint).
+///
+/// Like Excel, the value is taken at 15 significant digits, so a binary representation just
+/// below a midpoint still rounds up: `ROUND(2.675, 2)` is 2.68 and `ROUND(934489.4999999999, 0)`
+/// is 934490.
 pub fn codcel_round(value: f64, decimal_places: i32) -> Result<f64, Box<dyn Error + Send + Sync>> {
     let multiplier = 10_f64.powi(decimal_places);
-    let rounded = (value * multiplier).round() / multiplier;
+    let scaled = significant_15(significant_15(value) * multiplier);
+    let rounded = scaled.round() / multiplier;
     Ok(rounded)
+}
+
+/// `value` rounded to the 15 significant digits Excel works with.
+fn significant_15(value: f64) -> f64 {
+    if !value.is_finite() || value == 0.0 {
+        return value;
+    }
+    format!("{value:.14e}").parse().unwrap_or(value)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn values_just_below_a_midpoint_round_as_in_excel() {
+        assert_eq!(codcel_round(934489.4999999999, 0).unwrap(), 934490.0);
+        assert_eq!(codcel_round(2.675, 2).unwrap(), 2.68);
+        assert_eq!(codcel_round(-2.675, 2).unwrap(), -2.68);
+        assert_eq!(codcel_round(1.005, 2).unwrap(), 1.01);
+        assert_eq!(codcel_round(934489.4999, 0).unwrap(), 934489.0);
+    }
 
     #[test]
     fn test_round_positive_up() {

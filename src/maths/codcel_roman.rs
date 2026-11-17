@@ -13,6 +13,10 @@ use std::error::Error;
 /// Returns the Roman numeral string or an error for out-of-range inputs.
 pub fn codcel_roman(input: i32, form: Option<i32>) -> Result<String, Box<dyn Error + Send + Sync>> {
     let form = form.unwrap_or(0);
+    // Excel's ROMAN(0) is empty text, not an error.
+    if input == 0 && (0..=4).contains(&form) {
+        return Ok(String::new());
+    }
     if !(1..=3999).contains(&input) {
         return Err(format!("ROMAN: Input out of range (1-3999): {input}").into());
     }
@@ -193,10 +197,16 @@ mod tests {
 
     #[test]
     fn test_roman_input_out_of_range_low() {
-        // =ROMAN(0) in US format (returns #VALUE! error)
-        // =ROMAN(0) in German format (returns #VALUE! error)
-        let result = codcel_roman(0, None);
+        // =ROMAN(-1) in US format (returns #VALUE! error)
+        // =ROMAN(-1) in German format (returns #VALUE! error)
+        let result = codcel_roman(-1, None);
         assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_roman_zero_is_empty_text() {
+        // =ROMAN(0) returns "" (empty text)
+        assert_eq!(codcel_roman(0, None).unwrap(), "");
     }
 
     #[test]

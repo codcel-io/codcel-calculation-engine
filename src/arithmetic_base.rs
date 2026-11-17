@@ -117,7 +117,8 @@ fn remove_quotes(input: &str) -> String {
 }
 
 // Excel-compatible coercion: an empty/missing cell evaluates to 0 in numeric context.
-// Used by the scalar fallback of `add`/`subtract`/`multiply`/`divide` so that Lotus-style
+// Used by `add`/`subtract`/`multiply`/`divide`, for array elements as well as scalars, so that
+// a blank in an array operation counts as 0 as it does in Excel, and so that Lotus-style
 // leading-plus formulas like `=+A1` (parsed as `BinOp(None, Add, A1)`) don't propagate
 // "Cannot convert none to number value" errors.
 fn value_to_f64_or_zero(
@@ -365,28 +366,28 @@ pub fn multiply(
             // Element-wise multiplication of two arrays
             let mut results = Vec::with_capacity(lhs_vec.len());
             for (l, r) in lhs_vec.iter().zip(rhs_vec.iter()) {
-                let l_val = l.f64(value_format)?;
-                let r_val = r.f64(value_format)?;
+                let l_val = value_to_f64_or_zero(l.clone(), value_format)?;
+                let r_val = value_to_f64_or_zero(r.clone(), value_format)?;
                 results.push(Value::F64(codcel_multiply(l_val, r_val)?));
             }
             return Ok(Value::VecValue(results));
         }
         (Value::VecValue(lhs_vec), _) => {
             // Multiply each element of the array by a scalar
-            let r_val = rhs.f64(value_format)?;
+            let r_val = value_to_f64_or_zero(rhs.clone(), value_format)?;
             let mut results = Vec::with_capacity(lhs_vec.len());
             for l in lhs_vec {
-                let l_val = l.f64(value_format)?;
+                let l_val = value_to_f64_or_zero(l.clone(), value_format)?;
                 results.push(Value::F64(codcel_multiply(l_val, r_val)?));
             }
             return Ok(Value::VecValue(results));
         }
         (_, Value::VecValue(rhs_vec)) => {
             // Multiply a scalar by each element of the array
-            let l_val = lhs.f64(value_format)?;
+            let l_val = value_to_f64_or_zero(lhs.clone(), value_format)?;
             let mut results = Vec::with_capacity(rhs_vec.len());
             for r in rhs_vec {
-                let r_val = r.f64(value_format)?;
+                let r_val = value_to_f64_or_zero(r.clone(), value_format)?;
                 results.push(Value::F64(codcel_multiply(l_val, r_val)?));
             }
             return Ok(Value::VecValue(results));
@@ -397,8 +398,8 @@ pub fn multiply(
             for (lhs_row, rhs_row) in lhs_rows.iter().zip(rhs_rows.iter()) {
                 let mut result_row = Vec::with_capacity(lhs_row.len());
                 for (l, r) in lhs_row.iter().zip(rhs_row.iter()) {
-                    let l_val = l.f64(value_format)?;
-                    let r_val = r.f64(value_format)?;
+                    let l_val = value_to_f64_or_zero(l.clone(), value_format)?;
+                    let r_val = value_to_f64_or_zero(r.clone(), value_format)?;
                     result_row.push(Value::F64(codcel_multiply(l_val, r_val)?));
                 }
                 result_rows.push(result_row);
@@ -407,12 +408,12 @@ pub fn multiply(
         }
         (Value::AreaValue(lhs_rows), _) => {
             // Multiply each element of the 2D array by a scalar
-            let r_val = rhs.f64(value_format)?;
+            let r_val = value_to_f64_or_zero(rhs.clone(), value_format)?;
             let mut result_rows = Vec::with_capacity(lhs_rows.len());
             for lhs_row in lhs_rows {
                 let mut result_row = Vec::with_capacity(lhs_row.len());
                 for l in lhs_row {
-                    let l_val = l.f64(value_format)?;
+                    let l_val = value_to_f64_or_zero(l.clone(), value_format)?;
                     result_row.push(Value::F64(codcel_multiply(l_val, r_val)?));
                 }
                 result_rows.push(result_row);
@@ -421,12 +422,12 @@ pub fn multiply(
         }
         (_, Value::AreaValue(rhs_rows)) => {
             // Multiply a scalar by each element of the 2D array
-            let l_val = lhs.f64(value_format)?;
+            let l_val = value_to_f64_or_zero(lhs.clone(), value_format)?;
             let mut result_rows = Vec::with_capacity(rhs_rows.len());
             for rhs_row in rhs_rows {
                 let mut result_row = Vec::with_capacity(rhs_row.len());
                 for r in rhs_row {
-                    let r_val = r.f64(value_format)?;
+                    let r_val = value_to_f64_or_zero(r.clone(), value_format)?;
                     result_row.push(Value::F64(codcel_multiply(l_val, r_val)?));
                 }
                 result_rows.push(result_row);
@@ -465,26 +466,26 @@ pub fn add(
         (Value::VecValue(lhs_vec), Value::VecValue(rhs_vec)) => {
             let mut results = Vec::with_capacity(lhs_vec.len());
             for (l, r) in lhs_vec.iter().zip(rhs_vec.iter()) {
-                let l_val = l.f64(value_format)?;
-                let r_val = r.f64(value_format)?;
+                let l_val = value_to_f64_or_zero(l.clone(), value_format)?;
+                let r_val = value_to_f64_or_zero(r.clone(), value_format)?;
                 results.push(Value::F64(codcel_add(l_val, r_val)?));
             }
             return Ok(Value::VecValue(results));
         }
         (Value::VecValue(lhs_vec), _) => {
-            let r_val = rhs.f64(value_format)?;
+            let r_val = value_to_f64_or_zero(rhs.clone(), value_format)?;
             let mut results = Vec::with_capacity(lhs_vec.len());
             for l in lhs_vec {
-                let l_val = l.f64(value_format)?;
+                let l_val = value_to_f64_or_zero(l.clone(), value_format)?;
                 results.push(Value::F64(codcel_add(l_val, r_val)?));
             }
             return Ok(Value::VecValue(results));
         }
         (_, Value::VecValue(rhs_vec)) => {
-            let l_val = lhs.f64(value_format)?;
+            let l_val = value_to_f64_or_zero(lhs.clone(), value_format)?;
             let mut results = Vec::with_capacity(rhs_vec.len());
             for r in rhs_vec {
-                let r_val = r.f64(value_format)?;
+                let r_val = value_to_f64_or_zero(r.clone(), value_format)?;
                 results.push(Value::F64(codcel_add(l_val, r_val)?));
             }
             return Ok(Value::VecValue(results));
@@ -494,8 +495,8 @@ pub fn add(
             for (lhs_row, rhs_row) in lhs_rows.iter().zip(rhs_rows.iter()) {
                 let mut result_row = Vec::with_capacity(lhs_row.len());
                 for (l, r) in lhs_row.iter().zip(rhs_row.iter()) {
-                    let l_val = l.f64(value_format)?;
-                    let r_val = r.f64(value_format)?;
+                    let l_val = value_to_f64_or_zero(l.clone(), value_format)?;
+                    let r_val = value_to_f64_or_zero(r.clone(), value_format)?;
                     result_row.push(Value::F64(codcel_add(l_val, r_val)?));
                 }
                 result_rows.push(result_row);
@@ -503,12 +504,12 @@ pub fn add(
             return Ok(Value::AreaValue(result_rows));
         }
         (Value::AreaValue(lhs_rows), _) => {
-            let r_val = rhs.f64(value_format)?;
+            let r_val = value_to_f64_or_zero(rhs.clone(), value_format)?;
             let mut result_rows = Vec::with_capacity(lhs_rows.len());
             for lhs_row in lhs_rows {
                 let mut result_row = Vec::with_capacity(lhs_row.len());
                 for l in lhs_row {
-                    let l_val = l.f64(value_format)?;
+                    let l_val = value_to_f64_or_zero(l.clone(), value_format)?;
                     result_row.push(Value::F64(codcel_add(l_val, r_val)?));
                 }
                 result_rows.push(result_row);
@@ -516,12 +517,12 @@ pub fn add(
             return Ok(Value::AreaValue(result_rows));
         }
         (_, Value::AreaValue(rhs_rows)) => {
-            let l_val = lhs.f64(value_format)?;
+            let l_val = value_to_f64_or_zero(lhs.clone(), value_format)?;
             let mut result_rows = Vec::with_capacity(rhs_rows.len());
             for rhs_row in rhs_rows {
                 let mut result_row = Vec::with_capacity(rhs_row.len());
                 for r in rhs_row {
-                    let r_val = r.f64(value_format)?;
+                    let r_val = value_to_f64_or_zero(r.clone(), value_format)?;
                     result_row.push(Value::F64(codcel_add(l_val, r_val)?));
                 }
                 result_rows.push(result_row);
@@ -586,26 +587,26 @@ pub fn divide(
         (Value::VecValue(lhs_vec), Value::VecValue(rhs_vec)) => {
             let mut results = Vec::with_capacity(lhs_vec.len());
             for (l, r) in lhs_vec.iter().zip(rhs_vec.iter()) {
-                let l_val = l.f64(value_format)?;
-                let r_val = r.f64(value_format)?;
+                let l_val = value_to_f64_or_zero(l.clone(), value_format)?;
+                let r_val = value_to_f64_or_zero(r.clone(), value_format)?;
                 results.push(Value::F64(codcel_divide(l_val, r_val)?));
             }
             return Ok(Value::VecValue(results));
         }
         (Value::VecValue(lhs_vec), _) => {
-            let r_val = rhs.f64(value_format)?;
+            let r_val = value_to_f64_or_zero(rhs.clone(), value_format)?;
             let mut results = Vec::with_capacity(lhs_vec.len());
             for l in lhs_vec {
-                let l_val = l.f64(value_format)?;
+                let l_val = value_to_f64_or_zero(l.clone(), value_format)?;
                 results.push(Value::F64(codcel_divide(l_val, r_val)?));
             }
             return Ok(Value::VecValue(results));
         }
         (_, Value::VecValue(rhs_vec)) => {
-            let l_val = lhs.f64(value_format)?;
+            let l_val = value_to_f64_or_zero(lhs.clone(), value_format)?;
             let mut results = Vec::with_capacity(rhs_vec.len());
             for r in rhs_vec {
-                let r_val = r.f64(value_format)?;
+                let r_val = value_to_f64_or_zero(r.clone(), value_format)?;
                 results.push(Value::F64(codcel_divide(l_val, r_val)?));
             }
             return Ok(Value::VecValue(results));
@@ -615,8 +616,8 @@ pub fn divide(
             for (lhs_row, rhs_row) in lhs_rows.iter().zip(rhs_rows.iter()) {
                 let mut result_row = Vec::with_capacity(lhs_row.len());
                 for (l, r) in lhs_row.iter().zip(rhs_row.iter()) {
-                    let l_val = l.f64(value_format)?;
-                    let r_val = r.f64(value_format)?;
+                    let l_val = value_to_f64_or_zero(l.clone(), value_format)?;
+                    let r_val = value_to_f64_or_zero(r.clone(), value_format)?;
                     result_row.push(Value::F64(codcel_divide(l_val, r_val)?));
                 }
                 result_rows.push(result_row);
@@ -624,12 +625,12 @@ pub fn divide(
             return Ok(Value::AreaValue(result_rows));
         }
         (Value::AreaValue(lhs_rows), _) => {
-            let r_val = rhs.f64(value_format)?;
+            let r_val = value_to_f64_or_zero(rhs.clone(), value_format)?;
             let mut result_rows = Vec::with_capacity(lhs_rows.len());
             for lhs_row in lhs_rows {
                 let mut result_row = Vec::with_capacity(lhs_row.len());
                 for l in lhs_row {
-                    let l_val = l.f64(value_format)?;
+                    let l_val = value_to_f64_or_zero(l.clone(), value_format)?;
                     result_row.push(Value::F64(codcel_divide(l_val, r_val)?));
                 }
                 result_rows.push(result_row);
@@ -637,12 +638,12 @@ pub fn divide(
             return Ok(Value::AreaValue(result_rows));
         }
         (_, Value::AreaValue(rhs_rows)) => {
-            let l_val = lhs.f64(value_format)?;
+            let l_val = value_to_f64_or_zero(lhs.clone(), value_format)?;
             let mut result_rows = Vec::with_capacity(rhs_rows.len());
             for rhs_row in rhs_rows {
                 let mut result_row = Vec::with_capacity(rhs_row.len());
                 for r in rhs_row {
-                    let r_val = r.f64(value_format)?;
+                    let r_val = value_to_f64_or_zero(r.clone(), value_format)?;
                     result_row.push(Value::F64(codcel_divide(l_val, r_val)?));
                 }
                 result_rows.push(result_row);
@@ -1816,26 +1817,26 @@ pub fn subtract(
         (Value::VecValue(lhs_vec), Value::VecValue(rhs_vec)) => {
             let mut results = Vec::with_capacity(lhs_vec.len());
             for (l, r) in lhs_vec.iter().zip(rhs_vec.iter()) {
-                let l_val = l.f64(value_format)?;
-                let r_val = r.f64(value_format)?;
+                let l_val = value_to_f64_or_zero(l.clone(), value_format)?;
+                let r_val = value_to_f64_or_zero(r.clone(), value_format)?;
                 results.push(Value::F64(codcel_subtract(l_val, r_val)?));
             }
             return Ok(Value::VecValue(results));
         }
         (Value::VecValue(lhs_vec), _) => {
-            let r_val = rhs.f64(value_format)?;
+            let r_val = value_to_f64_or_zero(rhs.clone(), value_format)?;
             let mut results = Vec::with_capacity(lhs_vec.len());
             for l in lhs_vec {
-                let l_val = l.f64(value_format)?;
+                let l_val = value_to_f64_or_zero(l.clone(), value_format)?;
                 results.push(Value::F64(codcel_subtract(l_val, r_val)?));
             }
             return Ok(Value::VecValue(results));
         }
         (_, Value::VecValue(rhs_vec)) => {
-            let l_val = lhs.f64(value_format)?;
+            let l_val = value_to_f64_or_zero(lhs.clone(), value_format)?;
             let mut results = Vec::with_capacity(rhs_vec.len());
             for r in rhs_vec {
-                let r_val = r.f64(value_format)?;
+                let r_val = value_to_f64_or_zero(r.clone(), value_format)?;
                 results.push(Value::F64(codcel_subtract(l_val, r_val)?));
             }
             return Ok(Value::VecValue(results));
@@ -1845,8 +1846,8 @@ pub fn subtract(
             for (lhs_row, rhs_row) in lhs_rows.iter().zip(rhs_rows.iter()) {
                 let mut result_row = Vec::with_capacity(lhs_row.len());
                 for (l, r) in lhs_row.iter().zip(rhs_row.iter()) {
-                    let l_val = l.f64(value_format)?;
-                    let r_val = r.f64(value_format)?;
+                    let l_val = value_to_f64_or_zero(l.clone(), value_format)?;
+                    let r_val = value_to_f64_or_zero(r.clone(), value_format)?;
                     result_row.push(Value::F64(codcel_subtract(l_val, r_val)?));
                 }
                 result_rows.push(result_row);
@@ -1854,12 +1855,12 @@ pub fn subtract(
             return Ok(Value::AreaValue(result_rows));
         }
         (Value::AreaValue(lhs_rows), _) => {
-            let r_val = rhs.f64(value_format)?;
+            let r_val = value_to_f64_or_zero(rhs.clone(), value_format)?;
             let mut result_rows = Vec::with_capacity(lhs_rows.len());
             for lhs_row in lhs_rows {
                 let mut result_row = Vec::with_capacity(lhs_row.len());
                 for l in lhs_row {
-                    let l_val = l.f64(value_format)?;
+                    let l_val = value_to_f64_or_zero(l.clone(), value_format)?;
                     result_row.push(Value::F64(codcel_subtract(l_val, r_val)?));
                 }
                 result_rows.push(result_row);
@@ -1867,12 +1868,12 @@ pub fn subtract(
             return Ok(Value::AreaValue(result_rows));
         }
         (_, Value::AreaValue(rhs_rows)) => {
-            let l_val = lhs.f64(value_format)?;
+            let l_val = value_to_f64_or_zero(lhs.clone(), value_format)?;
             let mut result_rows = Vec::with_capacity(rhs_rows.len());
             for rhs_row in rhs_rows {
                 let mut result_row = Vec::with_capacity(rhs_row.len());
                 for r in rhs_row {
-                    let r_val = r.f64(value_format)?;
+                    let r_val = value_to_f64_or_zero(r.clone(), value_format)?;
                     result_row.push(Value::F64(codcel_subtract(l_val, r_val)?));
                 }
                 result_rows.push(result_row);
@@ -3537,6 +3538,22 @@ mod tests {
         .unwrap();
         println!("{result:?}");
         assert_eq!(result.f64(&value_format).unwrap(), 2.0);
+    }
+
+    #[test]
+    fn blanks_in_array_arithmetic_count_as_zero() {
+        let value_format = create_value_format();
+        let area = Value::AreaValue(vec![vec![value_f64(4.0)]]);
+        let row = Value::VecValue(vec![value_f64(4.0), Value::None]);
+
+        let result = multiply(area.clone(), Value::None, &value_format).unwrap();
+        assert_eq!(result.f64(&value_format).unwrap(), 0.0);
+        let result = add(Value::None, area.clone(), &value_format).unwrap();
+        assert_eq!(result.f64(&value_format).unwrap(), 4.0);
+        let result = subtract(area, Value::None, &value_format).unwrap();
+        assert_eq!(result.f64(&value_format).unwrap(), 4.0);
+        let result = add(row, value_f64(1.0), &value_format).unwrap();
+        assert_eq!(result, Value::VecValue(vec![value_f64(5.0), value_f64(1.0)]));
     }
 
     #[test]
