@@ -5,6 +5,41 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 
 # Changelog
 
+## 0.1.11 (unreleased)
+
+### Fixed
+
+- `+ - * /` on arrays and areas treat a blank as 0, as Excel does, instead of
+  failing with "Cannot convert none to number value". Scalars already did this.
+- `ROUND` takes the value at Excel's 15 significant digits before rounding, so
+  `ROUND(934489.4999999999, 0)` is 934490 and `ROUND(2.675, 2)` is 2.68.
+- `ROMAN(0)` returns empty text instead of `#VALUE!`.
+
+### Added
+
+- `Input::clone_sharing_caches`: a copy of the request that shares its caches.
+  `Input::clone` still gives empty caches.
+- `codcel_cached!`, with `Input::range_cache_get` and `range_cache_insert`, to
+  cache a value of any size for the rest of the request.
+- The `fill_down_cells` module. A filled-down range such as `$D$9:D9` reads
+  each cell once per request instead of re-reading every earlier row.
+- `Input::warmed` and `Input::set_warmed`, for generated fill-down warm-up.
+- `value::into_area_of_value` and `into_option_area_of_value`, which take
+  their value instead of copying it.
+- The `profile` module: opt-in counters, enabled by `CODCEL_PROFILE` and
+  `CODCEL_PROFILE_KEYS`.
+
+### Changed
+
+- `codcel_cache!` caches errors as well as values, so a failing cell is
+  calculated once per request.
+- `SUMIFS`, `COUNTIFS`, `AVERAGEIFS`, `MAXIFS` and `MINIFS` combine their
+  matches with a binary search.
+- `SUM`, `SUMIF` and array flattening no longer copy their ranges.
+- Number formatting happens only when a value is needed as text.
+
+Code generated for 0.1.11 uses the new API and does not build against 0.1.10.
+
 ## 0.1.10
 
 ### Breaking
