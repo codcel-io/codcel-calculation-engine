@@ -13,23 +13,35 @@ use chrono::{DateTime, NaiveTime, Utc};
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 use std::collections::HashMap;
 use std::error::Error;
-use std::sync::Mutex;
+use std::sync::{Arc, Mutex};
+
+/// What a request has computed so far, for the same input values.
+#[derive(Debug, Default)]
+struct Caches {
+    fn_cache: Mutex<HashMap<String, Value>>,
+    range_cache: Mutex<HashMap<u64, Value>>,
+    fn_error_cache: Mutex<HashMap<String, String>>,
+    fill_down_cache: Mutex<crate::fill_down_cells::FillDownCache>,
+    warmed: Mutex<HashMap<u64, usize>>,
+}
 
 #[derive(Debug)]
 pub struct Input {
     input_struct_name: String,
     map: HashMap<String, Value>,
     value_format: ValueFormat,
-    fn_cache: Mutex<HashMap<String, Value>>,
+    caches: Arc<Caches>,
 }
 
+/// A clone starts with empty caches: it may be given other values. See
+/// [`Input::clone_sharing_caches`] for a clone that keeps them.
 impl Clone for Input {
     fn clone(&self) -> Self {
         Input {
             input_struct_name: self.input_struct_name.clone(),
             map: self.map.clone(),
             value_format: self.value_format.clone(),
-            fn_cache: Mutex::new(HashMap::new()),
+            caches: Default::default(),
         }
     }
 }
@@ -58,39 +70,150 @@ impl<'de> Deserialize<'de> for Input {
             input_struct_name: helper.input_struct_name,
             map: helper.map,
             value_format: helper.value_format,
-            fn_cache: Mutex::new(HashMap::new()),
+            caches: Default::default(),
         })
     }
 }
 
 impl Input {
+    /// A clone that shares this input's per-request caches, for code that evaluates further
+    /// cells of the same request with the same values, such as a table cell that calls back into
+    /// a generated function. Its values must not be changed, or the caches would be wrong.
+    pub fn clone_sharing_caches(&self) -> Input {
+        Input {
+            input_struct_name: self.input_struct_name.clone(),
+            map: self.map.clone(),
+            value_format: self.value_format.clone(),
+            caches: Arc::clone(&self.caches),
+        }
+    }
+
     pub fn new(input_struct_name: &str, value_format: ValueFormat) -> Input {
         Input {
             input_struct_name: input_struct_name.to_string(),
             map: Default::default(),
             value_format,
-            fn_cache: Mutex::new(HashMap::new()),
+            caches: Default::default(),
         }
     }
 
     /// Check the per-request function cache.
     pub fn fn_cache_get(&self, key: &str) -> Option<Value> {
-        self.fn_cache
+        crate::profile::count(&crate::profile::FN_CACHE_GETS);
+        crate::profile::count_key(key);
+        let value = self
+            .caches
+            .fn_cache
             .lock()
             .unwrap_or_else(|poisoned| poisoned.into_inner())
             .get(key)
-            .cloned()
+            .cloned();
+        if value.is_some() {
+            crate::profile::count(&crate::profile::FN_CACHE_HITS);
+        } else {
+            crate::profile::count_miss(key);
+        }
+        value
     }
 
     /// Insert into the per-request function cache.
     /// Skips caching for large collections where the clone cost exceeds the lookup cost.
     pub fn fn_cache_insert(&self, key: String, value: Value) {
         if value.is_cacheable() {
-            self.fn_cache
+            self.caches
+                .fn_cache
                 .lock()
                 .unwrap_or_else(|poisoned| poisoned.into_inner())
                 .insert(key, value);
+        } else {
+            crate::profile::count(&crate::profile::FN_CACHE_SKIPPED);
         }
+    }
+
+    /// The message of the error a cached function returned earlier in this request, if it did.
+    /// Excel computes an error cell once like any other cell; without this, every reader of a
+    /// cell that fails would compute it, and everything it reads, again.
+    pub fn fn_error_get(&self, key: &str) -> Option<String> {
+        let message = self
+            .caches
+            .fn_error_cache
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner())
+            .get(key)
+            .cloned();
+        if message.is_some() {
+            crate::profile::count(&crate::profile::FN_ERROR_HITS);
+        }
+        message
+    }
+
+    /// Remember that the cached function `key` returned the error `message` in this request.
+    pub fn fn_error_insert(&self, key: String, message: String) {
+        self.caches
+            .fn_error_cache
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner())
+            .insert(key, message);
+    }
+
+    /// How many of a row dispatcher's rows have been warmed (evaluated in order, so a chain of
+    /// rows never recurses deeply) in this request. `dispatcher` identifies the dispatcher.
+    pub fn warmed(&self, dispatcher: u64) -> usize {
+        *self
+            .caches
+            .warmed
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner())
+            .get(&dispatcher)
+            .unwrap_or(&0)
+    }
+
+    /// Records that the first `count` rows of a row dispatcher have been warmed.
+    pub fn set_warmed(&self, dispatcher: u64, count: usize) {
+        let mut warmed = self
+            .caches
+            .warmed
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner());
+        let entry = warmed.entry(dispatcher).or_insert(0);
+        *entry = (*entry).max(count);
+    }
+
+    /// Check the per-request range cache, which holds values of any size, such as a column
+    /// of a fill-down range that several formulas read. The key identifies the expression that
+    /// computed the value (see [`codcel_cached`](crate::codcel_cached)).
+    pub fn range_cache_get(&self, key: u64) -> Option<Value> {
+        crate::profile::count(&crate::profile::RANGE_CACHE_GETS);
+        let value = self
+            .caches
+            .range_cache
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner())
+            .get(&key)
+            .cloned();
+        if value.is_some() {
+            crate::profile::count(&crate::profile::RANGE_CACHE_HITS);
+        }
+        value
+    }
+
+    /// Insert into the per-request range cache. Unlike [`fn_cache_insert`](Self::fn_cache_insert),
+    /// large values are kept: rebuilding a range costs at least as much as cloning it.
+    pub fn range_cache_insert(&self, key: u64, value: Value) {
+        self.caches
+            .range_cache
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner())
+            .insert(key, value);
+    }
+
+    pub(crate) fn fill_down_cache(
+        &self,
+    ) -> std::sync::MutexGuard<'_, crate::fill_down_cells::FillDownCache> {
+        self.caches
+            .fill_down_cache
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner())
     }
 
     /// Returns a reference to the `ValueFormat` for this calculation.

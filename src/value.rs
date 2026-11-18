@@ -1258,6 +1258,27 @@ impl Value {
         }
     }
 
+    /// [`area_of_value`](Self::area_of_value), moving a range's cells out instead of copying them.
+    pub fn into_area_of_value(self) -> Result<Vec<Vec<Value>>, Box<dyn Error + Send + Sync>> {
+        match self {
+            Value::VecValue(vec) | Value::OptionVecValue(Some(vec)) => Ok(vec![vec]),
+            Value::AreaValue(area) | Value::OptionAreaValue(Some(area)) => Ok(area),
+            other => other.area_of_value(),
+        }
+    }
+
+    /// [`option_area_of_value`](Self::option_area_of_value), moving a range's cells out instead
+    /// of copying them.
+    pub fn into_option_area_of_value(
+        self,
+    ) -> Result<Option<Vec<Vec<Value>>>, Box<dyn Error + Send + Sync>> {
+        match self {
+            Value::VecValue(vec) | Value::OptionVecValue(Some(vec)) => Ok(Some(vec![vec])),
+            Value::AreaValue(area) | Value::OptionAreaValue(Some(area)) => Ok(Some(area)),
+            other => other.option_area_of_value(),
+        }
+    }
+
     pub fn option_vec_of_value(&self) -> Result<Option<Vec<Value>>, Box<dyn Error + Send + Sync>> {
         match self {
             Value::F64(value) => Ok(Some(vec![Value::F64(*value)])),
@@ -3304,10 +3325,7 @@ pub fn flatten_value_to_partial_vec(value: Value) -> Vec<Value> {
             .into_iter()
             .flat_map(flatten_value_to_partial_vec)
             .collect(),
-        Value::AreaValue(vec) => vec
-            .into_iter()
-            .flat_map(|inner_vec| inner_vec.to_vec())
-            .collect(),
+        Value::AreaValue(vec) => vec.into_iter().flatten().collect(),
         other => vec![other], // For all other types, wrap in a Vec
     }
 }

@@ -154,14 +154,15 @@ fn value_to_f64_or_zero(
 ///
 /// # Errors
 /// Returns an error if the value cannot be converted to a floating-point number.
-pub fn float<T: ToF64 + Debug>(
+pub fn float<T: ToF64 + Debug + Clone>(
     value: T,
     decimal_separator: &str,
 ) -> Result<f64, Box<dyn Error + Send + Sync>> {
-    let string_value = format!("{:?}", value);
-    match value.to_f64() {
+    match value.clone().to_f64() {
         Ok(value) => Ok(value),
         Err(_) => {
+            // Formatted only here: this runs for every number converted.
+            let string_value = format!("{:?}", value);
             let test_string = remove_quotes(&string_value).replace(decimal_separator, ".");
             if let Ok(value) = test_string.to_f64() {
                 return Ok(value);
@@ -1944,13 +1945,24 @@ pub fn sum(
     for value in &values {
         if value.is_array() || value.is_area() {
             // Excel SUM ignores non-numeric cells in ranges/arrays
-            let area = value.area_of_value()?;
-            for row in &area {
-                for cell in row {
-                    if let Ok(val) = cell.f64(value_format) {
-                        result.add(val);
-                    }
+            let mut add_cell = |cell: &Value| {
+                if let Ok(val) = cell.f64(value_format) {
+                    result.add(val);
                 }
+            };
+            // A range's cells are read where they are rather than copied.
+            match value {
+                Value::VecValue(cells) | Value::OptionVecValue(Some(cells)) => {
+                    cells.iter().for_each(&mut add_cell)
+                }
+                Value::AreaValue(rows) | Value::OptionAreaValue(Some(rows)) => {
+                    rows.iter().flatten().for_each(&mut add_cell)
+                }
+                _ => value
+                    .area_of_value()?
+                    .iter()
+                    .flatten()
+                    .for_each(&mut add_cell),
             }
         } else {
             // Try to add the value to the accumulator, stop if error occurs and strict_type_conversion is true

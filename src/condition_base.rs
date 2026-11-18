@@ -274,7 +274,7 @@ pub fn sum_ifs(
             .skip(1)
             .fold(matching_indexes[0].clone(), |acc, indexes| {
                 acc.into_iter()
-                    .filter(|idx| indexes.contains(idx))
+                    .filter(|idx| indexes.binary_search(idx).is_ok())
                     .collect()
             })
     };
@@ -310,6 +310,7 @@ fn process_criteria(
         let (condition_operator, comparison_value) = parse_condition(&condition_string);
         let comparison_value = Value::String(comparison_value.to_lowercase());
 
+        // In ascending order, which callers rely on to intersect them by binary search.
         let matched_indexes: Vec<usize> = criteria_range
             .iter()
             .enumerate()
@@ -353,7 +354,7 @@ pub fn average_ifs(
             .skip(1)
             .fold(matching_indexes[0].clone(), |acc, indexes| {
                 acc.into_iter()
-                    .filter(|idx| indexes.contains(idx))
+                    .filter(|idx| indexes.binary_search(idx).is_ok())
                     .collect()
             })
     };
@@ -390,7 +391,7 @@ pub fn count_ifs(
             .skip(1)
             .fold(matching_indexes[0].clone(), |acc, indexes| {
                 acc.into_iter()
-                    .filter(|idx| indexes.contains(idx))
+                    .filter(|idx| indexes.binary_search(idx).is_ok())
                     .collect()
             })
     };
@@ -419,7 +420,7 @@ pub fn max_ifs(
             .skip(1)
             .fold(matching_indexes[0].clone(), |acc, indexes| {
                 acc.into_iter()
-                    .filter(|idx| indexes.contains(idx))
+                    .filter(|idx| indexes.binary_search(idx).is_ok())
                     .collect()
             })
     };
@@ -459,7 +460,7 @@ pub fn min_ifs(
             .skip(1)
             .fold(matching_indexes[0].clone(), |acc, indexes| {
                 acc.into_iter()
-                    .filter(|idx| indexes.contains(idx))
+                    .filter(|idx| indexes.binary_search(idx).is_ok())
                     .collect()
             })
     };
@@ -486,7 +487,7 @@ pub fn sum_if(
     value_format: &ValueFormat,
 ) -> Result<Value, Box<dyn Error + Send + Sync>> {
     // Extract the area of values and the condition string
-    let values_area = values.area_of_value()?;
+    let values_area = values.into_area_of_value()?;
     let condition_string = condition.string(value_format)?;
 
     // Parse the condition and the value to compare against
@@ -495,11 +496,8 @@ pub fn sum_if(
     let comparison_value = Value::String(comparison_value.to_lowercase());
 
     // Determine the summation area: use the optional sum_range if provided, otherwise use values_area
-    let sum_area = if let Some(sum_range_value) = sum_range_values.option_area_of_value()? {
-        sum_range_value
-    } else {
-        values_area.clone()
-    };
+    let sum_range_area = sum_range_values.into_option_area_of_value()?;
+    let sum_area = sum_range_area.as_ref().unwrap_or(&values_area);
 
     // Ensure the dimensions of the values_area and sum_area match
     if sum_area.len() != values_area.len()
