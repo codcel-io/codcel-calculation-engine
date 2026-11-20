@@ -693,7 +693,7 @@ pub fn networkdays(
 ) -> Result<Value, Box<dyn Error + Send + Sync>> {
     let start = start_date.date_time(value_format)?;
     let end = end_date.date_time(value_format)?;
-    let hols = match holidays.option_area_of_value()? {
+    let hols = match holidays.into_option_area_of_value()? {
         None => None,
         Some(area) => {
             let mut dates = Vec::new();
@@ -734,7 +734,7 @@ pub fn networkdays_intl(
         }
     };
 
-    let hols = match holidays.option_area_of_value()? {
+    let hols = match holidays.into_option_area_of_value()? {
         None => None,
         Some(area) => {
             let mut dates = Vec::new();
@@ -769,7 +769,7 @@ pub fn workday(
 ) -> Result<Value, Box<dyn Error + Send + Sync>> {
     let start = start_date.date_time(value_format)?;
     let d = days.i32(value_format)?;
-    let hols = match holidays.option_area_of_value()? {
+    let hols = match holidays.into_option_area_of_value()? {
         None => None,
         Some(area) => {
             let mut dates = Vec::new();
@@ -810,7 +810,7 @@ pub fn workday_intl(
         }
     };
 
-    let hols = match holidays.option_area_of_value()? {
+    let hols = match holidays.into_option_area_of_value()? {
         None => None,
         Some(area) => {
             let mut dates = Vec::new();

@@ -6,6 +6,9 @@
 
 use std::error::Error;
 
+use super::order_statistic::select_ascending;
+use super::order_statistic::select_middle_pair;
+
 /// Excel-compatible `MEDIAN` that returns the median of the given numbers.
 /// - `values`: an array of numeric values.
 ///
@@ -16,9 +19,17 @@ pub fn codcel_median(values: Vec<f64>) -> Result<f64, Box<dyn Error + Send + Syn
         return Err("MEDIAN: Input vector is empty.".into());
     }
 
+    // The middle values are selected, not sorted, where that gives the same values
     let mut sorted_values = values;
-    sorted_values.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
     let len = sorted_values.len();
+    if len.is_multiple_of(2) {
+        if let Some((lower, upper)) = select_middle_pair(&mut sorted_values) {
+            return Ok((lower + upper) / 2.0);
+        }
+    } else if let Some(middle) = select_ascending(&mut sorted_values, len / 2) {
+        return Ok(middle);
+    }
+    sorted_values.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
     let median = if len.is_multiple_of(2) {
         // Average of the two middle elements
         (sorted_values[len / 2 - 1] + sorted_values[len / 2]) / 2.0

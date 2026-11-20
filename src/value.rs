@@ -256,56 +256,38 @@ impl Value {
         }
     }
 
+    /// The value itself, or the first cell of a range (the range itself when it is empty).
     pub fn to_single_value(&self) -> Value {
-        let single_value = self.clone();
+        // Only the value returned is cloned, not the whole range.
         match self {
-            Value::F64(_) => single_value,
-            Value::I32(_) => single_value,
-            Value::String(_) => single_value,
-            Value::Bool(_) => single_value,
-            Value::OptionF64(_) => single_value,
-            Value::OptionI32(_) => single_value,
-            Value::OptionString(_) => single_value,
-            Value::OptionBool(_) => single_value,
-            Value::VecValue(value) => {
-                if let Some(val) = value.first() {
-                    val.clone()
-                } else {
-                    single_value
-                }
+            Value::VecValue(value) | Value::OptionVecValue(Some(value)) => {
+                value.first().unwrap_or(self).clone()
             }
-            Value::OptionVecValue(value_option) => {
-                if let Some(value) = value_option {
-                    if let Some(val) = value.first() {
-                        return val.clone();
-                    }
-                }
-                single_value
+            Value::AreaValue(value) | Value::OptionAreaValue(Some(value)) => value
+                .first()
+                .and_then(|row| row.first())
+                .unwrap_or(self)
+                .clone(),
+            _ => self.clone(),
+        }
+    }
+
+    /// [`to_single_value`](Self::to_single_value), moving the value out instead of copying it.
+    pub fn into_single_value(self) -> Value {
+        match self {
+            Value::VecValue(value) | Value::OptionVecValue(Some(value)) if !value.is_empty() => {
+                value.into_iter().next().unwrap_or(Value::None)
             }
-            Value::AreaValue(value) => {
-                if let Some(val_outer) = value.first() {
-                    if let Some(val) = val_outer.first() {
-                        return val.clone();
-                    }
-                }
-                single_value
+            Value::AreaValue(value) | Value::OptionAreaValue(Some(value))
+                if value.first().is_some_and(|row| !row.is_empty()) =>
+            {
+                value
+                    .into_iter()
+                    .next()
+                    .and_then(|row| row.into_iter().next())
+                    .unwrap_or(Value::None)
             }
-            Value::OptionAreaValue(value) => {
-                if let Some(value) = value {
-                    if let Some(val_outer) = value.first() {
-                        if let Some(val) = val_outer.first() {
-                            return val.clone();
-                        }
-                    }
-                }
-                single_value
-            }
-            Value::None => single_value,
-            Value::ChronoDateTime(_) => single_value,
-            Value::OptionChronoDateTime(_) => single_value,
-            Value::Time(_) => single_value,
-            Value::OptionTime(_) => single_value,
-            Value::Error(_) => single_value,
+            other => other,
         }
     }
 
@@ -404,6 +386,39 @@ impl Value {
 
     pub fn is_string(&self) -> bool {
         matches!(self, Value::OptionString(_) | Value::String(_))
+    }
+
+    /// [`f64`](Self::f64) without the error: `None` exactly where `f64` fails.
+    ///
+    /// For callers that skip what does not convert, such as SUM over a range with blanks or
+    /// text: the common cases are worked out without building the error `f64` would return.
+    pub fn try_f64(&self, value_format: &ValueFormat) -> Option<f64> {
+        match self {
+            Value::F64(value) | Value::OptionF64(Some(value)) => Some(*value),
+            Value::I32(value) | Value::OptionI32(Some(value)) => Some(f64::from(*value)),
+            Value::Bool(value) | Value::OptionBool(Some(value)) => {
+                Some(f64::from(u8::from(*value)))
+            }
+            Value::None
+            | Value::OptionF64(None)
+            | Value::OptionI32(None)
+            | Value::OptionBool(None)
+            | Value::OptionString(None) => None,
+            Value::String(text) | Value::OptionString(Some(text)) => {
+                if let Ok(value) = text.parse::<f64>() {
+                    return Some(value);
+                }
+                // With "." as the separator `float` tries the same text again, escaped as by
+                // `{:?}`, which can only parse if the text itself did; anything else takes the
+                // full path.
+                if value_format.decimal_separator == "." {
+                    None
+                } else {
+                    float(text.as_str(), &value_format.decimal_separator).ok()
+                }
+            }
+            other => other.f64(value_format).ok(),
+        }
     }
 
     pub fn f64(&self, value_format: &ValueFormat) -> Result<f64, Box<dyn Error + Send + Sync>> {
@@ -1074,6 +1089,20 @@ impl Value {
         }
     }
 
+    /// [`vec_value`](Self::vec_value), moving a range's cells out instead of copying them.
+    pub fn into_vec_value(self) -> Result<Vec<Value>, Box<dyn Error + Send + Sync>> {
+        match self {
+            Value::VecValue(value) => Ok(value),
+            Value::OptionVecValue(Some(value)) if !value.is_empty() => Ok(value),
+            Value::AreaValue(value) | Value::OptionAreaValue(Some(value))
+                if value.iter().any(|row| !row.is_empty()) =>
+            {
+                Ok(value.into_iter().flatten().collect())
+            }
+            other => other.vec_value(),
+        }
+    }
+
     pub fn i32(&self, value_format: &ValueFormat) -> Result<i32, Box<dyn Error + Send + Sync>> {
         match self {
             Value::F64(value) => integer(*value, &value_format.decimal_separator),
@@ -1264,6 +1293,43 @@ impl Value {
             Value::VecValue(vec) | Value::OptionVecValue(Some(vec)) => Ok(vec![vec]),
             Value::AreaValue(area) | Value::OptionAreaValue(Some(area)) => Ok(area),
             other => other.area_of_value(),
+        }
+    }
+
+    /// Calls `visit` on each cell [`area_of_value`](Self::area_of_value) would give, in the same
+    /// order, without copying a range's cells.
+    ///
+    /// # Errors
+    /// The error `area_of_value` gives, before any cell is visited.
+    pub fn for_each_cell(
+        &self,
+        mut visit: impl FnMut(&Value),
+    ) -> Result<(), Box<dyn Error + Send + Sync>> {
+        match self {
+            Value::VecValue(cells) | Value::OptionVecValue(Some(cells)) => {
+                cells.iter().for_each(visit)
+            }
+            Value::AreaValue(rows) | Value::OptionAreaValue(Some(rows)) => {
+                rows.iter().flatten().for_each(visit)
+            }
+            other => other.area_of_value()?.iter().flatten().for_each(&mut visit),
+        }
+        Ok(())
+    }
+
+    /// The number of cells [`area_of_value`](Self::area_of_value) would give for which `test`
+    /// holds, without copying a range's cells; 0 when `area_of_value` fails.
+    pub fn count_cells(&self, mut test: impl FnMut(&Value) -> bool) -> usize {
+        let mut count = 0;
+        let visited = self.for_each_cell(|cell| {
+            if test(cell) {
+                count += 1;
+            }
+        });
+        if visited.is_ok() {
+            count
+        } else {
+            0
         }
     }
 
@@ -3011,11 +3077,31 @@ impl Value {
         &self,
         value_format: &ValueFormat,
     ) -> Result<Vec<f64>, Box<dyn Error + Send + Sync>> {
-        let array = self.area_f64(value_format)?;
-        Ok(array
-            .iter()
-            .flat_map(|row| row.iter().cloned())
-            .collect::<Vec<f64>>())
+        self.flat_f64(value_format)
+    }
+
+    /// [`area_f64`](Self::area_f64) as one flat list, without building a row per cell of a
+    /// 1-D range. The same cells convert, and fail, as in `area_f64`.
+    pub fn flat_f64(
+        &self,
+        value_format: &ValueFormat,
+    ) -> Result<Vec<f64>, Box<dyn Error + Send + Sync>> {
+        match self {
+            Value::VecValue(value) | Value::OptionVecValue(Some(value)) if !value.is_empty() => {
+                coerce_list(value, |val| val.f64(value_format))
+            }
+            // As `area_f64` reads an area (a blank is 0, the first failure in row order is the
+            // error), without a list per row.
+            Value::AreaValue(rows) | Value::OptionAreaValue(Some(rows)) if !rows.is_empty() => rows
+                .iter()
+                .flatten()
+                .map(|val| match val {
+                    Value::None => Ok(0.0),
+                    other => other.f64(value_format).map_err(|_| coercion_error(val)),
+                })
+                .collect(),
+            _ => Ok(self.area_f64(value_format)?.concat()),
+        }
     }
 
     pub fn to_flatterned_vec_i32(
@@ -3030,11 +3116,23 @@ impl Value {
     }
 
     pub fn to_flatterned_vec_value(&self) -> Result<Vec<Value>, Box<dyn Error + Send + Sync>> {
-        let array = self.area_of_value()?;
-        Ok(array
-            .iter()
-            .flat_map(|row| row.iter().cloned())
-            .collect::<Vec<Value>>())
+        // A range's cells are copied once, rather than copied as an area and then again.
+        match self {
+            Value::VecValue(cells) | Value::OptionVecValue(Some(cells)) => Ok(cells.clone()),
+            Value::AreaValue(rows) | Value::OptionAreaValue(Some(rows)) => {
+                Ok(rows.iter().flatten().cloned().collect())
+            }
+            other => Ok(other.area_of_value()?.into_iter().flatten().collect()),
+        }
+    }
+
+    /// [`to_flatterned_vec_value`](Self::to_flatterned_vec_value), moving a range's cells out
+    /// instead of copying them.
+    pub fn into_flattened_vec_value(self) -> Result<Vec<Value>, Box<dyn Error + Send + Sync>> {
+        match self {
+            Value::VecValue(cells) | Value::OptionVecValue(Some(cells)) => Ok(cells),
+            other => Ok(other.into_area_of_value()?.into_iter().flatten().collect()),
+        }
     }
 
     pub fn to_flatterned_vec_date_time(
@@ -3316,7 +3414,18 @@ pub fn area_time(value: Vec<Vec<NaiveTime>>) -> Value {
 }
 
 pub fn flatten_value_to_partial_vec(value: Value) -> Vec<Value> {
+    /// Whether flattening `value` gives anything other than `vec![value]`.
+    fn is_nested(value: &Value) -> bool {
+        matches!(
+            value,
+            Value::VecValue(_) | Value::OptionVecValue(Some(_)) | Value::AreaValue(_)
+        )
+    }
     match value {
+        // A list with no ranges inside is already flat: kept as it is, not rebuilt.
+        Value::VecValue(vec) | Value::OptionVecValue(Some(vec)) if !vec.iter().any(is_nested) => {
+            vec
+        }
         Value::VecValue(vec) => vec
             .into_iter()
             .flat_map(flatten_value_to_partial_vec)
@@ -3335,11 +3444,7 @@ pub fn flatten_value_to_vec_f64(
     value: Value,
     value_format: &ValueFormat,
 ) -> Result<Vec<f64>, Box<dyn Error + Send + Sync>> {
-    let value = value.area_f64(value_format)?;
-    Ok(value
-        .iter()
-        .flat_map(|row| row.iter().cloned())
-        .collect::<Vec<f64>>())
+    value.flat_f64(value_format)
 }
 
 fn is_pure_string(value: &str) -> bool {
@@ -3356,11 +3461,8 @@ pub(crate) fn vec_value_to_vec_f64(
     Ok(values
         .into_iter()
         .flat_map(|value| {
-            value
-                .area_f64(value_format) // Get the range of f64 values for the current Value
-                .unwrap_or_else(|_| vec![]) // Handle potential errors by returning an empty Vec (consider better error handling if needed)
-                .into_iter()
-                .flatten() // Flatten the 2D array into a 1D iterator
+            // A value that does not convert is dropped whole (consider better error handling).
+            value.flat_f64(value_format).unwrap_or_default()
         })
         .collect())
 }
@@ -3409,7 +3511,7 @@ pub(crate) fn vec_value_to_vec_value(
         .into_iter()
         .flat_map(|value| {
             value
-                .area_of_value()
+                .into_area_of_value()
                 .unwrap_or_else(|_| vec![]) // Handle potential errors by returning an empty Vec (consider better error handling if needed)
                 .into_iter()
                 .flatten() // Flatten the 2D array into a 1D iterator

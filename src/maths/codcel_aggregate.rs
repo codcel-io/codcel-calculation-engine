@@ -165,7 +165,7 @@ pub fn codcel_aggregate(
                 return Err("AGGREGATE: No values for MEDIAN.".into());
             }
 
-            let mut sorted_values = filtered_values.clone();
+            let mut sorted_values = filtered_values;
             sorted_values.sort_by(|a, b| a.partial_cmp(b).unwrap_or(Ordering::Equal));
 
             let n = sorted_values.len();
@@ -213,7 +213,7 @@ pub fn codcel_aggregate(
                 .ok_or("AGGREGATE: Missing the trailing parameter.")?;
             let k = *parameter as usize;
             let data: Vec<f64> = rest.to_vec();
-            let mut sorted = data.clone();
+            let mut sorted = data;
             sorted.sort_by(|a, b| b.partial_cmp(a).unwrap_or(Ordering::Equal));
             if k == 0 || k > sorted.len() {
                 return Err("AGGREGATE: Invalid k for LARGE.".into());
@@ -230,7 +230,7 @@ pub fn codcel_aggregate(
                 .ok_or("AGGREGATE: Missing the trailing parameter.")?;
             let k = *parameter as usize;
             let data: Vec<f64> = rest.to_vec();
-            let mut sorted = data.clone();
+            let mut sorted = data;
             sorted.sort_by(|a, b| a.partial_cmp(b).unwrap_or(Ordering::Equal));
             if k == 0 || k > sorted.len() {
                 return Err("AGGREGATE: Invalid k for SMALL.".into());
@@ -248,7 +248,7 @@ pub fn codcel_aggregate(
             let k = *parameter;
             let data: Vec<f64> = rest.to_vec();
 
-            let mut sorted_values = data.clone();
+            let mut sorted_values = data;
             sorted_values.sort_by(|a, b| a.partial_cmp(b).unwrap_or(Ordering::Equal));
 
             let n = sorted_values.len() as f64;
@@ -281,7 +281,7 @@ pub fn codcel_aggregate(
                 );
             }
 
-            let mut sorted_values = data.clone();
+            let mut sorted_values = data;
             sorted_values.sort_by(|a, b| a.partial_cmp(b).unwrap_or(Ordering::Equal));
 
             let k = quart as f64 * 0.25;
@@ -313,7 +313,7 @@ pub fn codcel_aggregate(
                 return Err("AGGREGATE: Invalid k parameter for PERCENTILE.EXC. Must be between 0 and 1 exclusive.".into());
             }
 
-            let mut sorted_values = data.clone();
+            let mut sorted_values = data;
             sorted_values.sort_by(|a, b| a.partial_cmp(b).unwrap_or(Ordering::Equal));
 
             let n = sorted_values.len() as f64;
@@ -351,7 +351,7 @@ pub fn codcel_aggregate(
                 return Err("AGGREGATE: Invalid quartile parameter for QUARTILE.EXC. Must be between 1 and 3.".into());
             }
 
-            let mut sorted_values = data.clone();
+            let mut sorted_values = data;
             sorted_values.sort_by(|a, b| a.partial_cmp(b).unwrap_or(Ordering::Equal));
 
             let n = sorted_values.len() as f64;

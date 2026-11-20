@@ -5,7 +5,8 @@
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
 use crate::compensated_sum::{CompensatedSum, CompensatedSumExt};
-use crate::condition::{parse_condition, Condition};
+use crate::condition::Condition;
+use crate::criterion::Criterion;
 use crate::logical::codcel_and::codcel_and;
 use crate::logical::codcel_or::codcel_or;
 use crate::logical::codcel_xor::codcel_xor;
@@ -145,31 +146,28 @@ pub fn count_if(
     condition: Value,
     value_format: &ValueFormat,
 ) -> Result<Value, Box<dyn Error + Send + Sync>> {
-    // Extract the area of values and the condition string
-    let values_area = values.area_of_value()?;
+    // A range's cells are read where they are. Anything else becomes an area first, which is
+    // also where a value that cannot be read fails, before the condition is read.
+    let values = match values {
+        Value::VecValue(_)
+        | Value::OptionVecValue(Some(_))
+        | Value::AreaValue(_)
+        | Value::OptionAreaValue(Some(_)) => values,
+        other => Value::AreaValue(other.area_of_value()?),
+    };
     let condition_string = condition.string(value_format)?;
 
     // Parse the condition and the value to compare against
     // Excel conditional functions (AVERAGEIF, SUMIF, COUNTIF) are case-insensitive
-    let (condition_operator, comparison_value) = parse_condition(&condition_string);
-    let comparison_value = Value::String(comparison_value.to_lowercase());
+    let criterion = Criterion::new(&condition_string, value_format);
 
     // Count the cells matching the condition
-    let count = values_area
-        .iter()
-        .flat_map(|row| row.iter())
-        .filter(|cell| {
-            let cell_value = case_insensitive_cell(cell, value_format);
-            compare(
-                &cell_value,
-                &comparison_value,
-                &condition_operator,
-                value_format,
-            )
-            .map(|result| result.bool(value_format).unwrap_or(false))
-            .unwrap_or(false)
-        })
-        .count() as i32;
+    let mut count = 0;
+    values.for_each_cell(|cell| {
+        if criterion.matches(cell, value_format) {
+            count += 1;
+        }
+    })?;
 
     Ok(Value::I32(count))
 }
@@ -181,21 +179,16 @@ pub fn average_if(
     value_format: &ValueFormat,
 ) -> Result<Value, Box<dyn Error + Send + Sync>> {
     // Extract the area of values and the condition string
-    let values_area = values.area_of_value()?;
+    let values_area = values.into_area_of_value()?;
     let condition_string = condition.string(value_format)?;
 
     // Parse the condition and the value to compare against
     // Excel conditional functions (AVERAGEIF, SUMIF, COUNTIF) are case-insensitive
-    let (condition_operator, comparison_value) = parse_condition(&condition_string);
-    let comparison_value = Value::String(comparison_value.to_lowercase());
+    let criterion = Criterion::new(&condition_string, value_format);
 
     // Determine the averaging area: use the optional average_range if provided, otherwise use values_area
-    let average_area =
-        if let Some(average_range_value) = average_range_values.option_area_of_value()? {
-            average_range_value
-        } else {
-            values_area.clone()
-        };
+    let average_range_area = average_range_values.into_option_area_of_value()?;
+    let average_area = average_range_area.as_ref().unwrap_or(&values_area);
 
     // Ensure the dimensions of the values_area and average_area match
     if average_area.len() != values_area.len()
@@ -216,18 +209,9 @@ pub fn average_if(
     for (values_row, average_row) in values_area.iter().zip(average_area.iter()) {
         for (value_cell, average_cell) in values_row.iter().zip(average_row.iter()) {
             // Lowercase string values for case-insensitive matching
-            let cell_value = case_insensitive_cell(value_cell, value_format);
-            if compare(
-                &cell_value,
-                &comparison_value,
-                &condition_operator,
-                value_format,
-            )
-            .map(|result| result.bool(value_format).unwrap_or(false))
-            .unwrap_or(false)
-            {
+            if criterion.matches(value_cell, value_format) {
                 // Extract the numeric value of the average_cell
-                if let Ok(avg_value) = average_cell.f64(value_format) {
+                if let Some(avg_value) = average_cell.try_f64(value_format) {
                     sum.add(avg_value);
                     count += 1;
                 }
@@ -243,41 +227,16 @@ pub fn average_if(
     }
 }
 
-/// Lowercase a cell value for case-insensitive conditional matching.
-/// Non-string values are returned as-is.
-fn case_insensitive_cell(value: &Value, value_format: &ValueFormat) -> Value {
-    if value.is_string() {
-        if let Ok(s) = value.string(value_format) {
-            return Value::String(s.to_lowercase());
-        }
-    }
-    value.clone()
-}
-
 pub fn sum_ifs(
     sum_range_values: Value,
     criteria: Value,
     value_format: &ValueFormat,
 ) -> Result<Value, Box<dyn Error + Send + Sync>> {
     let sum_range_values = flatten_value_to_partial_vec(sum_range_values);
-    let criteria = criteria.vec_value()?;
+    let criteria = criteria.into_vec_value()?;
 
-    // Process criteria and collect matching indexes
-    let matching_indexes = process_criteria("SUMIFS", &criteria, value_format)?;
-
-    // Find indexes that match all criteria
-    let common_indexes = if matching_indexes.is_empty() {
-        Vec::new()
-    } else {
-        matching_indexes
-            .iter()
-            .skip(1)
-            .fold(matching_indexes[0].clone(), |acc, indexes| {
-                acc.into_iter()
-                    .filter(|idx| indexes.binary_search(idx).is_ok())
-                    .collect()
-            })
-    };
+    // The indexes of the cells that meet every criteria pair
+    let common_indexes = process_criteria("SUMIFS", criteria, value_format)?;
 
     // Sum values at matching indexes, with compensation so long ranges do not drift
     let mut sum = CompensatedSum::new();
@@ -288,50 +247,44 @@ pub fn sum_ifs(
     Ok(Value::F64(sum.total()))
 }
 
-/// Helper function to process criteria and return matching indexes
+/// The indexes, in ascending order, of the cells that meet every criteria pair.
+///
+/// The first range is tested in full; each later one only at the indexes that still match,
+/// which gives the same indexes as testing every range in full and intersecting them. Every
+/// pair's condition is still read, so a condition that cannot be read is an error even when no
+/// index is left.
 fn process_criteria(
     function_name: &str,
-    criteria: &[Value],
+    criteria: Vec<Value>,
     value_format: &ValueFormat,
-) -> Result<Vec<Vec<usize>>, Box<dyn Error + Send + Sync>> {
+) -> Result<Vec<usize>, Box<dyn Error + Send + Sync>> {
     if criteria.is_empty() || !criteria.len().is_multiple_of(2) {
         return Err(format!("{function_name}: Criteria must be provided in pairs").into());
     }
 
-    let mut indexes = Vec::with_capacity(criteria.len() / 2);
+    let mut matching: Option<Vec<usize>> = None;
 
-    for pair in criteria.chunks(2) {
-        // Extract criteria range and validate its length
-        let criteria_range = flatten_value_to_partial_vec(pair[0].clone());
+    let mut criteria = criteria.into_iter();
+    while let (Some(range), Some(condition)) = (criteria.next(), criteria.next()) {
+        // The range is moved, not copied.
+        let criteria_range = flatten_value_to_partial_vec(range);
 
-        // Parse condition and identify matching indexes
         // Excel conditional functions are case-insensitive
-        let condition_string = pair[1].string(value_format)?;
-        let (condition_operator, comparison_value) = parse_condition(&condition_string);
-        let comparison_value = Value::String(comparison_value.to_lowercase());
+        let condition_string = condition.string(value_format)?;
+        let criterion = Criterion::new(&condition_string, value_format);
+        let meets = |index: usize| {
+            criteria_range
+                .get(index)
+                .is_some_and(|cell| criterion.matches(cell, value_format))
+        };
 
-        // In ascending order, which callers rely on to intersect them by binary search.
-        let matched_indexes: Vec<usize> = criteria_range
-            .iter()
-            .enumerate()
-            .filter_map(|(index, value_cell)| {
-                let cell_value = case_insensitive_cell(value_cell, value_format);
-                match compare(
-                    &cell_value,
-                    &comparison_value,
-                    &condition_operator,
-                    value_format,
-                ) {
-                    Ok(result) if result.bool(value_format).unwrap_or(false) => Some(index),
-                    _ => None,
-                }
-            })
-            .collect();
-
-        indexes.push(matched_indexes);
+        matching = Some(match matching {
+            None => (0..criteria_range.len()).filter(|&i| meets(i)).collect(),
+            Some(indexes) => indexes.into_iter().filter(|&i| meets(i)).collect(),
+        });
     }
 
-    Ok(indexes)
+    Ok(matching.unwrap_or_default())
 }
 
 pub fn average_ifs(
@@ -340,24 +293,10 @@ pub fn average_ifs(
     value_format: &ValueFormat,
 ) -> Result<Value, Box<dyn Error + Send + Sync>> {
     let average_range_values = flatten_value_to_partial_vec(average_range_values);
-    let criteria = criteria.vec_value()?;
+    let criteria = criteria.into_vec_value()?;
 
-    // Process criteria and collect matching indexes
-    let matching_indexes = process_criteria("AVERAGEIFS", &criteria, value_format)?;
-
-    // Find indexes that match all criteria
-    let common_indexes = if matching_indexes.is_empty() {
-        Vec::new()
-    } else {
-        matching_indexes
-            .iter()
-            .skip(1)
-            .fold(matching_indexes[0].clone(), |acc, indexes| {
-                acc.into_iter()
-                    .filter(|idx| indexes.binary_search(idx).is_ok())
-                    .collect()
-            })
-    };
+    // The indexes of the cells that meet every criteria pair
+    let common_indexes = process_criteria("AVERAGEIFS", criteria, value_format)?;
 
     // Calculate the average of values at matching indexes
     if common_indexes.is_empty() {
@@ -377,24 +316,10 @@ pub fn count_ifs(
     criteria: Value,
     value_format: &ValueFormat,
 ) -> Result<Value, Box<dyn Error + Send + Sync>> {
-    let criteria = criteria.vec_value()?;
+    let criteria = criteria.into_vec_value()?;
 
-    // Process criteria and collect matching indexes
-    let matching_indexes = process_criteria("COUNTIFS", &criteria, value_format)?;
-
-    // Find indexes that match all criteria
-    let common_indexes = if matching_indexes.is_empty() {
-        Vec::new()
-    } else {
-        matching_indexes
-            .iter()
-            .skip(1)
-            .fold(matching_indexes[0].clone(), |acc, indexes| {
-                acc.into_iter()
-                    .filter(|idx| indexes.binary_search(idx).is_ok())
-                    .collect()
-            })
-    };
+    // The indexes of the cells that meet every criteria pair
+    let common_indexes = process_criteria("COUNTIFS", criteria, value_format)?;
 
     // Count the matching indexes
     Ok(Value::I32(common_indexes.len() as i32))
@@ -406,24 +331,10 @@ pub fn max_ifs(
     value_format: &ValueFormat,
 ) -> Result<Value, Box<dyn Error + Send + Sync>> {
     let max_range_values = flatten_value_to_partial_vec(max_range_values);
-    let criteria = criteria.vec_value()?;
+    let criteria = criteria.into_vec_value()?;
 
-    // Process criteria and collect matching indexes
-    let matching_indexes = process_criteria("MAXIFS", &criteria, value_format)?;
-
-    // Find indexes that match all criteria
-    let common_indexes = if matching_indexes.is_empty() {
-        Vec::new()
-    } else {
-        matching_indexes
-            .iter()
-            .skip(1)
-            .fold(matching_indexes[0].clone(), |acc, indexes| {
-                acc.into_iter()
-                    .filter(|idx| indexes.binary_search(idx).is_ok())
-                    .collect()
-            })
-    };
+    // The indexes of the cells that meet every criteria pair
+    let common_indexes = process_criteria("MAXIFS", criteria, value_format)?;
 
     // Find the maximum value among the matching indexes
     if common_indexes.is_empty() {
@@ -446,24 +357,10 @@ pub fn min_ifs(
     value_format: &ValueFormat,
 ) -> Result<Value, Box<dyn Error + Send + Sync>> {
     let min_range_values = flatten_value_to_partial_vec(min_range_values);
-    let criteria = criteria.vec_value()?;
+    let criteria = criteria.into_vec_value()?;
 
-    // Process criteria and collect matching indexes
-    let matching_indexes = process_criteria("MINIFS", &criteria, value_format)?;
-
-    // Find indexes that match all criteria
-    let common_indexes = if matching_indexes.is_empty() {
-        Vec::new()
-    } else {
-        matching_indexes
-            .iter()
-            .skip(1)
-            .fold(matching_indexes[0].clone(), |acc, indexes| {
-                acc.into_iter()
-                    .filter(|idx| indexes.binary_search(idx).is_ok())
-                    .collect()
-            })
-    };
+    // The indexes of the cells that meet every criteria pair
+    let common_indexes = process_criteria("MINIFS", criteria, value_format)?;
 
     // Find the minimum value among the matching indexes
     if common_indexes.is_empty() {
@@ -492,8 +389,7 @@ pub fn sum_if(
 
     // Parse the condition and the value to compare against
     // Excel conditional functions (AVERAGEIF, SUMIF, COUNTIF) are case-insensitive
-    let (condition_operator, comparison_value) = parse_condition(&condition_string);
-    let comparison_value = Value::String(comparison_value.to_lowercase());
+    let criterion = Criterion::new(&condition_string, value_format);
 
     // Determine the summation area: use the optional sum_range if provided, otherwise use values_area
     let sum_range_area = sum_range_values.into_option_area_of_value()?;
@@ -515,18 +411,9 @@ pub fn sum_if(
         .zip(sum_area.iter())
         .flat_map(|(values_row, sum_row)| values_row.iter().zip(sum_row.iter()))
         .filter_map(|(value_cell, sum_cell)| {
-            let cell_value = case_insensitive_cell(value_cell, value_format);
-            if compare(
-                &cell_value,
-                &comparison_value,
-                &condition_operator,
-                value_format,
-            )
-            .map(|result| result.bool(value_format).unwrap_or(false))
-            .unwrap_or(false)
-            {
+            if criterion.matches(value_cell, value_format) {
                 // Extract the numeric value of the sum_cell
-                sum_cell.f64(value_format).ok()
+                sum_cell.try_f64(value_format)
             } else {
                 None
             }

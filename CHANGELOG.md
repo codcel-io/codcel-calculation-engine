@@ -28,6 +28,12 @@ SPDX-License-Identifier: MIT OR Apache-2.0
   their value instead of copying it.
 - The `profile` module: opt-in counters, enabled by `CODCEL_PROFILE` and
   `CODCEL_PROFILE_KEYS`.
+- `Value::into_single_value`, `into_vec_value` and `into_flattened_vec_value`,
+  which take their value instead of copying it.
+- `Value::for_each_cell` and `count_cells`, which visit the cells of a range in
+  place, in the order `area_of_value` gives them.
+- `Value::flat_f64`, a range as one flat list of numbers.
+- `Value::try_f64`, a number or `None`, without building an error message.
 
 ### Changed
 
@@ -37,6 +43,26 @@ SPDX-License-Identifier: MIT OR Apache-2.0
   matches with a binary search.
 - `SUM`, `SUMIF` and array flattening no longer copy their ranges.
 - Number formatting happens only when a value is needed as text.
+- Faster functions over ranges, with the same results:
+  - `AVERAGE`, `MAX`, `MIN`, `COUNT`, `COUNTA`, `COUNTBLANK` and `SUMPRODUCT`
+    read their ranges in place, and skip blank and text cells without
+    building an error message.
+  - `COUNTIF`, `SUMIF`, `AVERAGEIF`, the `*IFS` functions and the `D*`
+    database functions read their criteria once per call instead of once per
+    cell. The `*IFS` functions test each later criterion only on rows that
+    met the earlier ones.
+  - `INDEX`, `MATCH`, `VLOOKUP`, `HLOOKUP`, `LOOKUP`, `XLOOKUP`, `XMATCH`,
+    `FILTER` and the array functions (`SORT`, `SORTBY`, `UNIQUE`,
+    `TRANSPOSE`, `TAKE`, `DROP`, `HSTACK`, `VSTACK` and others) no longer
+    copy their ranges. `SORT` and `SORTBY` work out each sort key once.
+  - `RANK`, `RANK.EQ` and `RANK.AVG` count in one pass instead of sorting.
+    `LARGE`, `SMALL` and `MEDIAN` find the value without a full sort.
+  - `MODE.SNGL` and `MODE.MULT` no longer turn each number into text.
+  - `SEARCH` and `SEARCHB` reuse their pattern, and `DATEVALUE` builds its
+    date patterns once.
+  - `MID`, `RIGHT` and `REPLACE` no longer copy the text before slicing it.
+  - Whole-number and boolean conversions build an error message only when
+    they fail.
 
 Code generated for 0.1.11 uses the new API and does not build against 0.1.10.
 

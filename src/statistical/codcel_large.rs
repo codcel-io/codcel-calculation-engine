@@ -6,6 +6,8 @@
 
 use std::error::Error;
 
+use super::order_statistic::select_ascending;
+
 /// Excel-compatible `LARGE` that returns the k-th largest value in a data set.
 /// - `values`: an array of numeric values.
 /// - `k`: the position (from the largest) in the array to return (1-based).
@@ -17,7 +19,13 @@ pub fn codcel_large(values: Vec<f64>, k: i32) -> Result<f64, Box<dyn Error + Sen
         return Err("LARGE: k is out of the range of the input values.".into());
     }
 
+    // The k-th largest is the (len - k)-th smallest: selected, not sorted, where that gives the
+    // same value
     let mut sorted_values = values;
+    let ascending_index = sorted_values.len() - k;
+    if let Some(value) = select_ascending(&mut sorted_values, ascending_index) {
+        return Ok(value);
+    }
     sorted_values.sort_by(|a, b| b.partial_cmp(a).unwrap_or(std::cmp::Ordering::Equal));
     Ok(sorted_values[k - 1])
 }

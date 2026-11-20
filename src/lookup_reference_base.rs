@@ -95,8 +95,8 @@ pub fn match_array(
     match_type: Value,
     value_format: &ValueFormat,
 ) -> Result<Value, Box<dyn Error + Send + Sync>> {
-    let lookup_value = lookup_value.to_single_value();
-    let lookup_array = lookup_array.to_flatterned_vec_value()?;
+    let lookup_value = lookup_value.into_single_value();
+    let lookup_array = lookup_array.into_flattened_vec_value()?;
     let match_type = match_type.option_i32(value_format)?;
 
     Ok(Value::I32(codcel_match(
@@ -129,8 +129,8 @@ pub fn v_lookup_array(
     range_lookup: Value,
     value_format: &ValueFormat,
 ) -> Result<Value, Box<dyn Error + Send + Sync>> {
-    let lookup_value = lookup_value.to_single_value();
-    let lookup_array = lookup_array.area_of_value()?;
+    let lookup_value = lookup_value.into_single_value();
+    let lookup_array = lookup_array.into_area_of_value()?;
     let col_index_num = col_index_num.i32(value_format)?;
     let range_lookup = range_lookup.option_bool(value_format)?;
 
@@ -153,7 +153,7 @@ pub fn index_array(
     column_num: Value,
     value_format: &ValueFormat,
 ) -> Result<Value, Box<dyn Error + Send + Sync>> {
-    let array = array.area_of_value()?;
+    let array = array.into_area_of_value()?;
     let row_num = row_num.i32(value_format)?;
     let column_num = column_num.option_i32(value_format)?;
 
@@ -178,8 +178,8 @@ pub fn lookup_array(
     result_vector: Value,
     _value_format: &ValueFormat,
 ) -> Result<Value, Box<dyn Error + Send + Sync>> {
-    let lookup_value = lookup_value.to_single_value();
-    let lookup_array = lookup_array.to_flatterned_vec_value()?;
+    let lookup_value = lookup_value.into_single_value();
+    let lookup_array = lookup_array.into_flattened_vec_value()?;
     let result_vector = result_vector.option_vec_of_value()?;
     codcel_lookup(lookup_value, lookup_array, result_vector)
 }
@@ -207,8 +207,8 @@ pub fn h_lookup_array(
     range_lookup: Value,
     value_format: &ValueFormat,
 ) -> Result<Value, Box<dyn Error + Send + Sync>> {
-    let lookup_value = lookup_value.to_single_value();
-    let lookup_array = lookup_array.area_of_value()?;
+    let lookup_value = lookup_value.into_single_value();
+    let lookup_array = lookup_array.into_area_of_value()?;
     let col_index_num = col_index_num.i32(value_format)?;
     let range_lookup = range_lookup.option_bool(value_format)?;
 
@@ -243,9 +243,9 @@ pub fn x_lookup_array(
     search_mode: Value,
     value_format: &ValueFormat,
 ) -> Result<Value, Box<dyn Error + Send + Sync>> {
-    let lookup_value = lookup_value.to_single_value();
-    let lookup_array = lookup_array.to_flatterned_vec_value()?;
-    let return_array = return_array.to_flatterned_vec_value()?;
+    let lookup_value = lookup_value.into_single_value();
+    let lookup_array = lookup_array.into_flattened_vec_value()?;
+    let return_array = return_array.into_flattened_vec_value()?;
     let if_not_found = if_not_found.option_value()?;
     let match_mode = match_mode.option_i32(value_format)?;
     let search_mode = search_mode.option_i32(value_format)?;
@@ -286,8 +286,8 @@ pub fn x_match_array(
     search_mode: Value,
     value_format: &ValueFormat,
 ) -> Result<Value, Box<dyn Error + Send + Sync>> {
-    let lookup_value = lookup_value.to_single_value();
-    let lookup_array = lookup_array.to_flatterned_vec_value()?;
+    let lookup_value = lookup_value.into_single_value();
+    let lookup_array = lookup_array.into_flattened_vec_value()?;
     let match_mode = match_mode.option_i32(value_format)?;
     let search_mode = search_mode.option_i32(value_format)?;
 
@@ -315,8 +315,8 @@ pub fn filter_array(
     if_empty: Value,
     value_format: &ValueFormat,
 ) -> Result<Value, Box<dyn Error + Send + Sync>> {
-    let array_elements = array.to_flatterned_vec_value()?;
-    let include_elements = include.to_flatterned_vec_value()?;
+    let array_elements = array.into_flattened_vec_value()?;
+    let include_elements = include.into_flattened_vec_value()?;
 
     let mut results: Vec<Value> = Vec::new();
     for (elem, inc) in array_elements.into_iter().zip(include_elements) {

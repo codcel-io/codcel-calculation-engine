@@ -7,6 +7,16 @@
 use std::collections::HashMap;
 use std::error::Error;
 
+/// The key two values share exactly when their `{:?}` forms are equal: the bits, with every
+/// NaN as one. Formatting each value as text did the same, but allocated.
+fn frequency_key(value: f64) -> u64 {
+    if value.is_nan() {
+        f64::NAN.to_bits()
+    } else {
+        value.to_bits()
+    }
+}
+
 /// Excel-compatible `MODE.SNGL` that returns the most frequently occurring value in a data set.
 /// - `values`: an array of numeric values.
 ///
@@ -17,13 +27,14 @@ pub fn codcel_mode_sngl(values: Vec<f64>) -> Result<f64, Box<dyn Error + Send + 
         return Err("MODE.SNGL: Cannot calculate mode of empty dataset".into());
     }
 
-    // Create a HashMap using string representation of f64 as key
-    let mut frequency_map: HashMap<String, (f64, usize)> = HashMap::new();
+    // Values are keyed as their `{:?}` forms would be
+    let mut frequency_map: HashMap<u64, (f64, usize)> = HashMap::new();
 
     // Count frequencies of each value, storing both the original f64 and its count
     for value in values {
-        let key = format!("{value:?}");
-        let entry = frequency_map.entry(key).or_insert((value, 0));
+        let entry = frequency_map
+            .entry(frequency_key(value))
+            .or_insert((value, 0));
         entry.1 += 1;
     }
 

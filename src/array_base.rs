@@ -32,7 +32,7 @@ use crate::value::vec_value_to_vec_i32;
 use crate::value::Value;
 use crate::value_format::ValueFormat;
 use std::cmp::Ordering;
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 use std::error::Error;
 
 // TODO : CHECK HOW TO FIX THIS FOR WASM
@@ -51,18 +51,19 @@ pub fn sort_by(
     by_area: Vec<(Value, Value)>,
     format: &ValueFormat,
 ) -> Result<Value, Box<dyn Error + Send + Sync>> {
-    let values = area.area_of_value()?; // Input matrix
+    let values = area.into_area_of_value()?; // Input matrix
 
     // Parse sorting keys and orders
     let by_areas: Vec<(Vec<Value>, i32)> = by_area
         .into_iter()
         .map(|(by_array, sort_order)| {
-            let key_area = by_array.area_of_value()?; // Convert sorting keys to matrix
+            let key_area = by_array.into_area_of_value()?; // Convert sorting keys to matrix
             if key_area.len() != 1 {
                 return Err("by_area must contain exactly one row of sorting keys.".into());
             }
             let order = sort_order.option_i32(format)?.unwrap_or(1); // Default to ascending
-            Ok((key_area[0].clone(), order)) // Extract the single row of keys
+            let keys = key_area.into_iter().next().unwrap_or_default(); // The single row of keys
+            Ok((keys, order))
         })
         .collect::<Result<Vec<_>, Box<dyn Error + Send + Sync>>>()?;
 
@@ -76,18 +77,32 @@ pub fn sort_by(
     // Create a vector of (index, value) for sorting
     let mut indexed_values: Vec<(usize, &Value)> = row.iter().enumerate().collect();
 
+    // Whether each key is text, and its text, worked out once rather than on every comparison
+    let key_texts: Vec<Vec<(bool, String)>> = by_areas
+        .iter()
+        .map(|(key_row, _)| {
+            key_row
+                .iter()
+                .map(|key| {
+                    (
+                        key.is_single_string(),
+                        key.string(format).unwrap_or_default(),
+                    )
+                })
+                .collect()
+        })
+        .collect();
+
     // Perform sorting
     indexed_values.sort_by(|(index_a, _value_a), (index_b, _value_b)| {
-        for (key_row, order) in &by_areas {
+        for ((key_row, order), texts) in by_areas.iter().zip(&key_texts) {
             let key_a = &key_row[*index_a];
             let key_b = &key_row[*index_b];
+            let (a_is_text, text_a) = &texts[*index_a];
+            let (b_is_text, text_b) = &texts[*index_b];
 
-            let comparison = if key_a.is_single_string() || key_b.is_single_string() {
-                key_a
-                    .string(format)
-                    .unwrap_or("".to_string())
-                    .partial_cmp(&key_b.string(format).unwrap_or("".to_string()))
-                    .unwrap_or(Ordering::Equal)
+            let comparison = if *a_is_text || *b_is_text {
+                text_a.partial_cmp(text_b).unwrap_or(Ordering::Equal)
             } else {
                 key_a.partial_cmp(key_b).unwrap_or(Ordering::Equal)
             };
@@ -120,7 +135,7 @@ pub fn sort(
     by_col: Value,
     format: &ValueFormat,
 ) -> Result<Value, Box<dyn Error + Send + Sync>> {
-    let values = area.area_of_value()?;
+    let values = area.into_area_of_value()?;
 
     // Determine if the 'by_col' parameter is set to true
     let by_col = by_col.option_bool(format)?.unwrap_or_default();
@@ -176,7 +191,7 @@ pub fn unique(
     exactly_once: Value,
     _format: &ValueFormat,
 ) -> Result<Value, Box<dyn Error + Send + Sync>> {
-    let values = area.area_of_value()?;
+    let values = area.into_area_of_value()?;
 
     // Determine if the 'exactly_once' parameter is set to true
     let exactly_once = match exactly_once {
@@ -197,37 +212,27 @@ pub fn unique(
         values
     };
 
-    // HashMap to keep track of occurrences of each value
-    let mut occurrences: HashMap<Value, usize> = HashMap::new();
-
-    // Count occurrences of each value
-    for row in &transposed_values {
-        for value in row {
-            let cloned_value = (*value).clone();
-            *occurrences.entry(cloned_value).or_insert(0) += 1;
-        }
+    // Occurrences of each value, counted on the cells where they are rather than on copies
+    let mut occurrences: HashMap<&Value, usize> = HashMap::new();
+    for value in transposed_values.iter().flatten() {
+        *occurrences.entry(value).or_insert(0) += 1;
     }
 
     // Vec to keep the unique values in their original order
     let mut unique_values: Vec<Vec<Value>> = Vec::new();
-    let mut seen: HashMap<Value, bool> = HashMap::new(); // To keep track of first appearances
+    let mut seen: HashSet<&Value> = HashSet::new(); // To keep track of first appearances
 
     // Iterate over rows (or columns, if transposed) while checking the occurrences
     for row in transposed_values.iter() {
         let mut unique_row: Vec<Value> = Vec::new();
 
         for value in row.iter() {
-            let cloned_value = (*value).clone();
-
-            if let Some(count) = occurrences.get(&cloned_value) {
-                #[allow(clippy::map_entry)]
-                if !seen.contains_key(&cloned_value) {
-                    // Only consider the first appearance
-                    // If `exactly_once` is true, only add if it appears exactly once
-                    if (exactly_once && *count == 1) || (!exactly_once && *count >= 1) {
-                        unique_row.push(cloned_value.clone());
-                    }
-                    seen.insert(cloned_value, true); // Mark as seen
+            // Only consider the first appearance
+            if seen.insert(value) {
+                let count = occurrences[value];
+                // If `exactly_once` is true, only add if it appears exactly once
+                if (exactly_once && count == 1) || (!exactly_once && count >= 1) {
+                    unique_row.push(value.clone());
                 }
             }
         }
@@ -248,7 +253,7 @@ pub fn take(
     columns: Value,
     value_format: &ValueFormat,
 ) -> Result<Value, Box<dyn Error + Send + Sync>> {
-    let array = area.area_of_value()?;
+    let array = area.into_area_of_value()?;
     let rows = rows.option_i32(value_format)?;
     let columns = columns.option_i32(value_format)?;
 
@@ -261,7 +266,7 @@ pub fn drop(
     columns: Value,
     value_format: &ValueFormat,
 ) -> Result<Value, Box<dyn Error + Send + Sync>> {
-    let array = area.area_of_value()?;
+    let array = area.into_area_of_value()?;
     let rows = rows.option_i32(value_format)?;
     let columns = columns.option_i32(value_format)?;
 
@@ -279,7 +284,7 @@ pub fn offset(
     ref_col: Value,
     value_format: &ValueFormat,
 ) -> Result<Value, Box<dyn Error + Send + Sync>> {
-    let array = area.area_of_value()?;
+    let array = area.into_area_of_value()?;
     let rows = rows.i32(value_format)?;
     let cols = cols.i32(value_format)?;
     let height = height.option_i32(value_format)?;
@@ -294,7 +299,7 @@ pub fn transpose(
     area: Value,
     _value_format: &ValueFormat,
 ) -> Result<Value, Box<dyn Error + Send + Sync>> {
-    let array = area.area_of_value()?;
+    let array = area.into_area_of_value()?;
     codcel_transpose(array)
 }
 
@@ -302,7 +307,7 @@ pub fn column(
     area: Value,
     _value_format: &ValueFormat,
 ) -> Result<Value, Box<dyn Error + Send + Sync>> {
-    let array = area.area_of_value()?;
+    let array = area.into_area_of_value()?;
     codcel_column(array)
 }
 
@@ -310,7 +315,7 @@ pub fn columns(
     area: Value,
     _value_format: &ValueFormat,
 ) -> Result<Value, Box<dyn Error + Send + Sync>> {
-    let array = area.area_of_value()?;
+    let array = area.into_area_of_value()?;
     codcel_columns(array)
 }
 
@@ -318,7 +323,7 @@ pub fn row(
     area: Value,
     _value_format: &ValueFormat,
 ) -> Result<Value, Box<dyn Error + Send + Sync>> {
-    let array = area.area_of_value()?;
+    let array = area.into_area_of_value()?;
     codcel_row(array)
 }
 
@@ -326,7 +331,7 @@ pub fn rows(
     area: Value,
     _value_format: &ValueFormat,
 ) -> Result<Value, Box<dyn Error + Send + Sync>> {
-    let array = area.area_of_value()?;
+    let array = area.into_area_of_value()?;
     codcel_rows(array)
 }
 
@@ -368,7 +373,7 @@ pub fn tocol(
     scan_by_column: Value,
     value_format: &ValueFormat,
 ) -> Result<Value, Box<dyn Error + Send + Sync>> {
-    let array = area.area_of_value()?;
+    let array = area.into_area_of_value()?;
     let ignore = ignore.option_i32(value_format)?;
     let scan_by_column = scan_by_column.option_bool(value_format)?;
     codcel_tocol(array, ignore, scan_by_column)
@@ -380,7 +385,7 @@ pub fn torow(
     scan_by_column: Value,
     value_format: &ValueFormat,
 ) -> Result<Value, Box<dyn Error + Send + Sync>> {
-    let array = area.area_of_value()?;
+    let array = area.into_area_of_value()?;
     let ignore = ignore.option_i32(value_format)?;
     let scan_by_column = scan_by_column.option_bool(value_format)?;
     codcel_torow(array, ignore, scan_by_column)
@@ -391,7 +396,7 @@ pub fn chooserows(
     indices: Vec<Value>,
     value_format: &ValueFormat,
 ) -> Result<Value, Box<dyn Error + Send + Sync>> {
-    let array = area.area_of_value()?;
+    let array = area.into_area_of_value()?;
     let row_indices = vec_value_to_vec_i32(indices, value_format)?;
     codcel_chooserows(array, row_indices)
 }
@@ -401,7 +406,7 @@ pub fn choosecols(
     indices: Vec<Value>,
     value_format: &ValueFormat,
 ) -> Result<Value, Box<dyn Error + Send + Sync>> {
-    let array = area.area_of_value()?;
+    let array = area.into_area_of_value()?;
     let col_indices = vec_value_to_vec_i32(indices, value_format)?;
     codcel_choosecols(array, col_indices)
 }
@@ -412,7 +417,7 @@ pub fn wraprows(
     pad_with: Value,
     value_format: &ValueFormat,
 ) -> Result<Value, Box<dyn Error + Send + Sync>> {
-    let array = area.area_of_value()?;
+    let array = area.into_area_of_value()?;
     let wrap_count = wrap_count.i32(value_format)?;
     let pad_with = if pad_with.is_none() {
         None
@@ -428,7 +433,7 @@ pub fn wrapcols(
     pad_with: Value,
     value_format: &ValueFormat,
 ) -> Result<Value, Box<dyn Error + Send + Sync>> {
-    let array = area.area_of_value()?;
+    let array = area.into_area_of_value()?;
     let wrap_count = wrap_count.i32(value_format)?;
     let pad_with = if pad_with.is_none() {
         None
@@ -445,7 +450,7 @@ pub fn expand(
     pad_with: Value,
     value_format: &ValueFormat,
 ) -> Result<Value, Box<dyn Error + Send + Sync>> {
-    let array = area.area_of_value()?;
+    let array = area.into_area_of_value()?;
     let target_rows = if rows.is_none() {
         array.len() as i32
     } else {
@@ -466,7 +471,7 @@ pub fn trimrange(
     trim_columns: Value,
     value_format: &ValueFormat,
 ) -> Result<Value, Box<dyn Error + Send + Sync>> {
-    let array = area.area_of_value()?;
+    let array = area.into_area_of_value()?;
     let trim_rows = trim_rows.option_i32(value_format)?;
     let trim_columns = trim_columns.option_i32(value_format)?;
     codcel_trimrange(array, trim_rows, trim_columns)
@@ -488,7 +493,7 @@ fn stack_arguments(values: Value) -> Result<Vec<Vec<Vec<Value>>>, Box<dyn Error 
 
     arguments
         .into_iter()
-        .map(|argument| argument.area_of_value())
+        .map(Value::into_area_of_value)
         .collect()
 }
 
@@ -535,7 +540,7 @@ pub fn v_stack(
 }
 
 /*pub fn left(area: Value, num_chars: Value, value_format: &ValueFormat) -> Result<Value, Box<dyn Error + Send + Sync>> {
-    let values = area.area_of_value()?;
+    let values = area.into_area_of_value()?;
 
     // Extract the number of characters to take (default to 1 if not provided)
     let num_chars_option: Option<i32> = num_chars.option_i32(value_format).expect("LEFT: num_chars value is not a number");
@@ -581,7 +586,7 @@ pub fn excel_mod(
         return Err("MOD: Division by zero error".into());
     }
 
-    let values = area.area_of_value()?;
+    let values = area.into_area_of_value()?;
 
     // Resultant 2D array for the final output
     let mut result: Vec<Vec<Value>> = Vec::new();
@@ -634,7 +639,7 @@ fn transpose_internal(area: &Vec<Vec<Value>>) -> Vec<Vec<Value>> {
 pub use codcel_information::{error_type, iserr, iserror, isna};
 
 pub fn len(area: Value, value_format: &ValueFormat) -> Result<Value, Box<dyn Error + Send + Sync>> {
-    let values = area.area_of_value()?;
+    let values = area.into_area_of_value()?;
 
     let mut result: Vec<Vec<Value>> = Vec::new();
 
@@ -657,7 +662,7 @@ pub fn lenb(
     area: Value,
     value_format: &ValueFormat,
 ) -> Result<Value, Box<dyn Error + Send + Sync>> {
-    let values = area.area_of_value()?;
+    let values = area.into_area_of_value()?;
 
     let mut result: Vec<Vec<Value>> = Vec::new();
 
@@ -689,21 +694,18 @@ fn sort_row(
     let string_sort = does_column_contain_any_pure_strings(&valid_rows, sort_index);
 
     if string_sort {
+        // Each row's key is turned into text once, not on every comparison; the sort is stable
+        // as before.
+        let mut keyed: Vec<(String, Vec<Value>)> = valid_rows
+            .into_iter()
+            .map(|row| (row[sort_index].string(format).unwrap_or_default(), row))
+            .collect();
         if descending {
-            valid_rows.sort_by(|a, b| {
-                b[sort_index]
-                    .string(format)
-                    .unwrap_or_default()
-                    .cmp(&a[sort_index].string(format).unwrap_or_default())
-            });
+            keyed.sort_by(|a, b| b.0.cmp(&a.0));
         } else {
-            valid_rows.sort_by(|a, b| {
-                a[sort_index]
-                    .string(format)
-                    .unwrap_or_default()
-                    .cmp(&b[sort_index].string(format).unwrap_or_default())
-            });
+            keyed.sort_by(|a, b| a.0.cmp(&b.0));
         }
+        valid_rows = keyed.into_iter().map(|(_, row)| row).collect();
     } else if descending {
         valid_rows.sort_by(|a, b| {
             b[sort_index]

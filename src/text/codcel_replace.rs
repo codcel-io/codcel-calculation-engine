@@ -29,18 +29,23 @@ pub fn codcel_replace<S: AsRef<str>>(
 
     let start_position = start_position as usize - 1; // Convert to 0-based index
 
-    // Use character-based indexing for proper Unicode support
-    let chars: Vec<char> = old_text.chars().collect();
+    // Positions count characters, not bytes; the text is sliced where they fall. The start may
+    // be just past the last character.
+    let start = match old_text.char_indices().nth(start_position) {
+        Some((i, _)) => i,
+        None if old_text.chars().count() == start_position => old_text.len(),
+        None => return Err("REPLACE: Start position is out of bounds.".into()),
+    };
+    let rest = &old_text[start..];
+    let end = rest
+        .char_indices()
+        .nth(num_chars as usize)
+        .map_or(rest.len(), |(i, _)| i);
 
-    if start_position > chars.len() {
-        return Err("REPLACE: Start position is out of bounds.".into());
-    }
-
-    let end_position = std::cmp::min(start_position + num_chars as usize, chars.len());
-
-    let before: String = chars[..start_position].iter().collect();
-    let after: String = chars[end_position..].iter().collect();
-    let result = format!("{}{}{}", before, new_text, after);
+    let mut result = String::with_capacity(old_text.len() + new_text.len());
+    result.push_str(&old_text[..start]);
+    result.push_str(new_text);
+    result.push_str(&rest[end..]);
 
     Ok(result)
 }

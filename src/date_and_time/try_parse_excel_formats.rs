@@ -6,17 +6,27 @@
 
 use chrono::{DateTime, NaiveDate, NaiveTime, TimeZone, Utc};
 use regex::Regex;
+use std::sync::LazyLock;
 
 /// Attempts to parse Excel-like date strings (MDY/DMY/YMD and `DD-MMM-YYYY`).
 ///
 /// Also handles 2-digit years using Excel's cutoff (00–29 => 2000s, 30–99 => 1900s) and
 /// returns a midnight UTC `DateTime` when successful.
+/// The date patterns, compiled once rather than on every call.
+static RE_MDY: LazyLock<Option<Regex>> =
+    LazyLock::new(|| Regex::new(r"^(\d{1,2})[/-](\d{1,2})[/-](\d{2,4})$").ok());
+static RE_YMD: LazyLock<Option<Regex>> =
+    LazyLock::new(|| Regex::new(r"^(\d{4})[/-](\d{1,2})[/-](\d{1,2})$").ok());
+static RE_DMMY: LazyLock<Option<Regex>> =
+    LazyLock::new(|| Regex::new(r"^(\d{1,2})[-]([A-Za-z]{3,9})[-](\d{2,4})$").ok());
+
 pub fn try_parse_excel_formats(date_text: &str) -> Option<DateTime<Utc>> {
-    // Handle Excel specific formats with regex
-    let re_mdy = Regex::new(r"^(\d{1,2})[/-](\d{1,2})[/-](\d{2,4})$").ok()?;
-    let re_dmy = Regex::new(r"^(\d{1,2})[/-](\d{1,2})[/-](\d{2,4})$").ok()?;
-    let re_ymd = Regex::new(r"^(\d{4})[/-](\d{1,2})[/-](\d{1,2})$").ok()?;
-    let re_dmmy = Regex::new(r"^(\d{1,2})[-]([A-Za-z]{3,9})[-](\d{2,4})$").ok()?;
+    // Handle Excel specific formats with regex. Day-month-year has the same pattern as
+    // month-day-year, tried second.
+    let re_mdy = RE_MDY.as_ref()?;
+    let re_dmy = re_mdy;
+    let re_ymd = RE_YMD.as_ref()?;
+    let re_dmmy = RE_DMMY.as_ref()?;
 
     if let Some(caps) = re_mdy.captures(date_text) {
         let month: u32 = caps.get(1)?.as_str().parse().ok()?;

@@ -26,14 +26,16 @@ pub fn codcel_right<S: AsRef<str>>(
     let result = if chars_to_take > text_ref.len() as i32 {
         text_ref.to_string() // Return the entire string if `chars_to_take` exceeds string length
     } else {
-        text_ref
-            .chars()
-            .rev() // Reverse the characters
-            .take(chars_to_take as usize) // Take the last `chars_to_take` characters
-            .collect::<Vec<char>>()
-            .into_iter()
-            .rev() // Reverse again to maintain the original order
-            .collect()
+        // The last `chars_to_take` characters, sliced from where the first of them starts
+        let start = match (chars_to_take as usize).checked_sub(1) {
+            None => text_ref.len(),
+            Some(back) => text_ref
+                .char_indices()
+                .rev()
+                .nth(back)
+                .map_or(0, |(i, _)| i),
+        };
+        text_ref[start..].to_string()
     };
 
     Ok(result)

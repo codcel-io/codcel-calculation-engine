@@ -4,10 +4,9 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
-use regex::Regex;
 use std::error::Error;
 
-use super::codcel_search::build_wildcard_pattern;
+use super::codcel_search::wildcard_regex;
 use super::dbcs_utils::{
     char_index_to_dbcs_byte_pos, dbcs_byte_len, dbcs_byte_pos_to_char_index_forward,
 };
@@ -49,9 +48,7 @@ pub fn codcel_searchb(
     // Get the text from start_char_idx onwards as a string
     let adjusted_text: String = text.chars().skip(start_char_idx).collect();
 
-    let pattern = build_wildcard_pattern(substring);
-    let regex_str = format!("(?i){pattern}");
-    let regex = Regex::new(&regex_str)?;
+    let regex = wildcard_regex(substring)?;
 
     if let Some(matched) = regex.find(&adjusted_text) {
         // matched.start() is a UTF-8 byte offset in adjusted_text

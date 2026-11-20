@@ -22,7 +22,7 @@ pub fn codcel_trim_mean(data: Vec<f64>, percent: f64) -> Result<f64, Box<dyn Err
         return Err("TRIMMEAN: Percent must be between 0 and 1.".into());
     }
 
-    let mut sorted_data = data.clone();
+    let mut sorted_data = data;
     sorted_data.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
 
     let total_count = sorted_data.len();

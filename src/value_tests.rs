@@ -542,4 +542,69 @@ mod tests {
         assert_eq!(result3, "test");
         assert_eq!(result4, "TRUE");
     }
+
+    /// `try_f64` is `None` exactly where `f64` fails, and otherwise gives the same number.
+    #[test]
+    fn try_f64_agrees_with_f64() {
+        let comma = ValueFormat {
+            decimal_separator: ",".to_string(),
+            ..Default::default()
+        };
+        let texts = [
+            "",
+            "0",
+            "-0",
+            "1.5",
+            "1,5",
+            " 2",
+            "2 ",
+            "1e3",
+            "inf",
+            "NaN",
+            "abc",
+            "\"3\"",
+            "\"3,5\"",
+            "a\\b",
+            "tab\there",
+            "Ünï",
+            "1.000,5",
+            "+4",
+            ".5",
+            "5.",
+            "0x10",
+        ];
+        let mut cells = vec![
+            Value::F64(2.5),
+            Value::F64(f64::NAN),
+            Value::I32(-3),
+            Value::Bool(true),
+            Value::Bool(false),
+            Value::None,
+            Value::OptionF64(None),
+            Value::OptionF64(Some(1.25)),
+            Value::OptionI32(None),
+            Value::OptionI32(Some(4)),
+            Value::OptionBool(Some(true)),
+            Value::OptionBool(None),
+            Value::OptionString(None),
+            Value::Error(ExcelError::Div0),
+            Value::VecValue(vec![Value::F64(1.0)]),
+            Value::AreaValue(vec![]),
+        ];
+        for text in texts {
+            cells.push(Value::String(text.to_string()));
+            cells.push(Value::OptionString(Some(text.to_string())));
+        }
+        for value_format in [ValueFormat::default(), comma] {
+            for cell in &cells {
+                let expected = cell.f64(&value_format).ok();
+                let got = cell.try_f64(&value_format);
+                assert_eq!(
+                    got.map(f64::to_bits),
+                    expected.map(f64::to_bits),
+                    "{cell:?}"
+                );
+            }
+        }
+    }
 }

@@ -18,8 +18,8 @@ pub fn codcel_dcount(
     criteria: Value,
     value_format: &ValueFormat,
 ) -> Result<Value, Box<dyn Error + Send + Sync>> {
-    let database = database.area_of_value()?;
-    let criteria = criteria.area_of_value()?;
+    let database = database.into_area_of_value()?;
+    let criteria = criteria.into_area_of_value()?;
     let matched = match_db_criteria(&database, &criteria, value_format)?;
 
     let field_omitted = field.is_none()

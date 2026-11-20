@@ -26,20 +26,79 @@ pub fn codcel_mid<S: AsRef<str>>(
     let start_position = start_position as usize - 1; // Convert to 0-based index
     let num_chars = num_chars as usize;
 
-    // Handle Unicode characters properly by using character iterators
-    let chars: Vec<char> = text.chars().collect();
-
-    if start_position >= chars.len() {
+    // Positions count characters, not bytes; the text is sliced where they fall
+    let Some((start, _)) = text.char_indices().nth(start_position) else {
         return Ok(String::new());
-    }
-
-    let end_position = std::cmp::min(start_position + num_chars, chars.len());
-    Ok(chars[start_position..end_position].iter().collect())
+    };
+    let rest = &text[start..];
+    let end = rest
+        .char_indices()
+        .nth(num_chars)
+        .map_or(rest.len(), |(i, _)| i);
+    Ok(rest[..end].to_string())
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// MID, RIGHT and REPLACE give what the earlier `Vec<char>` versions gave, for every
+    /// position and length over ASCII, multi-byte and empty text.
+    #[test]
+    fn slicing_matches_char_vector_versions() {
+        use crate::text::codcel_replace::codcel_replace;
+        use crate::text::codcel_right::codcel_right;
+        for text in [
+            "",
+            "a",
+            "Hello World",
+            "Ünïcödé café",
+            "日本語のテキスト",
+            "a😀b",
+        ] {
+            let chars: Vec<char> = text.chars().collect();
+            for start in -1..15 {
+                for len in -1..15 {
+                    let mid = codcel_mid(text, start, len).ok();
+                    let expected_mid = (start >= 1 && len >= 0).then(|| {
+                        let s = start as usize - 1;
+                        if s >= chars.len() {
+                            String::new()
+                        } else {
+                            chars[s..chars.len().min(s + len as usize)].iter().collect()
+                        }
+                    });
+                    assert_eq!(mid, expected_mid, "MID({text:?},{start},{len})");
+
+                    let replaced = codcel_replace(text, start, len, "XY").ok();
+                    let expected_replace =
+                        (start >= 1 && len >= 0 && start as usize - 1 <= chars.len()).then(|| {
+                            let s = start as usize - 1;
+                            let e = chars.len().min(s + len as usize);
+                            format!(
+                                "{}XY{}",
+                                chars[..s].iter().collect::<String>(),
+                                chars[e..].iter().collect::<String>()
+                            )
+                        });
+                    assert_eq!(
+                        replaced, expected_replace,
+                        "REPLACE({text:?},{start},{len})"
+                    );
+                }
+                let right = codcel_right(text, Some(start)).ok();
+                let expected_right = (start >= 0).then(|| {
+                    if start > text.len() as i32 {
+                        text.to_string()
+                    } else {
+                        let n = (start as usize).min(chars.len());
+                        chars[chars.len() - n..].iter().collect()
+                    }
+                });
+                assert_eq!(right, expected_right, "RIGHT({text:?},{start})");
+            }
+        }
+    }
 
     #[test]
     fn test_mid_basic() {

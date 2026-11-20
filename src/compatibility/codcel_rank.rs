@@ -22,7 +22,21 @@ pub fn codcel_rank(
         return Err("RANK: Array cannot be empty".into());
     }
 
-    let mut sorted_array = array.clone();
+    // Without NaN, the rank is one more than the number of values ranked above it: counted in
+    // one pass, rather than by sorting a copy on every call.
+    if !array.iter().any(|v| v.is_nan()) {
+        if !array.contains(&value) {
+            return Err("RANK: Value not found in the array".into());
+        }
+        let ascending = order.unwrap_or(false);
+        let above = array
+            .iter()
+            .filter(|&&v| if ascending { v < value } else { v > value })
+            .count();
+        return Ok(above as i32 + 1);
+    }
+
+    let mut sorted_array = array;
 
     // Sort ascending if `order` is true, otherwise sort descending
     if order.unwrap_or(false) {

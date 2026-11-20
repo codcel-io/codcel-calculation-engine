@@ -18,8 +18,8 @@ pub fn codcel_dget(
     criteria: Value,
     value_format: &ValueFormat,
 ) -> Result<Value, Box<dyn Error + Send + Sync>> {
-    let database = database.area_of_value()?;
-    let criteria = criteria.area_of_value()?;
+    let database = database.into_area_of_value()?;
+    let criteria = criteria.into_area_of_value()?;
     let field_idx = resolve_field(&database, &field, value_format)?;
     let matched = match_db_criteria(&database, &criteria, value_format)?;
 

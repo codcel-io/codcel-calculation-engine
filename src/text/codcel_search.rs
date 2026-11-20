@@ -47,6 +47,26 @@ pub(crate) fn build_wildcard_pattern(substring: &str) -> String {
     pattern
 }
 
+/// The case-insensitive regex for the wildcard string `substring`.
+///
+/// SEARCH is usually filled down with the same text to find, so the last regex built on this
+/// thread is kept and reused rather than compiled again for every cell.
+pub(crate) fn wildcard_regex(substring: &str) -> Result<Regex, regex::Error> {
+    thread_local! {
+        static LAST: std::cell::RefCell<Option<(String, Regex)>> = const { std::cell::RefCell::new(None) };
+    }
+    LAST.with(|last| {
+        if let Some((cached, regex)) = last.borrow().as_ref() {
+            if cached == substring {
+                return Ok(regex.clone());
+            }
+        }
+        let regex = Regex::new(&format!("(?i){}", build_wildcard_pattern(substring)))?;
+        *last.borrow_mut() = Some((substring.to_string(), regex.clone()));
+        Ok(regex)
+    })
+}
+
 /// Excel-compatible `SEARCH` that locates one text string within another (case-insensitive).
 /// - `substring`: the text to find. Supports wildcards: `?` matches any single character,
 ///   `*` matches any sequence of characters. Use `~` to escape wildcards: `~?` for literal `?`,
@@ -77,11 +97,8 @@ pub fn codcel_search(
         return Err("Error: SEARCH start position exceeds the text length.".into());
     }
 
-    let pattern = build_wildcard_pattern(substring);
-
-    // Create regex with case-insensitivity
-    let regex_str = format!("(?i){pattern}");
-    let regex = Regex::new(&regex_str)?;
+    // Case-insensitive regex for the wildcard pattern
+    let regex = wildcard_regex(substring)?;
 
     // Adjust the text to start from the specified character position
     let byte_offset = text

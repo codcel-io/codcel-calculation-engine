@@ -293,14 +293,15 @@ pub fn float_to_formatted_string_display<T: Display>(
 ///
 /// # Errors
 /// Returns an error with message "Cannot convert {value} to a whole number" if conversion fails.
-pub fn integer<T: ToI32 + Debug>(
+pub fn integer<T: ToI32 + Debug + Clone>(
     value: T,
     decimal_separator: &str,
 ) -> Result<i32, Box<dyn Error + Send + Sync>> {
-    let string_value = format!("{:?}", value);
-    match value.to_i32() {
+    match value.clone().to_i32() {
         Ok(value) => Ok(value),
         Err(_) => {
+            // Formatted only here: this runs for every value converted.
+            let string_value = format!("{:?}", value);
             let test_string = remove_quotes(&string_value).replace(decimal_separator, ".");
             if let Ok(value) = test_string.to_i32() {
                 return Ok(value);
@@ -325,14 +326,15 @@ pub fn integer<T: ToI32 + Debug>(
 ///
 /// # Errors
 /// Returns an error with message "Cannot convert {value} to a boolean" if conversion fails.
-pub fn boolean<T: ToBool + Debug>(
+pub fn boolean<T: ToBool + Debug + Clone>(
     value: T,
     decimal_separator: &str,
 ) -> Result<bool, Box<dyn Error + Send + Sync>> {
-    let string_value = format!("{:?}", value);
-    match value.to_bool() {
+    match value.clone().to_bool() {
         Ok(value) => Ok(value),
         Err(_) => {
+            // Formatted only here: this runs for every value converted.
+            let string_value = format!("{:?}", value);
             let test_string = remove_quotes(&string_value).replace(decimal_separator, ".");
             if let Ok(value) = test_string.to_bool() {
                 return Ok(value);
@@ -1945,25 +1947,12 @@ pub fn sum(
     for value in &values {
         if value.is_array() || value.is_area() {
             // Excel SUM ignores non-numeric cells in ranges/arrays
-            let mut add_cell = |cell: &Value| {
-                if let Ok(val) = cell.f64(value_format) {
+            // A range's cells are read where they are rather than copied.
+            value.for_each_cell(|cell| {
+                if let Some(val) = cell.try_f64(value_format) {
                     result.add(val);
                 }
-            };
-            // A range's cells are read where they are rather than copied.
-            match value {
-                Value::VecValue(cells) | Value::OptionVecValue(Some(cells)) => {
-                    cells.iter().for_each(&mut add_cell)
-                }
-                Value::AreaValue(rows) | Value::OptionAreaValue(Some(rows)) => {
-                    rows.iter().flatten().for_each(&mut add_cell)
-                }
-                _ => value
-                    .area_of_value()?
-                    .iter()
-                    .flatten()
-                    .for_each(&mut add_cell),
-            }
+            })?;
         } else {
             // Try to add the value to the accumulator, stop if error occurs and strict_type_conversion is true
             match value.f64(value_format) {
@@ -2114,13 +2103,11 @@ pub fn count(
         return Ok(Value::I32(0));
     }
 
-    let count = values
+    // A value whose cells cannot be read counts nothing.
+    let count: usize = values
         .iter()
-        .filter_map(|value| value.area_of_value().ok()) // Handle potential errors from `area_of_value`
-        .flat_map(|areas| areas.into_iter()) // Flatten the outer collection
-        .flat_map(|rows| rows.into_iter()) // Flatten inner rows
-        .filter(|cols| cols.is_count_number_type()) // Filter only the desired columns
-        .count(); // Count the filtered elements
+        .map(|value| value.count_cells(Value::is_count_number_type))
+        .sum();
 
     Ok(Value::I32(count as i32))
 }
@@ -2145,13 +2132,12 @@ pub fn counta(
         return Ok(Value::I32(0));
     }
 
-    let count = values
+    let count: usize = values
         .iter()
-        .filter_map(|value| value.area_of_value().ok())
-        .flat_map(|areas| areas.into_iter())
-        .flat_map(|rows| rows.into_iter())
-        .filter(|cols| !codcel_is_blank(cols, _value_format).unwrap_or(false))
-        .count();
+        .map(|value| {
+            value.count_cells(|cell| !codcel_is_blank(cell, _value_format).unwrap_or(false))
+        })
+        .sum();
 
     Ok(Value::I32(count as i32))
 }
@@ -2176,13 +2162,14 @@ pub fn countblank(
         return Ok(Value::I32(0));
     }
 
-    let count = values
+    let count: usize = values
         .iter()
-        .filter_map(|value| value.area_of_value().ok())
-        .flat_map(|areas| areas.into_iter())
-        .flat_map(|rows| rows.into_iter())
-        .filter(|cell| codcel_is_blank_or_empty_string(cell, value_format).unwrap_or(false))
-        .count();
+        .map(|value| {
+            value.count_cells(|cell| {
+                codcel_is_blank_or_empty_string(cell, value_format).unwrap_or(false)
+            })
+        })
+        .sum();
 
     Ok(Value::I32(count as i32))
 }
@@ -2239,15 +2226,12 @@ pub fn max(
                 Ok(acc.max(max_in_array))
             } else if value.is_area() {
                 // Excel MAX ignores non-numeric cells in ranges/arrays
-                let area = value.area_of_value()?;
                 let mut local_max = acc;
-                for row in &area {
-                    for cell in row {
-                        if let Ok(val) = cell.f64(value_format) {
-                            local_max = local_max.max(val);
-                        }
+                value.for_each_cell(|cell| {
+                    if let Some(val) = cell.try_f64(value_format) {
+                        local_max = local_max.max(val);
                     }
-                }
+                })?;
                 Ok(local_max)
             } else {
                 // Excel MAX ignores text and boolean values from cell references
@@ -2726,15 +2710,12 @@ pub fn min(
                 Ok(acc.min(min_in_array))
             } else if value.is_area() {
                 // Excel MIN ignores non-numeric cells in ranges/arrays
-                let area = value.area_of_value()?;
                 let mut local_min = acc;
-                for row in &area {
-                    for cell in row {
-                        if let Ok(val) = cell.f64(value_format) {
-                            local_min = local_min.min(val);
-                        }
+                value.for_each_cell(|cell| {
+                    if let Some(val) = cell.try_f64(value_format) {
+                        local_min = local_min.min(val);
                     }
-                }
+                })?;
                 Ok(local_min)
             } else {
                 // Excel MIN ignores text and boolean values from cell references
@@ -3335,7 +3316,7 @@ pub fn sum_product(
     values: Value,
     value_format: &ValueFormat,
 ) -> Result<Value, Box<dyn Error + Send + Sync>> {
-    let values = values.vec_value()?;
+    let values = values.into_vec_value()?;
 
     let mut input: Vec<Vec<f64>> = Vec::new();
 

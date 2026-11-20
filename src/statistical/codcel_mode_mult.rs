@@ -7,6 +7,16 @@
 use std::collections::HashMap;
 use std::error::Error;
 
+/// The key two values share exactly when their `{:?}` forms are equal: the bits, with every
+/// NaN as one. Formatting each value as text did the same, but allocated.
+fn frequency_key(value: f64) -> u64 {
+    if value.is_nan() {
+        f64::NAN.to_bits()
+    } else {
+        value.to_bits()
+    }
+}
+
 /// Excel-compatible `MODE.MULT` that returns a vertical array of the most frequently occurring values.
 /// - `numbers`: an array of numeric values.
 ///
@@ -18,12 +28,13 @@ pub fn codcel_mode_mult(numbers: Vec<f64>) -> Result<Vec<f64>, Box<dyn Error + S
     }
 
     // Track frequency and first-appearance position for each unique value
-    // Using string key for f64 to handle NaN/precision issues
-    let mut frequency_map: HashMap<String, (f64, usize, usize)> = HashMap::new(); // (value, count, first_index)
+    // Values are keyed as their `{:?}` forms would be
+    let mut frequency_map: HashMap<u64, (f64, usize, usize)> = HashMap::new(); // (value, count, first_index)
 
     for (i, value) in numbers.iter().enumerate() {
-        let key = format!("{value:?}");
-        let entry = frequency_map.entry(key).or_insert((*value, 0, i));
+        let entry = frequency_map
+            .entry(frequency_key(*value))
+            .or_insert((*value, 0, i));
         entry.1 += 1;
     }
 

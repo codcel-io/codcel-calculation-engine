@@ -25,8 +25,21 @@ pub fn codcel_rank_eq(
     // Default to descending order if `order` is None
     let sort_ascending = order.unwrap_or(false);
 
+    // Without NaN, the rank is one more than the number of values ranked above it: counted in
+    // one pass, rather than by sorting a copy on every call.
+    if !values.iter().any(|v| v.is_nan()) {
+        if !values.contains(&value) {
+            return Err("RANK.EQ: The value is not found in the list.".into());
+        }
+        let above = values
+            .iter()
+            .filter(|&&v| if sort_ascending { v < value } else { v > value })
+            .count();
+        return Ok((above + 1) as i32);
+    }
+
     // Sort the values in ascending or descending order
-    let mut sorted_values = values.clone();
+    let mut sorted_values = values;
     if sort_ascending {
         sorted_values.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
     } else {

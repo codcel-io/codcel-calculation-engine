@@ -4,22 +4,11 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
-use crate::condition::parse_condition;
-use crate::match_type_and_compare_macro::compare;
+use crate::criterion::Criterion;
 use crate::value::Value;
 use crate::value_format::ValueFormat;
 use std::collections::HashMap;
 use std::error::Error;
-
-/// Lowercase a cell value for case-insensitive matching. Non-string values are returned as-is.
-fn case_insensitive_cell(value: &Value, value_format: &ValueFormat) -> Value {
-    if value.is_string() {
-        if let Ok(s) = value.string(value_format) {
-            return Value::String(s.to_lowercase());
-        }
-    }
-    value.clone()
-}
 
 /// Builds a lowercase header → column-index map from the first row of `database`.
 pub(crate) fn build_header_map(
@@ -129,26 +118,29 @@ pub(crate) fn match_db_criteria(
             return Ok((0..data_rows.len()).collect());
         }
 
+        // Each criterion is parsed once for all the rows; one that cannot be read matches nothing.
+        let constraints: Vec<_> = constraints
+            .into_iter()
+            .map(|(db_col, criterion)| {
+                let parsed = criterion
+                    .string(value_format)
+                    .ok()
+                    .map(|condition_string| Criterion::new(&condition_string, value_format));
+                (db_col, parsed)
+            })
+            .collect();
+
         for (row_idx, row) in data_rows.iter().enumerate() {
             if selected[row_idx] {
                 continue;
             }
-            let row_matches = constraints.iter().all(|(db_col, criterion)| {
-                let cell = match row.get(*db_col) {
-                    Some(v) => v.clone(),
-                    None => return false,
+            let row_matches = constraints.iter().all(|(db_col, parsed)| {
+                let Some(cell) = row.get(*db_col) else {
+                    return false;
                 };
-                let condition_string = match criterion.string(value_format) {
-                    Ok(s) => s,
-                    Err(_) => return false,
-                };
-                let (op, rhs_text) = parse_condition(&condition_string);
-                let rhs = Value::String(rhs_text.to_lowercase());
-                let lhs = case_insensitive_cell(&cell, value_format);
-                match compare(&lhs, &rhs, &op, value_format) {
-                    Ok(result) => result.bool(value_format).unwrap_or(false),
-                    Err(_) => false,
-                }
+                parsed
+                    .as_ref()
+                    .is_some_and(|criterion| criterion.matches(cell, value_format))
             });
             if row_matches {
                 selected[row_idx] = true;

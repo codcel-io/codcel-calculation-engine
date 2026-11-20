@@ -21,9 +21,9 @@ pub fn codcel_transpose(array: Vec<Vec<Value>>) -> Result<Value, Box<dyn Error +
     let col_count = array[0].len();
     let mut transposed: Vec<Vec<Value>> = vec![Vec::with_capacity(array.len()); col_count];
 
-    for row in &array {
-        for (col_idx, value) in row.iter().enumerate() {
-            transposed[col_idx].push(value.clone());
+    for row in array {
+        for (col_idx, value) in row.into_iter().enumerate() {
+            transposed[col_idx].push(value);
         }
     }
 

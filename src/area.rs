@@ -2645,7 +2645,7 @@ where
     F: Fn(Value) -> Result<String, Box<dyn Error + Send + Sync>>,
 {
     // Convert the input into an appropriate matrix
-    let area_value = string_value.area_of_value()?;
+    let area_value = string_value.into_area_of_value()?;
 
     let max_rows = area_value.len();
     let max_cols = area_value.first().map_or(0, |row| row.len());
@@ -2686,7 +2686,7 @@ where
     F: Fn(Value, Option<bool>, &ValueFormat) -> Result<String, Box<dyn Error + Send + Sync>>,
 {
     // Convert the inputs into appropriate matrices
-    let area_value = string_value.area_of_value()?;
+    let area_value = string_value.into_area_of_value()?;
     let area_opt_bool = optional_bool.option_area_of_bool(strict_type_conversion, value_format)?;
 
     // Determine the maximum dimensions across inputs
@@ -2780,7 +2780,7 @@ where
     ConvertFn: Fn(U) -> Value,
 {
     // Extract the 2D array of values
-    let values = area.area_of_value()?;
+    let values = area.into_area_of_value()?;
 
     // Use iterators to transform rows
     let result: Result<Vec<Vec<Value>>, Box<dyn Error + Send + Sync>> = values
@@ -2941,7 +2941,7 @@ where
     F: Fn(&Value, &ValueFormat) -> Result<f64, Box<dyn Error + Send + Sync>>,
 {
     // Extract the 2D array of values
-    let values = area.area_of_value()?;
+    let values = area.into_area_of_value()?;
 
     // Use iterators to transform rows
     let result: Result<Vec<Vec<Value>>, Box<dyn Error + Send + Sync>> = values
@@ -2971,7 +2971,7 @@ where
     F: Fn(&Value, &ValueFormat) -> Result<bool, Box<dyn Error + Send + Sync>>,
 {
     // Extract the 2D array of values
-    let values = area.area_of_value()?;
+    let values = area.into_area_of_value()?;
 
     // Use iterators to transform rows
     let result: Result<Vec<Vec<Value>>, Box<dyn Error + Send + Sync>> = values

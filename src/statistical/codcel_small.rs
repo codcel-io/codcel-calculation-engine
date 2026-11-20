@@ -6,6 +6,8 @@
 
 use std::error::Error;
 
+use super::order_statistic::select_ascending;
+
 /// Excel-compatible `SMALL` that returns the k-th smallest value in a data set.
 /// - `values`: an array of numeric values.
 /// - `k`: the position (from the smallest) in the array to return (1-based).
@@ -17,7 +19,11 @@ pub fn codcel_small(values: Vec<f64>, k: i32) -> Result<f64, Box<dyn Error + Sen
         return Err("SMALL: k is out of the range of the input values.".into());
     }
 
+    // Selected, not sorted, where that gives the same value
     let mut sorted_values = values;
+    if let Some(value) = select_ascending(&mut sorted_values, k - 1) {
+        return Ok(value);
+    }
     sorted_values.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
     Ok(sorted_values[k - 1])
 }

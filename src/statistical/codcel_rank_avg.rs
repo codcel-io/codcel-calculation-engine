@@ -25,8 +25,27 @@ pub fn codcel_rank_avg(
     // Default to descending order if `order` is None
     let sort_ascending = order.unwrap_or(false);
 
+    // Without NaN, the tied values take the ranks just after those ranked above them: counted
+    // in one pass, rather than by sorting a copy on every call.
+    if !values.iter().any(|v| v.is_nan()) {
+        let (mut above, mut tied) = (0u64, 0u64);
+        for &v in &values {
+            if v == value {
+                tied += 1;
+            } else if (sort_ascending && v < value) || (!sort_ascending && v > value) {
+                above += 1;
+            }
+        }
+        if tied == 0 {
+            return Err("RANK.AVG: The value is not found in the list.".into());
+        }
+        // The sum of the ranks above+1 ..= above+tied, exact as the sum of the ranks was.
+        let rank_sum = tied * above + tied * (tied + 1) / 2;
+        return Ok(rank_sum as f64 / tied as f64);
+    }
+
     // Sort the values in ascending or descending order
-    let mut sorted_values = values.clone();
+    let mut sorted_values = values;
     if sort_ascending {
         sorted_values.sort_by(|a, b| a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal));
     } else {
@@ -56,6 +75,73 @@ pub fn codcel_rank_avg(
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    /// The ranks as the sorting implementation computed them, to check the counting one against.
+    fn sorted_ranks(value: f64, values: &[f64], ascending: bool) -> Option<(i32, f64)> {
+        let mut sorted = values.to_vec();
+        if ascending {
+            sorted.sort_by(|a, b| a.partial_cmp(b).unwrap());
+        } else {
+            sorted.sort_by(|a, b| b.partial_cmp(a).unwrap());
+        }
+        let positions: Vec<usize> = (0..sorted.len()).filter(|&i| sorted[i] == value).collect();
+        let first = *positions.first()? as i32 + 1;
+        let sum: f64 = positions.iter().map(|&i| (i + 1) as f64).sum();
+        Some((first, sum / positions.len() as f64))
+    }
+
+    #[test]
+    fn counted_ranks_match_sorted_ranks() {
+        let mut seed: u64 = 0x2545_f491_4f6c_dd1d;
+        let mut next = || {
+            seed = seed.wrapping_mul(6_364_136_223_846_793_005).wrapping_add(1);
+            seed >> 33
+        };
+        for _ in 0..2_000 {
+            let len = 1 + (next() % 40) as usize;
+            // Few distinct values, so there are many ties; includes -0.0 and 0.0.
+            let values: Vec<f64> = (0..len)
+                .map(|_| match next() % 9 {
+                    0 => -0.0,
+                    1 => 0.0,
+                    n => (n as f64 - 4.0) * 1.5,
+                })
+                .collect();
+            let value = values[(next() as usize) % len];
+            let missing = 1234.5;
+            for ascending in [false, true] {
+                let order = Some(ascending);
+                let (eq, avg) = sorted_ranks(value, &values, ascending).unwrap();
+                assert_eq!(
+                    crate::statistical::codcel_rank_eq::codcel_rank_eq(
+                        value,
+                        values.clone(),
+                        order
+                    )
+                    .unwrap(),
+                    eq
+                );
+                assert_eq!(
+                    crate::compatibility::codcel_rank::codcel_rank(value, values.clone(), order)
+                        .unwrap(),
+                    eq
+                );
+                assert_eq!(
+                    codcel_rank_avg(value, values.clone(), order)
+                        .unwrap()
+                        .to_bits(),
+                    avg.to_bits()
+                );
+                assert!(codcel_rank_avg(missing, values.clone(), order).is_err());
+                assert!(crate::statistical::codcel_rank_eq::codcel_rank_eq(
+                    missing,
+                    values.clone(),
+                    order
+                )
+                .is_err());
+            }
+        }
+    }
 
     #[test]
     fn test_rank_avg_descending() {

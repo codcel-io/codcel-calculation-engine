@@ -31,6 +31,7 @@ pub mod compensated_sum;
 mod condition;
 pub mod condition_base;
 pub mod convert;
+mod criterion;
 pub mod database;
 pub mod database_base;
 pub mod date_and_time;

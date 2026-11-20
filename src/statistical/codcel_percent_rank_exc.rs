@@ -29,7 +29,7 @@ pub fn codcel_percent_rank_exc(
         return Err("PERCENTRANK.EXC: Significance must be >= 1.".into());
     }
 
-    let mut sorted_array = array.clone();
+    let mut sorted_array = array;
     // A NaN in the range is the legacy in-band representation of an Excel error;
     // Excel propagates it rather than sorting around it.
     if sorted_array.iter().any(|v| v.is_nan()) {

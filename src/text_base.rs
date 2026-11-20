@@ -63,7 +63,7 @@ pub fn find(
     let substring = substring.string(value_format)?;
     let start_position = start_position.option_i32(value_format)?;
 
-    let values = text.area_of_value()?;
+    let values = text.into_area_of_value()?;
 
     // Resultant 2D array for the final output
     let mut result: Vec<Vec<Value>> = Vec::new();
@@ -110,7 +110,7 @@ pub fn findb(
     let substring = substring.string(value_format)?;
     let start_position = start_position.option_i32(value_format)?;
 
-    let values = text.area_of_value()?;
+    let values = text.into_area_of_value()?;
 
     // Resultant 2D array for the final output
     let mut result: Vec<Vec<Value>> = Vec::new();
@@ -157,7 +157,7 @@ pub fn search(
     let substring = substring.string(value_format)?;
     let start_position = start_position.option_i32(value_format)?;
 
-    let values = text.area_of_value()?;
+    let values = text.into_area_of_value()?;
 
     // Resultant 2D array for the final output
     let mut result: Vec<Vec<Value>> = Vec::new();
@@ -205,7 +205,7 @@ pub fn searchb(
     let substring = substring.string(value_format)?;
     let start_position = start_position.option_i32(value_format)?;
 
-    let values = text.area_of_value()?;
+    let values = text.into_area_of_value()?;
 
     // Resultant 2D array for the final output
     let mut result: Vec<Vec<Value>> = Vec::new();
@@ -972,7 +972,7 @@ pub fn number_value(
     strict_type_conversion: bool,
     value_format: &ValueFormat,
 ) -> Result<Value, Box<dyn Error + Send + Sync>> {
-    let decimal_separator = decimal_separator.option_area_of_value()?;
+    let decimal_separator = decimal_separator.into_option_area_of_value()?;
     let decimal_separator = if let Some(value) = decimal_separator {
         value
     } else {
@@ -981,7 +981,7 @@ pub fn number_value(
         )]]
     };
 
-    let group_separator = group_separator.option_area_of_value()?;
+    let group_separator = group_separator.into_option_area_of_value()?;
     let group_separator = if let Some(value) = group_separator {
         value
     } else {

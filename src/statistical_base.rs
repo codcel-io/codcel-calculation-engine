@@ -1145,7 +1145,7 @@ pub fn linest(
     value_format: &ValueFormat,
 ) -> Result<Value, Box<dyn Error + Send + Sync>> {
     let known_ys = known_ys.to_flatterned_vec_f64(value_format)?;
-    let known_xs = known_xs.option_area_of_value()?;
+    let known_xs = known_xs.into_option_area_of_value()?;
     let known_xs = if let Some(known_xs) = known_xs {
         // Convert to Vec<Vec<f64>> preserving 2D structure (rows x cols)
         let mut xs_2d: Vec<Vec<f64>> = Vec::new();
@@ -1184,7 +1184,7 @@ pub fn logest(
     value_format: &ValueFormat,
 ) -> Result<Value, Box<dyn Error + Send + Sync>> {
     let known_ys = known_ys.to_flatterned_vec_f64(value_format)?;
-    let known_xs = known_xs.option_area_of_value()?;
+    let known_xs = known_xs.into_option_area_of_value()?;
     let known_xs = if let Some(known_xs) = known_xs {
         let values = Value::AreaValue(known_xs);
         Some(values.to_flatterned_vec_f64(value_format)?)
@@ -1341,16 +1341,13 @@ pub fn average(
     for value in &values {
         if value.is_array() || value.is_area() {
             // Excel AVERAGE ignores non-numeric cells in ranges/arrays
-            if let Ok(area) = value.area_of_value() {
-                for row in &area {
-                    for cell in row {
-                        if let Ok(val) = cell.f64(value_format) {
-                            sum.add(val);
-                            count += 1;
-                        }
-                    }
+            // A range's cells are read where they are; a value that cannot be read adds nothing.
+            let _ = value.for_each_cell(|cell| {
+                if let Some(val) = cell.try_f64(value_format) {
+                    sum.add(val);
+                    count += 1;
                 }
-            }
+            });
         } else if is_non_numeric_cell(value) {
             // The transpiler expands ranges into individual values.
             // Excel AVERAGE ignores text, booleans, and empty cells in ranges.
@@ -1712,8 +1709,8 @@ pub fn chisq_test(
     expected_range: Value,
     value_format: &ValueFormat,
 ) -> Result<Value, Box<dyn Error + Send + Sync>> {
-    let actual_area = actual_range.area_of_value()?;
-    let expected_area = expected_range.area_of_value()?;
+    let actual_area = actual_range.into_area_of_value()?;
+    let expected_area = expected_range.into_area_of_value()?;
 
     // Use original range dimensions for degrees of freedom
     let num_rows = actual_area.len();
