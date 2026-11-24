@@ -13,7 +13,7 @@ use crate::lookup_and_reference::codcel_v_lookup::codcel_v_lookup;
 use crate::lookup_and_reference::codcel_x_lookup::codcel_x_lookup;
 use crate::lookup_and_reference::codcel_x_match::codcel_x_match;
 use crate::value::Value::VecValue;
-use crate::value::{vec_value_to_vec_value, Value};
+use crate::value::{vec_value_to_vec_value, FlatRef, Value};
 use crate::value_format::ValueFormat;
 use std::error::Error;
 
@@ -95,15 +95,25 @@ pub fn match_array(
     match_type: Value,
     value_format: &ValueFormat,
 ) -> Result<Value, Box<dyn Error + Send + Sync>> {
+    match_array_ref(lookup_value, &lookup_array, match_type, value_format)
+}
+
+/// [`match_array`] reading `lookup_array` where it is. The cells are compared by reference, with
+/// the same comparisons.
+pub fn match_array_ref(
+    lookup_value: Value,
+    lookup_array: &Value,
+    match_type: Value,
+    value_format: &ValueFormat,
+) -> Result<Value, Box<dyn Error + Send + Sync>> {
     let lookup_value = lookup_value.into_single_value();
-    let lookup_array = lookup_array.into_flattened_vec_value()?;
+    let lookup_array = lookup_array.flattened_ref()?;
     let match_type = match_type.option_i32(value_format)?;
 
-    Ok(Value::I32(codcel_match(
-        lookup_value,
-        lookup_array,
-        match_type,
-    )?))
+    Ok(Value::I32(match lookup_array {
+        FlatRef::Borrowed(cells) => codcel_match(&lookup_value, cells, match_type)?,
+        FlatRef::Owned(cells) => codcel_match(lookup_value, cells, match_type)?,
+    }))
 }
 
 /// Excel-compatible `VLOOKUP` function.

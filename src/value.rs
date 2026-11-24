@@ -1288,6 +1288,41 @@ impl Value {
     }
 
     /// [`area_of_value`](Self::area_of_value), moving a range's cells out instead of copying them.
+    /// [`into_area_of_value`](Self::into_area_of_value) without copying a range's cells.
+    pub fn area_ref(&self) -> Result<AreaRef<'_>, Box<dyn Error + Send + Sync>> {
+        Ok(match self {
+            Value::VecValue(vec) | Value::OptionVecValue(Some(vec)) => AreaRef::Row(vec),
+            Value::AreaValue(area) | Value::OptionAreaValue(Some(area)) => AreaRef::Rows(area),
+            other => AreaRef::Owned(other.area_of_value()?),
+        })
+    }
+
+    /// [`into_option_area_of_value`](Self::into_option_area_of_value) without copying a range's
+    /// cells.
+    pub fn option_area_ref(&self) -> Result<Option<AreaRef<'_>>, Box<dyn Error + Send + Sync>> {
+        Ok(match self {
+            Value::VecValue(vec) | Value::OptionVecValue(Some(vec)) => Some(AreaRef::Row(vec)),
+            Value::AreaValue(area) | Value::OptionAreaValue(Some(area)) => {
+                Some(AreaRef::Rows(area))
+            }
+            other => other.option_area_of_value()?.map(AreaRef::Owned),
+        })
+    }
+
+    /// [`into_flattened_vec_value`](Self::into_flattened_vec_value) without copying a range's
+    /// cells: borrowed when the value is a range, owned otherwise.
+    pub fn flattened_ref(&self) -> Result<FlatRef<'_>, Box<dyn Error + Send + Sync>> {
+        Ok(match self {
+            Value::VecValue(cells) | Value::OptionVecValue(Some(cells)) => {
+                FlatRef::Borrowed(cells.iter().collect())
+            }
+            Value::AreaValue(area) | Value::OptionAreaValue(Some(area)) => {
+                FlatRef::Borrowed(area.iter().flatten().collect())
+            }
+            other => FlatRef::Owned(other.area_of_value()?.into_iter().flatten().collect()),
+        })
+    }
+
     pub fn into_area_of_value(self) -> Result<Vec<Vec<Value>>, Box<dyn Error + Send + Sync>> {
         match self {
             Value::VecValue(vec) | Value::OptionVecValue(Some(vec)) => Ok(vec![vec]),
@@ -3413,6 +3448,32 @@ pub fn area_time(value: Vec<Vec<NaiveTime>>) -> Value {
     Value::AreaValue(values)
 }
 
+/// [`flatten_value_to_partial_vec`] without copying: the same cells, in the same order, borrowed
+/// from `value`.
+pub fn flatten_value_to_partial_refs(value: &Value) -> Vec<&Value> {
+    fn push<'a>(value: &'a Value, out: &mut Vec<&'a Value>) {
+        match value {
+            Value::VecValue(vec) | Value::OptionVecValue(Some(vec)) => {
+                for cell in vec {
+                    push(cell, out);
+                }
+            }
+            Value::AreaValue(rows) => out.extend(rows.iter().flatten()),
+            other => out.push(other),
+        }
+    }
+    match value {
+        // At the top level a list's cells are flattened in turn; an area's rows are joined; any
+        // other value is a list of itself. Inside a list, cells are flattened the same way.
+        Value::VecValue(_) | Value::OptionVecValue(Some(_)) | Value::AreaValue(_) => {
+            let mut out = Vec::new();
+            push(value, &mut out);
+            out
+        }
+        other => vec![other],
+    }
+}
+
 pub fn flatten_value_to_partial_vec(value: Value) -> Vec<Value> {
     /// Whether flattening `value` gives anything other than `vec![value]`.
     fn is_nested(value: &Value) -> bool {
@@ -4051,5 +4112,134 @@ mod tests {
         assert!(result1);
         assert!(!result2);
         assert!(!result3);
+    }
+}
+
+/// The rows of a value read as an area (see [`Value::area_ref`]): borrowed from a range, or built
+/// for any other value.
+#[derive(Debug)]
+pub enum AreaRef<'a> {
+    /// A list's cells: one row.
+    Row(&'a [Value]),
+    Rows(&'a [Vec<Value>]),
+    Owned(Vec<Vec<Value>>),
+}
+
+impl AreaRef<'_> {
+    /// The number of rows.
+    pub fn len(&self) -> usize {
+        match self {
+            AreaRef::Row(_) => 1,
+            AreaRef::Rows(rows) => rows.len(),
+            AreaRef::Owned(rows) => rows.len(),
+        }
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.len() == 0
+    }
+
+    /// The rows, in order.
+    pub fn rows(&self) -> Box<dyn Iterator<Item = &[Value]> + '_> {
+        match self {
+            AreaRef::Row(row) => Box::new(std::iter::once(*row)),
+            AreaRef::Rows(rows) => Box::new(rows.iter().map(Vec::as_slice)),
+            AreaRef::Owned(rows) => Box::new(rows.iter().map(Vec::as_slice)),
+        }
+    }
+}
+
+/// The cells of a value flattened (see [`Value::flattened_ref`]).
+#[derive(Debug)]
+pub enum FlatRef<'a> {
+    Borrowed(Vec<&'a Value>),
+    Owned(Vec<Value>),
+}
+
+#[cfg(test)]
+mod ref_view_tests {
+    use super::*;
+
+    fn samples() -> Vec<Value> {
+        let s = |t: &str| Value::String(t.to_string());
+        let flat = vec![Value::F64(1.5), s("a"), Value::None, Value::Bool(true)];
+        let area = vec![
+            vec![Value::I32(1), s("b")],
+            vec![Value::OptionF64(None), Value::F64(-2.0)],
+        ];
+        vec![
+            Value::F64(3.0),
+            Value::I32(-4),
+            s("text"),
+            Value::Bool(false),
+            Value::None,
+            Value::OptionF64(None),
+            Value::OptionString(Some("x".to_string())),
+            Value::VecValue(vec![]),
+            Value::VecValue(flat.clone()),
+            Value::OptionVecValue(Some(flat.clone())),
+            Value::OptionVecValue(None),
+            Value::AreaValue(area.clone()),
+            Value::AreaValue(vec![]),
+            Value::AreaValue(vec![vec![]]),
+            Value::OptionAreaValue(Some(area.clone())),
+            Value::OptionAreaValue(None),
+            // Ranges inside a list.
+            Value::VecValue(vec![
+                Value::F64(1.0),
+                Value::VecValue(flat.clone()),
+                Value::AreaValue(area.clone()),
+                Value::OptionVecValue(Some(vec![Value::VecValue(vec![s("deep")])])),
+                Value::OptionAreaValue(Some(area.clone())),
+            ]),
+            Value::OptionVecValue(Some(vec![Value::AreaValue(area)])),
+        ]
+    }
+
+    fn show<T: std::fmt::Debug>(r: Result<T, Box<dyn Error + Send + Sync>>) -> String {
+        match r {
+            Ok(v) => format!("{v:?}"),
+            Err(e) => format!("error {e}"),
+        }
+    }
+
+    /// Every borrowed view gives the cells, in the order, and the errors, of the conversion it
+    /// stands for.
+    #[test]
+    fn views_match_the_owned_conversions() {
+        for value in samples() {
+            let rows = |a: AreaRef<'_>| a.rows().map(<[Value]>::to_vec).collect::<Vec<_>>();
+            assert_eq!(
+                show(value.area_ref().map(rows)),
+                show(value.clone().into_area_of_value()),
+                "area_ref {value:?}"
+            );
+            assert_eq!(
+                show(value.option_area_ref().map(|a| a.map(rows))),
+                show(value.clone().into_option_area_of_value()),
+                "option_area_ref {value:?}"
+            );
+            let flat = value.flattened_ref().map(|f| match f {
+                FlatRef::Borrowed(cells) => cells.into_iter().cloned().collect::<Vec<_>>(),
+                FlatRef::Owned(cells) => cells,
+            });
+            assert_eq!(
+                show(flat),
+                show(value.clone().into_flattened_vec_value()),
+                "flattened_ref {value:?}"
+            );
+            let partial: Vec<Value> = flatten_value_to_partial_refs(&value)
+                .into_iter()
+                .cloned()
+                .collect();
+            assert_eq!(
+                partial,
+                flatten_value_to_partial_vec(value.clone()),
+                "partial {value:?}"
+            );
+            if let Ok(area) = value.area_ref() {
+                assert_eq!(area.len(), area.rows().count());
+            }
+        }
     }
 }

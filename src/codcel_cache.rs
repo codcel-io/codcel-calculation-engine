@@ -122,6 +122,23 @@ macro_rules! codcel_cached {
     }};
 }
 
+/// [`codcel_cached!`] for a function that reads the range by reference: the same range,
+/// computed once per request under the same key, as an `Arc<Value>` instead of a copy. Pass it
+/// as `&*codcel_cached_shared!(...)`.
+#[macro_export]
+macro_rules! codcel_cached_shared {
+    ($input:expr, $key:expr, $body:expr) => {{
+        match $input.range_cache_get_shared($key) {
+            Some(cached) => cached,
+            None => {
+                let __value = ::std::sync::Arc::new($body);
+                $input.range_cache_insert_shared($key, ::std::sync::Arc::clone(&__value));
+                __value
+            }
+        }
+    }};
+}
+
 #[cfg(test)]
 mod tests {
     use crate::input::Input;

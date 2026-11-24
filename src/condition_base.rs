@@ -11,7 +11,9 @@ use crate::logical::codcel_and::codcel_and;
 use crate::logical::codcel_or::codcel_or;
 use crate::logical::codcel_xor::codcel_xor;
 use crate::match_type_and_compare_macro::compare;
-use crate::value::{flatten_value_to_partial_vec, vec_value_to_vec_boolean, Value};
+use crate::value::{
+    flatten_value_to_partial_refs, flatten_value_to_partial_vec, vec_value_to_vec_boolean, Value,
+};
 use crate::value_format::ValueFormat;
 use std::error::Error;
 
@@ -232,8 +234,19 @@ pub fn sum_ifs(
     criteria: Value,
     value_format: &ValueFormat,
 ) -> Result<Value, Box<dyn Error + Send + Sync>> {
-    let sum_range_values = flatten_value_to_partial_vec(sum_range_values);
     let criteria = criteria.into_vec_value()?;
+    let criteria: Vec<&Value> = criteria.iter().collect();
+    sum_ifs_ref(&sum_range_values, &criteria, value_format)
+}
+
+/// [`sum_ifs`] reading its ranges where they are: `criteria` is the list of (range, condition)
+/// pairs that `sum_ifs` takes as one value.
+pub fn sum_ifs_ref(
+    sum_range_values: &Value,
+    criteria: &[&Value],
+    value_format: &ValueFormat,
+) -> Result<Value, Box<dyn Error + Send + Sync>> {
+    let sum_range_values = flatten_value_to_partial_refs(sum_range_values);
 
     // The indexes of the cells that meet every criteria pair
     let common_indexes = process_criteria("SUMIFS", criteria, value_format)?;
@@ -255,7 +268,7 @@ pub fn sum_ifs(
 /// index is left.
 fn process_criteria(
     function_name: &str,
-    criteria: Vec<Value>,
+    criteria: &[&Value],
     value_format: &ValueFormat,
 ) -> Result<Vec<usize>, Box<dyn Error + Send + Sync>> {
     if criteria.is_empty() || !criteria.len().is_multiple_of(2) {
@@ -264,10 +277,10 @@ fn process_criteria(
 
     let mut matching: Option<Vec<usize>> = None;
 
-    let mut criteria = criteria.into_iter();
+    let mut criteria = criteria.iter();
     while let (Some(range), Some(condition)) = (criteria.next(), criteria.next()) {
-        // The range is moved, not copied.
-        let criteria_range = flatten_value_to_partial_vec(range);
+        // The range is read where it is, not copied.
+        let criteria_range = flatten_value_to_partial_refs(range);
 
         // Excel conditional functions are case-insensitive
         let condition_string = condition.string(value_format)?;
@@ -296,7 +309,11 @@ pub fn average_ifs(
     let criteria = criteria.into_vec_value()?;
 
     // The indexes of the cells that meet every criteria pair
-    let common_indexes = process_criteria("AVERAGEIFS", criteria, value_format)?;
+    let common_indexes = process_criteria(
+        "AVERAGEIFS",
+        &criteria.iter().collect::<Vec<_>>(),
+        value_format,
+    )?;
 
     // Calculate the average of values at matching indexes
     if common_indexes.is_empty() {
@@ -319,7 +336,11 @@ pub fn count_ifs(
     let criteria = criteria.into_vec_value()?;
 
     // The indexes of the cells that meet every criteria pair
-    let common_indexes = process_criteria("COUNTIFS", criteria, value_format)?;
+    let common_indexes = process_criteria(
+        "COUNTIFS",
+        &criteria.iter().collect::<Vec<_>>(),
+        value_format,
+    )?;
 
     // Count the matching indexes
     Ok(Value::I32(common_indexes.len() as i32))
@@ -334,7 +355,8 @@ pub fn max_ifs(
     let criteria = criteria.into_vec_value()?;
 
     // The indexes of the cells that meet every criteria pair
-    let common_indexes = process_criteria("MAXIFS", criteria, value_format)?;
+    let common_indexes =
+        process_criteria("MAXIFS", &criteria.iter().collect::<Vec<_>>(), value_format)?;
 
     // Find the maximum value among the matching indexes
     if common_indexes.is_empty() {
@@ -360,7 +382,8 @@ pub fn min_ifs(
     let criteria = criteria.into_vec_value()?;
 
     // The indexes of the cells that meet every criteria pair
-    let common_indexes = process_criteria("MINIFS", criteria, value_format)?;
+    let common_indexes =
+        process_criteria("MINIFS", &criteria.iter().collect::<Vec<_>>(), value_format)?;
 
     // Find the minimum value among the matching indexes
     if common_indexes.is_empty() {
@@ -383,8 +406,18 @@ pub fn sum_if(
     sum_range_values: Value,
     value_format: &ValueFormat,
 ) -> Result<Value, Box<dyn Error + Send + Sync>> {
+    sum_if_ref(&values, condition, &sum_range_values, value_format)
+}
+
+/// [`sum_if`] reading its ranges where they are.
+pub fn sum_if_ref(
+    values: &Value,
+    condition: Value,
+    sum_range_values: &Value,
+    value_format: &ValueFormat,
+) -> Result<Value, Box<dyn Error + Send + Sync>> {
     // Extract the area of values and the condition string
-    let values_area = values.into_area_of_value()?;
+    let values_area = values.area_ref()?;
     let condition_string = condition.string(value_format)?;
 
     // Parse the condition and the value to compare against
@@ -392,14 +425,14 @@ pub fn sum_if(
     let criterion = Criterion::new(&condition_string, value_format);
 
     // Determine the summation area: use the optional sum_range if provided, otherwise use values_area
-    let sum_range_area = sum_range_values.into_option_area_of_value()?;
+    let sum_range_area = sum_range_values.option_area_ref()?;
     let sum_area = sum_range_area.as_ref().unwrap_or(&values_area);
 
     // Ensure the dimensions of the values_area and sum_area match
     if sum_area.len() != values_area.len()
         || sum_area
-            .iter()
-            .zip(values_area.iter())
+            .rows()
+            .zip(values_area.rows())
             .any(|(sum_row, values_row)| sum_row.len() != values_row.len())
     {
         return Err("The dimensions of the sum range do not match the values range.".into());
@@ -407,8 +440,8 @@ pub fn sum_if(
 
     // Sum the values of cells in the sum_area matching the condition in values_area
     let sum = values_area
-        .iter()
-        .zip(sum_area.iter())
+        .rows()
+        .zip(sum_area.rows())
         .flat_map(|(values_row, sum_row)| values_row.iter().zip(sum_row.iter()))
         .filter_map(|(value_cell, sum_cell)| {
             if criterion.matches(value_cell, value_format) {

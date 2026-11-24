@@ -24,7 +24,9 @@ pub(crate) type FastMap<K, V> = HashMap<K, V, rustc_hash::FxBuildHasher>;
 #[derive(Debug, Default)]
 struct Caches {
     fn_cache: Mutex<FastMap<String, Value>>,
-    range_cache: Mutex<FastMap<u64, Value>>,
+    /// Shared, so a range is handed out without copying its cells (see
+    /// [`range_cache_get_shared`](Input::range_cache_get_shared)).
+    range_cache: Mutex<FastMap<u64, Arc<Value>>>,
     fn_error_cache: Mutex<FastMap<String, String>>,
     /// Row dispatchers' values, by (dispatcher, row): see [`codcel_cache_row`](crate::codcel_cache_row).
     row_cache: Mutex<FastMap<(&'static str, i32), Value>>,
@@ -254,6 +256,13 @@ impl Input {
     /// of a fill-down range that several formulas read. The key identifies the expression that
     /// computed the value (see [`codcel_cached`](crate::codcel_cached)).
     pub fn range_cache_get(&self, key: u64) -> Option<Value> {
+        self.range_cache_get_shared(key)
+            .map(|value| Value::clone(&value))
+    }
+
+    /// [`range_cache_get`](Self::range_cache_get) without copying the range: for functions that
+    /// read a range by reference.
+    pub fn range_cache_get_shared(&self, key: u64) -> Option<Arc<Value>> {
         crate::profile::count(&crate::profile::RANGE_CACHE_GETS);
         let value = self
             .caches
@@ -271,6 +280,11 @@ impl Input {
     /// Insert into the per-request range cache. Unlike [`fn_cache_insert`](Self::fn_cache_insert),
     /// large values are kept: rebuilding a range costs at least as much as cloning it.
     pub fn range_cache_insert(&self, key: u64, value: Value) {
+        self.range_cache_insert_shared(key, Arc::new(value));
+    }
+
+    /// [`range_cache_insert`](Self::range_cache_insert) of a range already shared.
+    pub fn range_cache_insert_shared(&self, key: u64, value: Arc<Value>) {
         self.caches
             .range_cache
             .lock()

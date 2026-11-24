@@ -165,3 +165,54 @@ fn test_default_match_type() {
     let result = codcel_match(4, lookup_array, None); // Should default to 1
     assert_eq!(result.unwrap(), 2); // Should find 3 at position 2
 }
+
+#[cfg(test)]
+mod by_reference_tests {
+    use super::codcel_match;
+    use crate::value::Value;
+
+    /// Matching borrowed cells gives the positions and errors of matching owned ones.
+    #[test]
+    fn references_match_as_values_do() {
+        let s = |t: &str| Value::String(t.to_string());
+        let arrays = vec![
+            vec![
+                Value::F64(1.0),
+                Value::F64(2.0),
+                Value::F64(2.0),
+                Value::F64(5.0),
+            ],
+            vec![Value::F64(5.0), Value::I32(3), Value::F64(1.0)],
+            vec![s("apple"), s("Banana"), s("cherry"), Value::None],
+            vec![
+                Value::Bool(true),
+                s("x"),
+                Value::F64(0.0),
+                Value::None,
+                Value::I32(7),
+            ],
+            vec![],
+        ];
+        let lookups = [
+            Value::F64(2.0),
+            Value::I32(3),
+            Value::F64(4.5),
+            s("banana"),
+            s("b*"),
+            Value::Bool(true),
+            Value::None,
+            Value::F64(-1.0),
+        ];
+        for array in &arrays {
+            for lookup in &lookups {
+                for match_type in [None, Some(0), Some(1), Some(-1), Some(2)] {
+                    let owned = codcel_match(lookup.clone(), array.clone(), match_type)
+                        .map_err(|e| e.to_string());
+                    let borrowed = codcel_match(lookup, array.iter().collect(), match_type)
+                        .map_err(|e| e.to_string());
+                    assert_eq!(owned, borrowed, "{lookup:?} in {array:?}, {match_type:?}");
+                }
+            }
+        }
+    }
+}
