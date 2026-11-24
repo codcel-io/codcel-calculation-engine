@@ -2237,8 +2237,8 @@ pub fn max(
                 })?;
                 Ok(local_max)
             } else {
-                // Excel MAX ignores text and boolean values from cell references
-                if value.is_string() || matches!(value, Value::Bool(_)) {
+                // Excel MAX ignores text, boolean values and blank cells from cell references
+                if value.is_string() || matches!(value, Value::Bool(_) | Value::None) {
                     return Ok(acc);
                 }
                 // Try to compare the value with the accumulator, stop if error occurs and strict_type_conversion is true
@@ -2251,7 +2251,8 @@ pub fn max(
         },
     )?;
 
-    Ok(Value::F64(result))
+    // Excel gives 0 when nothing counted is a number (only blank cells or text, say).
+    Ok(Value::F64(if result == f64::MIN { 0.0 } else { result }))
 }
 
 /// Excel-compatible `INT` function.
@@ -2721,8 +2722,8 @@ pub fn min(
                 })?;
                 Ok(local_min)
             } else {
-                // Excel MIN ignores text and boolean values from cell references
-                if value.is_string() || matches!(value, Value::Bool(_)) {
+                // Excel MIN ignores text, boolean values and blank cells from cell references
+                if value.is_string() || matches!(value, Value::Bool(_) | Value::None) {
                     return Ok(acc);
                 }
                 // Try to compare the value with the accumulator, stop if error occurs and strict_type_conversion is true
@@ -2740,7 +2741,8 @@ pub fn min(
         },
     )?;
 
-    Ok(Value::F64(result))
+    // Excel gives 0 when nothing counted is a number (only blank cells or text, say).
+    Ok(Value::F64(if result == f64::MAX { 0.0 } else { result }))
 }
 
 /// Excel-compatible `COS` function.
@@ -5021,5 +5023,26 @@ mod tests {
         // Zeros should be counted (not blank)
         let result = counta(vec![value_f64(0.0), value_i32(0)], &value_format).unwrap();
         assert_eq!(result.f64(&value_format).unwrap(), 2.0);
+    }
+}
+
+#[cfg(test)]
+mod blank_cell_tests {
+    use super::*;
+
+    #[test]
+    fn max_and_min_ignore_a_blank_cell_like_excel() {
+        let f = ValueFormat::default();
+        assert_eq!(max(vec![Value::F64(5.0), Value::None], true, &f).unwrap(), Value::F64(5.0));
+        assert_eq!(max(vec![Value::F64(-5.0), Value::None], true, &f).unwrap(), Value::F64(-5.0));
+        assert_eq!(min(vec![Value::F64(5.0), Value::None], true, &f).unwrap(), Value::F64(5.0));
+        assert_eq!(min(vec![Value::F64(-5.0), Value::None], true, &f).unwrap(), Value::F64(-5.0));
+    }
+
+    #[test]
+    fn max_and_min_of_only_blank_cells_are_zero_like_excel() {
+        let f = ValueFormat::default();
+        assert_eq!(max(vec![Value::None, Value::None], true, &f).unwrap(), Value::F64(0.0));
+        assert_eq!(min(vec![Value::None], true, &f).unwrap(), Value::F64(0.0));
     }
 }
