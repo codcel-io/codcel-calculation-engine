@@ -309,6 +309,43 @@ pub fn x_match_array(
     )?))
 }
 
+/// FILTER on a grid, keeping its shape as Excel does: an include row as wide as the grid keeps
+/// the columns where it is true (a row stays a row), and an include column as tall as the grid
+/// keeps the rows where it is true. `None` when the include fits neither way.
+fn filter_area(
+    array: &Value,
+    include: &Value,
+    value_format: &ValueFormat,
+) -> Result<Option<Vec<Vec<Value>>>, Box<dyn Error + Send + Sync>> {
+    let grid = array.clone().into_area_of_value()?;
+    let mask_grid = include.clone().into_area_of_value()?;
+    let rows = grid.len();
+    let columns = grid.first().map_or(0, Vec::len);
+    let truthy = |v: &Value| v.bool(value_format).unwrap_or_default();
+    // One include per column: a single include row as wide as the grid (not also as tall, which
+    // is the include column case below).
+    let by_columns = mask_grid.len() == 1 && mask_grid[0].len() == columns && columns > 1;
+    if by_columns {
+        let keep: Vec<bool> = mask_grid[0].iter().map(truthy).collect();
+        let result = grid
+            .iter()
+            .map(|row| row.iter().zip(&keep).filter(|(_, k)| **k).map(|(v, _)| v.clone()).collect::<Vec<_>>())
+            .collect::<Vec<_>>();
+        return Ok(Some(result));
+    }
+    // One include per row: an include column as tall as the grid.
+    if mask_grid.len() == rows && mask_grid.iter().all(|r| r.len() == 1) {
+        let result = grid
+            .into_iter()
+            .zip(mask_grid.iter())
+            .filter(|(_, m)| truthy(&m[0]))
+            .map(|(row, _)| row)
+            .collect();
+        return Ok(Some(result));
+    }
+    Ok(None)
+}
+
 /// Excel-compatible `FILTER` function for array values.
 /// Filters an array based on a boolean include mask.
 /// Used when FILTER is called inside a lambda (BYROW, MAP, etc.) with lambda parameters.
@@ -325,6 +362,20 @@ pub fn filter_array(
     if_empty: Value,
     value_format: &ValueFormat,
 ) -> Result<Value, Box<dyn Error + Send + Sync>> {
+    let is_area = |v: &Value| matches!(v, Value::AreaValue(_) | Value::OptionAreaValue(Some(_)));
+    if is_area(&array) || is_area(&include) {
+        if let Some(result) = filter_area(&array, &include, value_format)? {
+            if result.is_empty() || result[0].is_empty() {
+                return Ok(if_empty);
+            }
+            // A single column stays a list, as before (a list reads as a column).
+            if result.len() > 1 && result.iter().all(|row| row.len() == 1) {
+                return Ok(Value::VecValue(result.into_iter().flatten().collect()));
+            }
+            return Ok(Value::AreaValue(result));
+        }
+    }
+
     let array_elements = array.into_flattened_vec_value()?;
     let include_elements = include.into_flattened_vec_value()?;
 
@@ -341,5 +392,46 @@ pub fn filter_array(
         Ok(if_empty)
     } else {
         Ok(Value::VecValue(results))
+    }
+}
+
+#[cfg(test)]
+mod filter_array_shape_tests {
+    use super::*;
+
+    fn f(n: f64) -> Value {
+        Value::F64(n)
+    }
+
+    #[test]
+    fn a_row_filtered_by_a_row_stays_a_row() {
+        let array = Value::AreaValue(vec![vec![f(1.0), f(5.0), f(10.0)]]);
+        let include = Value::AreaValue(vec![vec![Value::Bool(false), Value::Bool(true), Value::Bool(true)]]);
+        let result = filter_array(array, include, Value::None, &ValueFormat::default()).unwrap();
+        assert_eq!(result, Value::AreaValue(vec![vec![f(5.0), f(10.0)]]));
+    }
+
+    #[test]
+    fn a_grid_filtered_by_a_column_keeps_whole_rows() {
+        let array = Value::AreaValue(vec![vec![f(1.0), f(2.0)], vec![f(3.0), f(4.0)], vec![f(5.0), f(6.0)]]);
+        let include = Value::AreaValue(vec![vec![Value::Bool(true)], vec![Value::Bool(false)], vec![Value::Bool(true)]]);
+        let result = filter_array(array, include, Value::None, &ValueFormat::default()).unwrap();
+        assert_eq!(result, Value::AreaValue(vec![vec![f(1.0), f(2.0)], vec![f(5.0), f(6.0)]]));
+    }
+
+    #[test]
+    fn a_column_filtered_by_a_column_stays_a_column() {
+        let array = Value::AreaValue(vec![vec![f(1.0)], vec![f(2.0)], vec![f(3.0)]]);
+        let include = Value::AreaValue(vec![vec![Value::Bool(true)], vec![Value::Bool(false)], vec![Value::Bool(true)]]);
+        let result = filter_array(array, include, Value::None, &ValueFormat::default()).unwrap();
+        assert_eq!(result, Value::VecValue(vec![f(1.0), f(3.0)]));
+    }
+
+    #[test]
+    fn nothing_kept_gives_if_empty() {
+        let array = Value::AreaValue(vec![vec![f(1.0)], vec![f(2.0)]]);
+        let include = Value::AreaValue(vec![vec![Value::Bool(false)], vec![Value::Bool(false)]]);
+        let result = filter_array(array, include, Value::String("none".into()), &ValueFormat::default()).unwrap();
+        assert_eq!(result, Value::String("none".into()));
     }
 }
