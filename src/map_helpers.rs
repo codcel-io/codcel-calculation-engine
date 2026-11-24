@@ -543,55 +543,106 @@ where
         filter_opt,
     )?;
 
-    let total_depth_val = group_data.total_depth.unwrap_or(0);
+    let total_depth_val = group_data.total_depth.unwrap_or(1);
+    let num_value_cols = group_data.num_value_cols;
     let num_key_cols = if group_data.groups.is_empty() {
         0
     } else {
         group_data.groups[0].key.len()
     };
 
-    // Build result rows
-    let mut result_rows: Vec<Vec<Value>> = Vec::new();
+    // Each group's row: its key, then the function over each value column (Excel aggregates
+    // the value columns separately: SUM over two columns gives two sums).
+    let mut group_rows: Vec<(Vec<Value>, Vec<Value>)> = Vec::with_capacity(group_data.groups.len());
+    for group in &group_data.groups {
+        let mut row = group.key.clone();
+        aggregate_columns(&f, &group.values, num_value_cols, &mut row).await?;
+        group_rows.push((group.key.clone(), row));
+    }
 
-    // For total_depth -1 or -2, we skip per-group rows and only show totals
-    let show_group_rows = total_depth_val >= 0;
-
-    if show_group_rows {
-        // Aggregate each group
-        for group in &group_data.groups {
-            let group_values = Value::AreaValue(group.values.clone());
-            let agg_result = f(group_values).await?;
-
-            // Build result row: key columns + aggregation result(s)
-            let mut row = group.key.clone();
-            append_agg_result(&mut row, &agg_result, group_data.num_value_cols);
-            result_rows.push(row);
+    // Sorting by a value column (|sort_order| past the key columns) needs the aggregates.
+    if let Some(order) = group_data.sort_order {
+        let column = order.unsigned_abs() as usize;
+        if order != 0 && column > num_key_cols {
+            use crate::lookup_and_reference::codcel_groupby::compare_values;
+            group_rows.sort_by(|(_, a), (_, b)| {
+                let cmp = match (a.get(column - 1), b.get(column - 1)) {
+                    (Some(va), Some(vb)) => compare_values(va, vb),
+                    _ => std::cmp::Ordering::Equal,
+                };
+                if order < 0 { cmp.reverse() } else { cmp }
+            });
         }
     }
 
-    // Add grand total row if total_depth requires it (1, 2, -1, -2)
-    if (total_depth_val == 1
-        || total_depth_val == 2
-        || total_depth_val == -1
-        || total_depth_val == -2)
-        && !group_data.all_values.is_empty()
+    // A total row: its label in the first key column, then `key_cells`, then the aggregates.
+    async fn total_row<F, Fut>(
+        f: &F, label: Value, key_cells: Vec<Value>, values: &[Vec<Value>], num_value_cols: usize,
+    ) -> Result<Vec<Value>, Box<dyn Error + Send + Sync>>
+    where
+        F: Fn(Value) -> Fut,
+        Fut: Future<Output = Result<Value, Box<dyn Error + Send + Sync>>>,
     {
-        let all_values = Value::AreaValue(group_data.all_values.clone());
-        let grand_total = f(all_values).await?;
+        let mut row = vec![label];
+        row.extend(key_cells);
+        aggregate_columns(f, values, num_value_cols, &mut row).await?;
+        Ok(row)
+    }
 
-        let mut total_row: Vec<Value> = Vec::new();
-        // Use "Grand Total" for total_depth -2, "Total" for others
-        let label = if total_depth_val == -2 {
-            "Grand Total"
-        } else {
-            "Total"
-        };
-        total_row.push(Value::String(label.to_string()));
-        for _ in 1..num_key_cols {
-            total_row.push(Value::None);
+    let grand = total_depth_val != 0 && !group_data.all_values.is_empty();
+    // Subtotals by the first key column need a second key column to subtotal over.
+    let subtotals = total_depth_val.abs() >= 2 && num_key_cols > 1;
+    let at_top = total_depth_val < 0;
+    let blanks = |n: usize| vec![Value::None; n];
+
+    let grand_row = if grand {
+        let label = if total_depth_val.abs() >= 2 { "Grand Total" } else { "Total" };
+        Some(total_row(&f, Value::String(label.to_string()), blanks(num_key_cols.saturating_sub(1)), &group_data.all_values, num_value_cols).await?)
+    } else {
+        None
+    };
+
+    let mut result_rows: Vec<Vec<Value>> = Vec::new();
+    if let Some(headers) = &group_data.headers {
+        result_rows.push(headers.clone());
+    }
+    if at_top {
+        if let Some(row) = &grand_row {
+            result_rows.push(row.clone());
         }
-        append_agg_result(&mut total_row, &grand_total, group_data.num_value_cols);
-        result_rows.push(total_row);
+    }
+    if subtotals {
+        // The top-level keys in the order their first group appears.
+        let mut top_keys: Vec<Value> = Vec::new();
+        for (key, _) in &group_rows {
+            if !top_keys.contains(&key[0]) {
+                top_keys.push(key[0].clone());
+            }
+        }
+        for top in top_keys {
+            let members: Vec<&Vec<Value>> = group_rows.iter().filter(|(key, _)| key[0] == top).map(|(_, row)| row).collect();
+            let values: Vec<Vec<Value>> = group_data
+                .groups
+                .iter()
+                .filter(|group| group.key[0] == top)
+                .flat_map(|group| group.values.iter().cloned())
+                .collect();
+            let subtotal = total_row(&f, top.clone(), blanks(num_key_cols - 1), &values, num_value_cols).await?;
+            if at_top {
+                result_rows.push(subtotal);
+                result_rows.extend(members.into_iter().cloned());
+            } else {
+                result_rows.extend(members.into_iter().cloned());
+                result_rows.push(subtotal);
+            }
+        }
+    } else {
+        result_rows.extend(group_rows.into_iter().map(|(_, row)| row));
+    }
+    if !at_top {
+        if let Some(row) = grand_row {
+            result_rows.push(row);
+        }
     }
 
     if result_rows.is_empty() {
@@ -599,6 +650,31 @@ where
     } else {
         Ok(Value::AreaValue(result_rows))
     }
+}
+
+/// Appends the function over each value column of `values` (rows) to `row`. A single value
+/// column is passed as it is; with several, each column is passed on its own, as in Excel.
+async fn aggregate_columns<F, Fut>(
+    f: &F, values: &[Vec<Value>], num_value_cols: usize, row: &mut Vec<Value>,
+) -> Result<(), Box<dyn Error + Send + Sync>>
+where
+    F: Fn(Value) -> Fut,
+    Fut: Future<Output = Result<Value, Box<dyn Error + Send + Sync>>>,
+{
+    if num_value_cols <= 1 {
+        let result = f(Value::AreaValue(values.to_vec())).await?;
+        append_agg_result(row, &result, num_value_cols);
+        return Ok(());
+    }
+    for column in 0..num_value_cols {
+        let column_values: Vec<Vec<Value>> = values
+            .iter()
+            .map(|r| vec![r.get(column).cloned().unwrap_or(Value::None)])
+            .collect();
+        let result = f(Value::AreaValue(column_values)).await?;
+        append_agg_result(row, &result, 1);
+    }
+    Ok(())
 }
 
 /// Convert a Value to a 2D array (Vec<Vec<Value>>).

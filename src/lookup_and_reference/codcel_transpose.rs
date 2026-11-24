@@ -23,7 +23,8 @@ pub fn codcel_transpose(array: Vec<Vec<Value>>) -> Result<Value, Box<dyn Error +
 
     for row in array {
         for (col_idx, value) in row.into_iter().enumerate() {
-            transposed[col_idx].push(value);
+            // A blank cell is 0, as Excel shows it in an array result.
+            transposed[col_idx].push(crate::lookup_and_reference::codcel_tocol::kept(&value));
         }
     }
 

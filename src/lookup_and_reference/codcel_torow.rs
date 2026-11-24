@@ -4,7 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
-use crate::lookup_and_reference::codcel_tocol::should_include;
+use crate::lookup_and_reference::codcel_tocol::{kept, should_include};
 use crate::value::Value;
 use std::error::Error;
 
@@ -34,7 +34,7 @@ pub fn codcel_torow(
         for col in 0..col_count {
             for row in &array {
                 if col < row.len() && should_include(&row[col], ignore) {
-                    result.push(row[col].clone());
+                    result.push(kept(&row[col]));
                 }
             }
         }
@@ -42,7 +42,7 @@ pub fn codcel_torow(
         for row in &array {
             for value in row {
                 if should_include(value, ignore) {
-                    result.push(value.clone());
+                    result.push(kept(value));
                 }
             }
         }

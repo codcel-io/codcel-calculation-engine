@@ -20,16 +20,35 @@ pub(crate) fn is_blank(value: &Value) -> bool {
     }
 }
 
+/// Checks whether a value is an Excel error: an error value, or the NaN that `NA()` gives.
+pub(crate) fn is_error(value: &Value) -> bool {
+    match value {
+        Value::Error(_) => true,
+        Value::F64(n) | Value::OptionF64(Some(n)) => n.is_nan(),
+        _ => false,
+    }
+}
+
 /// Determines whether a value should be included based on the `ignore` parameter.
 ///
 /// - 0: keep all values (default)
 /// - 1: ignore blanks
-/// - 2: ignore errors (not applicable in our system, treated as keep all)
+/// - 2: ignore errors
 /// - 3: ignore blanks and errors
 pub(crate) fn should_include(value: &Value, ignore: i32) -> bool {
     match ignore {
-        1 | 3 => !is_blank(value),
+        1 => !is_blank(value),
+        2 => !is_error(value),
+        3 => !is_blank(value) && !is_error(value),
         _ => true,
+    }
+}
+
+/// A value kept in the result: a blank cell is 0, as Excel shows it in an array result.
+pub(crate) fn kept(value: &Value) -> Value {
+    match value {
+        Value::None => Value::F64(0.0),
+        other => other.clone(),
     }
 }
 
@@ -59,7 +78,7 @@ pub fn codcel_tocol(
         for col in 0..col_count {
             for row in &array {
                 if col < row.len() && should_include(&row[col], ignore) {
-                    result.push(row[col].clone());
+                    result.push(kept(&row[col]));
                 }
             }
         }
@@ -67,7 +86,7 @@ pub fn codcel_tocol(
         for row in &array {
             for value in row {
                 if should_include(value, ignore) {
-                    result.push(value.clone());
+                    result.push(kept(value));
                 }
             }
         }
@@ -183,5 +202,23 @@ mod tests {
         let result = area(codcel_tocol(vec![vec![Value::I32(42)]], None, None).unwrap());
         assert_eq!(result.len(), 1);
         assert_eq!(i(&result[0][0]), 42);
+    }
+
+    #[test]
+    fn tocol_ignore_errors_drops_error_values_and_na() {
+        let array = vec![
+            vec![Value::I32(1), Value::Error(crate::excel_error::ExcelError::Na)],
+            vec![Value::F64(f64::NAN), Value::None],
+        ];
+        let errors = area(codcel_tocol(array.clone(), Some(2), None).unwrap());
+        assert_eq!(errors, vec![vec![Value::I32(1)], vec![Value::F64(0.0)]]);
+        let both = area(codcel_tocol(array, Some(3), None).unwrap());
+        assert_eq!(both, vec![vec![Value::I32(1)]]);
+    }
+
+    #[test]
+    fn tocol_keeps_a_blank_cell_as_zero() {
+        let array = vec![vec![Value::I32(1), Value::None]];
+        assert_eq!(area(codcel_tocol(array, None, None).unwrap()), vec![vec![Value::I32(1)], vec![Value::F64(0.0)]]);
     }
 }

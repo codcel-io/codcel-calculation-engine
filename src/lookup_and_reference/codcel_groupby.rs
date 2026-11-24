@@ -29,6 +29,8 @@ pub struct GroupByData {
     pub total_depth: Option<i32>,
     /// Number of value columns (for assembling output).
     pub num_value_cols: usize,
+    /// The header row (row fields then values) when `field_headers` is 3, to show above the result.
+    pub headers: Option<Vec<Value>>,
 }
 
 /// Core grouping logic for Excel's GROUPBY function.
@@ -89,6 +91,11 @@ pub fn codcel_groupby(
     // Note: Headers are NOT included in the output — in the codcel transpiled context,
     // each cell formula references a specific position in the result array, and the
     // transpiler handles header positioning separately.
+    let headers = if field_headers == 3 && !row_fields.is_empty() && !values.is_empty() {
+        Some(row_fields[0].iter().chain(values[0].iter()).cloned().collect())
+    } else {
+        None
+    };
     let (data_row_fields, data_values) = if field_headers == 1 || field_headers == 3 {
         if row_fields.len() < 2 {
             return Err(
@@ -144,11 +151,19 @@ pub fn codcel_groupby(
         }
     }
 
-    // Sort groups if sort_order is specified
+    // Sort groups by their keys. Excel's default is ascending by the first column; sorting by
+    // another column of the result (|sort_order| > number of key columns) is done once the groups
+    // are aggregated, in `groupby_value`.
+    let sort_order = Some(sort_order.unwrap_or(1));
     if let Some(order) = sort_order {
-        if order != 0 {
+        let num_key_cols = filtered_row_fields.first().map_or(0, Vec::len) as i32;
+        if order != 0 && order.abs() <= num_key_cols.max(1) {
+            let first = (order.abs() - 1) as usize;
             groups.sort_by(|a, b| {
-                for (va, vb) in a.key.iter().zip(b.key.iter()) {
+                // The chosen column first, then the other key columns in order.
+                let columns = std::iter::once(first).chain((0..a.key.len()).filter(|c| *c != first));
+                for column in columns {
+                    let (va, vb) = (&a.key[column], &b.key[column]);
                     let cmp = compare_values(va, vb);
                     if cmp != std::cmp::Ordering::Equal {
                         return if order < 0 { cmp.reverse() } else { cmp };
@@ -163,13 +178,15 @@ pub fn codcel_groupby(
         groups,
         all_values,
         sort_order,
-        total_depth: Some(total_depth.unwrap_or(0)),
+        // Excel's default is grand totals.
+        total_depth: Some(total_depth.unwrap_or(1)),
         num_value_cols,
+        headers,
     })
 }
 
 /// Compare two Values for sorting purposes.
-fn compare_values(a: &Value, b: &Value) -> std::cmp::Ordering {
+pub(crate) fn compare_values(a: &Value, b: &Value) -> std::cmp::Ordering {
     match (a, b) {
         (Value::I32(a), Value::I32(b)) => a.cmp(b),
         (Value::F64(a), Value::F64(b)) => a.partial_cmp(b).unwrap_or(std::cmp::Ordering::Equal),
