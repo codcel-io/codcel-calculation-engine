@@ -40,7 +40,7 @@ fn enabled() -> bool {
     *ENABLED.get_or_init(|| std::env::var_os("CODCEL_PROFILE").is_some())
 }
 
-fn keys_enabled() -> bool {
+pub(crate) fn keys_enabled() -> bool {
     static ENABLED: OnceLock<bool> = OnceLock::new();
     *ENABLED.get_or_init(|| std::env::var_os("CODCEL_PROFILE_KEYS").is_some())
 }

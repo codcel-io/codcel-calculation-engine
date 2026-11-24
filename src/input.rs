@@ -15,20 +15,28 @@ use std::collections::HashMap;
 use std::error::Error;
 use std::sync::{Arc, Mutex};
 
+/// A map with a fast hasher. Its keys are the generator's names and numbers, never data from
+/// outside, so the hashing need not resist chosen keys; looking them up is a large part of the
+/// time of a calculation.
+pub(crate) type FastMap<K, V> = HashMap<K, V, rustc_hash::FxBuildHasher>;
+
 /// What a request has computed so far, for the same input values.
 #[derive(Debug, Default)]
 struct Caches {
-    fn_cache: Mutex<HashMap<String, Value>>,
-    range_cache: Mutex<HashMap<u64, Value>>,
-    fn_error_cache: Mutex<HashMap<String, String>>,
+    fn_cache: Mutex<FastMap<String, Value>>,
+    range_cache: Mutex<FastMap<u64, Value>>,
+    fn_error_cache: Mutex<FastMap<String, String>>,
+    /// Row dispatchers' values, by (dispatcher, row): see [`codcel_cache_row`](crate::codcel_cache_row).
+    row_cache: Mutex<FastMap<(&'static str, i32), Value>>,
+    row_error_cache: Mutex<FastMap<(&'static str, i32), String>>,
     fill_down_cache: Mutex<crate::fill_down_cells::FillDownCache>,
-    warmed: Mutex<HashMap<u64, usize>>,
+    warmed: Mutex<FastMap<u64, usize>>,
 }
 
 #[derive(Debug)]
 pub struct Input {
     input_struct_name: String,
-    map: HashMap<String, Value>,
+    map: FastMap<String, Value>,
     value_format: ValueFormat,
     caches: Arc<Caches>,
 }
@@ -62,7 +70,7 @@ impl<'de> Deserialize<'de> for Input {
         #[derive(Deserialize)]
         struct InputHelper {
             input_struct_name: String,
-            map: HashMap<String, Value>,
+            map: FastMap<String, Value>,
             value_format: ValueFormat,
         }
         let helper = InputHelper::deserialize(deserializer)?;
@@ -154,6 +162,69 @@ impl Input {
             .lock()
             .unwrap_or_else(|poisoned| poisoned.into_inner())
             .insert(key, message);
+    }
+
+    /// The value row `row` of row dispatcher `dispatcher` returned earlier in this request, if
+    /// it did. Like [`fn_cache_get`](Self::fn_cache_get) with the key `"{dispatcher}_{row}"`,
+    /// without building the key.
+    pub fn row_cache_get(&self, dispatcher: &'static str, row: i32) -> Option<Value> {
+        crate::profile::count(&crate::profile::FN_CACHE_GETS);
+        if crate::profile::keys_enabled() {
+            let key = format!("{dispatcher}_{row}");
+            crate::profile::count_key(&key);
+        }
+        let value = self
+            .caches
+            .row_cache
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner())
+            .get(&(dispatcher, row))
+            .cloned();
+        if value.is_some() {
+            crate::profile::count(&crate::profile::FN_CACHE_HITS);
+        } else if crate::profile::keys_enabled() {
+            crate::profile::count_miss(&format!("{dispatcher}_{row}"));
+        }
+        value
+    }
+
+    /// Keeps the value of row `row` of row dispatcher `dispatcher` for the rest of the request,
+    /// unless it is too large (as [`fn_cache_insert`](Self::fn_cache_insert)).
+    pub fn row_cache_insert(&self, dispatcher: &'static str, row: i32, value: Value) {
+        if value.is_cacheable() {
+            self.caches
+                .row_cache
+                .lock()
+                .unwrap_or_else(|poisoned| poisoned.into_inner())
+                .insert((dispatcher, row), value);
+        } else {
+            crate::profile::count(&crate::profile::FN_CACHE_SKIPPED);
+        }
+    }
+
+    /// The message of the error row `row` of row dispatcher `dispatcher` returned earlier in
+    /// this request, if it did (as [`fn_error_get`](Self::fn_error_get)).
+    pub fn row_error_get(&self, dispatcher: &'static str, row: i32) -> Option<String> {
+        let message = self
+            .caches
+            .row_error_cache
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner())
+            .get(&(dispatcher, row))
+            .cloned();
+        if message.is_some() {
+            crate::profile::count(&crate::profile::FN_ERROR_HITS);
+        }
+        message
+    }
+
+    /// Remembers that row `row` of row dispatcher `dispatcher` returned the error `message`.
+    pub fn row_error_insert(&self, dispatcher: &'static str, row: i32, message: String) {
+        self.caches
+            .row_error_cache
+            .lock()
+            .unwrap_or_else(|poisoned| poisoned.into_inner())
+            .insert((dispatcher, row), message);
     }
 
     /// How many of a row dispatcher's rows have been warmed (evaluated in order, so a chain of
@@ -434,10 +505,9 @@ impl Input {
 
     // ── Get ───────────────────────────────────────────────────────────────
     pub fn get(&self, name: &str) -> Result<Value, Box<dyn Error + Send + Sync>> {
-        if self.map.contains_key(name) {
-            Ok(self.map[name].clone())
-        } else {
-            Err(format!("{} does not exist on {}", name, self.input_struct_name).into())
+        match self.map.get(name) {
+            Some(value) => Ok(value.clone()),
+            None => Err(format!("{} does not exist on {}", name, self.input_struct_name).into()),
         }
     }
 }

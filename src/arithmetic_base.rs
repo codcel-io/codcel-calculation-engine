@@ -1931,6 +1931,9 @@ pub fn odd(
 ///
 /// # Errors
 /// Returns an error if conversion fails (when strict_type_conversion is true).
+/// The error [`sum`] returns for a value that is not a number, with `strict_type_conversion`.
+pub(crate) const SUM_NOT_NUMBERS: &str = "SUM: Input values are not numbers";
+
 pub fn sum(
     values: Vec<Value>,
     strict_type_conversion: bool,
@@ -1959,7 +1962,7 @@ pub fn sum(
                 Ok(val) => result.add(val),
                 Err(_) => {
                     if strict_type_conversion {
-                        return Err("SUM: Input values are not numbers".into()); // Propagate error if strict
+                        return Err(SUM_NOT_NUMBERS.into()); // Propagate error if strict
                     }
                     // Ignore error and continue with the sum if not strict
                 }

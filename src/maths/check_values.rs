@@ -27,6 +27,10 @@ pub(crate) fn check_bin_op(
     rhs: f64,
     op_name: &str,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
+    // The labels are only needed for an error: not built for every operation.
+    if lhs.is_finite() && rhs.is_finite() {
+        return Ok(());
+    }
     check_value_f64(&format!("{op_name}: - 1st"), lhs)?;
     check_value_f64(&format!("{op_name}: - 2nd"), rhs)?;
     Ok(())
