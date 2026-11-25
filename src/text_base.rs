@@ -17,8 +17,8 @@ use crate::area::{
 use crate::excel_error::coercion_error;
 use crate::text::{
     codcel_array_to_text::codcel_array_to_text, codcel_asc::codcel_asc,
-    codcel_bahttext::codcel_bahttext, codcel_char::codcel_char, codcel_clean::codcel_clean,
-    codcel_code::codcel_code, codcel_dbcs::codcel_dbcs, codcel_dollar::codcel_dollar,
+    character_set::CharacterSet, codcel_bahttext::codcel_bahttext, codcel_clean::codcel_clean,
+    codcel_dbcs::codcel_dbcs, codcel_dollar::codcel_dollar,
     codcel_exact::codcel_exact_vec, codcel_find::codcel_find, codcel_findb::codcel_findb,
     codcel_fixed::codcel_fixed, codcel_jis::codcel_jis, codcel_left::codcel_left,
     codcel_leftb::codcel_leftb, codcel_lower::codcel_lower, codcel_mid::codcel_mid,
@@ -330,11 +330,13 @@ pub fn char(
     strict_type_conversion: bool,
     value_format: &ValueFormat,
 ) -> Result<Value, Box<dyn Error + Send + Sync>> {
+    // Excel numbers characters in its platform's character set (see `ValueFormat::character_set`).
+    let character_set = CharacterSet::parse(&value_format.character_set);
     process_area_int_to_string(
         area,
         strict_type_conversion,
         value_format,
-        codcel_char,
+        |code| character_set.char(code),
         "CHAR",
     )
 }
@@ -444,11 +446,13 @@ pub fn code(
     strict_type_conversion: bool,
     value_format: &ValueFormat,
 ) -> Result<Value, Box<dyn Error + Send + Sync>> {
+    // Excel numbers characters in its platform's character set (see `ValueFormat::character_set`).
+    let character_set = CharacterSet::parse(&value_format.character_set);
     process_area_string_to_int(
         area,
         strict_type_conversion,
         value_format,
-        codcel_code,
+        |text| character_set.code(&text),
         "CODE",
     )
 }

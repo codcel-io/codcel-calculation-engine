@@ -1698,9 +1698,13 @@ pub fn mround(
     multiple: Value,
     value_format: &ValueFormat,
 ) -> Result<Value, Box<dyn Error + Send + Sync>> {
-    let number = number.f64(value_format)?;
-    let multiple = multiple.f64(value_format)?;
-    Ok(Value::F64(codcel_mround(number, multiple)?))
+    let single = |number: &Value, multiple: &Value| -> Result<Value, Box<dyn Error + Send + Sync>> {
+        Ok(Value::F64(codcel_mround(number.f64(value_format)?, multiple.f64(value_format)?)?))
+    };
+    if !crate::area::is_array(&number) && !crate::area::is_array(&multiple) {
+        return single(&number, &multiple);
+    }
+    crate::area::map_cells(vec![number, multiple], |args| single(&args[0], &args[1]))
 }
 
 /// Excel-compatible `MMULT` function.
@@ -2293,9 +2297,13 @@ pub fn round(
     decimal_places: Value,
     value_format: &ValueFormat,
 ) -> Result<Value, Box<dyn Error + Send + Sync>> {
-    let value = value.f64(value_format)?;
-    let decimal_places = decimal_places.i32(value_format)?;
-    Ok(Value::F64(codcel_round(value, decimal_places)?))
+    let single = |value: &Value, decimal_places: &Value| -> Result<Value, Box<dyn Error + Send + Sync>> {
+        Ok(Value::F64(codcel_round(value.f64(value_format)?, decimal_places.i32(value_format)?)?))
+    };
+    if !crate::area::is_array(&value) && !crate::area::is_array(&decimal_places) {
+        return single(&value, &decimal_places);
+    }
+    crate::area::map_cells(vec![value, decimal_places], |args| single(&args[0], &args[1]))
 }
 
 /// Excel-compatible `ROUNDDOWN` function.
@@ -2316,9 +2324,13 @@ pub fn round_down(
     decimal_places: Value,
     value_format: &ValueFormat,
 ) -> Result<Value, Box<dyn Error + Send + Sync>> {
-    let value = value.f64(value_format)?;
-    let decimal_places = decimal_places.i32(value_format)?;
-    Ok(Value::F64(codcel_round_down(value, decimal_places)?))
+    let single = |value: &Value, decimal_places: &Value| -> Result<Value, Box<dyn Error + Send + Sync>> {
+        Ok(Value::F64(codcel_round_down(value.f64(value_format)?, decimal_places.i32(value_format)?)?))
+    };
+    if !crate::area::is_array(&value) && !crate::area::is_array(&decimal_places) {
+        return single(&value, &decimal_places);
+    }
+    crate::area::map_cells(vec![value, decimal_places], |args| single(&args[0], &args[1]))
 }
 
 /// Excel-compatible `ROUNDUP` function.
@@ -2339,9 +2351,13 @@ pub fn round_up(
     decimal_places: Value,
     value_format: &ValueFormat,
 ) -> Result<Value, Box<dyn Error + Send + Sync>> {
-    let value = value.f64(value_format)?;
-    let decimal_places = decimal_places.i32(value_format)?;
-    Ok(Value::F64(codcel_round_up(value, decimal_places)?))
+    let single = |value: &Value, decimal_places: &Value| -> Result<Value, Box<dyn Error + Send + Sync>> {
+        Ok(Value::F64(codcel_round_up(value.f64(value_format)?, decimal_places.i32(value_format)?)?))
+    };
+    if !crate::area::is_array(&value) && !crate::area::is_array(&decimal_places) {
+        return single(&value, &decimal_places);
+    }
+    crate::area::map_cells(vec![value, decimal_places], |args| single(&args[0], &args[1]))
 }
 
 /// Excel-compatible `ABS` function.

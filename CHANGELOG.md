@@ -14,6 +14,14 @@ SPDX-License-Identifier: MIT OR Apache-2.0
 - `ROUND` takes the value at Excel's 15 significant digits before rounding, so
   `ROUND(934489.4999999999, 0)` is 934490 and `ROUND(2.675, 2)` is 2.68.
 - `ROMAN(0)` returns empty text instead of `#VALUE!`.
+- `NOT`, `ROUND`, `ROUNDUP`, `ROUNDDOWN` and `MROUND` given a list or area work
+  cell by cell and keep its shape, as in Excel, instead of using its first cell.
+  A cell that is an error, or cannot be read, gives an error in that cell only.
+- `PROPER` starts a word at a letter after any character that is not a letter,
+  digits included, as Excel does: `PROPER("123main")` is `123Main`.
+- `FIXED` with negative decimals rounds left of the decimal point, as Excel does:
+  `FIXED(1234.567, -1)` is `1,230` (was `1,235`). A negative number no longer
+  gets a separator after its sign (`-123,456`, not `-,123,456`).
 
 ### Added
 
@@ -34,9 +42,22 @@ SPDX-License-Identifier: MIT OR Apache-2.0
   place, in the order `area_of_value` gives them.
 - `Value::flat_f64`, a range as one flat list of numbers.
 - `Value::try_f64`, a number or `None`, without building an error message.
+- `ValueFormat::character_set` and the `CODCEL_CHARACTER_SET` environment
+  variable: `windows` (the default), `mac` or `unicode`. See `CODE` and `CHAR`
+  under Changed.
+- The `text::character_set` module: Windows code page 1252 and Mac Roman.
 
 ### Changed
 
+- **`CODE` and `CHAR` number characters as Excel does**, in its platform's
+  character set rather than Unicode: Windows code page 1252 by default
+  (`CODE("€")` is 128, `CHAR(128)` is `€`), Mac Roman with `character_set`
+  `mac` (219), or Unicode code points with `unicode` (8364, the previous
+  behaviour). ASCII is the same in all three. In `windows` and `mac`, a
+  character the set does not have is 63 (`?`) and `CHAR` outside 1 to 255 is
+  `#VALUE!`. `UNICODE` and `UNICHAR` are unchanged.
+- `ValueFormat` has a new public field, `character_set`, so a struct literal
+  without `..Default::default()` needs it added.
 - `codcel_cache!` caches errors as well as values, so a failing cell is
   calculated once per request.
 - `SUMIFS`, `COUNTIFS`, `AVERAGEIFS`, `MAXIFS` and `MINIFS` combine their

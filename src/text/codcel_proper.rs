@@ -10,8 +10,8 @@ use unicode_segmentation::UnicodeSegmentation;
 /// Excel-compatible `PROPER` that capitalizes the first letter of each word in a text string.
 /// - `text`: the text string to convert to proper case (title case).
 ///   Returns the text with the first letter of each word capitalized and
-///   all other letters in lowercase. Words are delimited by spaces, punctuation,
-///   and other non-letter characters. Handles Unicode grapheme clusters correctly.
+///   all other letters in lowercase. Words are delimited by any character that is not a
+///   letter (spaces, punctuation and digits). Handles Unicode grapheme clusters correctly.
 pub fn codcel_proper<S: AsRef<str>>(text: S) -> Result<String, Box<dyn Error + Send + Sync>> {
     let text = text.as_ref();
     let mut result = String::with_capacity(text.len());
@@ -30,33 +30,20 @@ pub fn codcel_proper<S: AsRef<str>>(text: S) -> Result<String, Box<dyn Error + S
             continue;
         };
 
-        if first_char.is_whitespace()
-            || first_char.is_ascii_punctuation()
-            || matches!(
-                // em dash, en dash, apostrophe, quote, guillemets, slashes
-                first_char,
-                '—' | '–' | '\'' | '"' | '«' | '»' | '/' | '\\'
-            )
-        {
-            capitalize_next = true;
-            result.push(first_char);
-            // Push remaining chars in the grapheme cluster if any
-            result.extend(chars);
-        } else if capitalize_next {
-            if first_char.is_alphabetic() {
+        // As in Excel, a letter after anything that is not a letter (a space, punctuation or a
+        // digit: "123main" gives "123Main") starts a word.
+        if first_char.is_alphabetic() {
+            if capitalize_next {
                 result.extend(first_char.to_uppercase());
-                result.extend(chars.flat_map(|c| c.to_lowercase()));
             } else {
-                result.push(first_char);
-                result.extend(chars);
+                result.extend(first_char.to_lowercase());
             }
-            capitalize_next = false;
-        } else if first_char.is_alphabetic() {
-            result.extend(first_char.to_lowercase());
             result.extend(chars.flat_map(|c| c.to_lowercase()));
+            capitalize_next = false;
         } else {
             result.push(first_char);
             result.extend(chars);
+            capitalize_next = true;
         }
     }
 
@@ -91,7 +78,9 @@ mod tests {
         // =PROPER("1st thing 2nd thing") in German format
         let result = codcel_proper("1st thing 2nd thing").unwrap();
         println!("{result}");
-        assert_eq!(result, "1st Thing 2nd Thing");
+        // Excel starts a word at a letter after a digit too.
+        assert_eq!(result, "1St Thing 2Nd Thing");
+        assert_eq!(codcel_proper("123main street").unwrap(), "123Main Street");
     }
 
     #[test]

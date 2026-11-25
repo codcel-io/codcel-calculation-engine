@@ -7,6 +7,7 @@
 pub mod codcel_array_to_text;
 pub mod codcel_asc;
 pub mod codcel_bahttext;
+pub mod character_set;
 pub mod codcel_char;
 pub mod codcel_clean;
 pub mod codcel_code;

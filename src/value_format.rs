@@ -46,6 +46,10 @@ pub struct ValueFormat {
     /// the Canaries share `es-ES` and are an hour apart, and the United States
     /// spans six zones under `en-US`. It has to be stated or left to the host.
     pub timezone: String,
+    /// The character set `CODE` and `CHAR` number characters in, as the platform's Excel does:
+    /// `windows` (code page 1252, `CODE("€")` is 128, the default), `mac` (Mac Roman, 219) or
+    /// `unicode` (the code point, 8364, as `UNICODE`). See [`crate::text::character_set`].
+    pub character_set: String,
 }
 
 /// Hand-written rather than derived: `#[derive(Default)]` would give
@@ -63,6 +67,7 @@ impl Default for ValueFormat {
             allow_lotus_1_2_3_1900_date_bug: true,
             region: String::new(),
             timezone: String::new(),
+            character_set: "windows".to_string(),
         }
     }
 }
@@ -177,6 +182,9 @@ impl ValueFormat {
             // A language tag says nothing about where the machine is, so the
             // timezone is carried across from the fallback rather than guessed.
             timezone: fallback.timezone.clone(),
+            // The Excel the workbook was built in, not the machine running the code: carried
+            // across so `CODE` and `CHAR` give the same answer wherever they run.
+            character_set: fallback.character_set.clone(),
         }
     }
 
@@ -262,6 +270,9 @@ impl ValueFormat {
         }
         if let Ok(v) = std::env::var("CODCEL_TIMEZONE") {
             base.timezone = v;
+        }
+        if let Ok(v) = std::env::var("CODCEL_CHARACTER_SET") {
+            base.character_set = v;
         }
         if let Ok(v) = std::env::var("CODCEL_ALLOW_LOTUS_1_2_3_1900_DATE_BUG") {
             if let Ok(b) = v.parse::<bool>() {

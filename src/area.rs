@@ -9,6 +9,112 @@ use crate::value_format::ValueFormat;
 use chrono::{DateTime, Utc};
 use std::error::Error;
 
+/// A list or area value (the kinds [`map_cells`] applies a function to cell by cell).
+pub(crate) fn is_array(value: &Value) -> bool {
+    matches!(
+        value,
+        Value::VecValue(_) | Value::OptionVecValue(Some(_)) | Value::AreaValue(_) | Value::OptionAreaValue(Some(_))
+    )
+}
+
+/// Applies a function written for single values to each cell of its list and area arguments,
+/// as Excel does when such a function is given a range (`=ROUND(A1:A3, 2)`).
+///
+/// With no list or area argument, `op` is called once with the arguments unchanged, so a
+/// single-value call behaves exactly as before. Otherwise the result has the largest number of
+/// rows and columns among the arguments. An argument with a single row or column is repeated
+/// across the other direction, a single value is repeated everywhere, and a position past the end
+/// of a smaller argument is `#N/A`. A cell whose argument is an error gives that error, and a
+/// cell `op` fails on gives its Excel error (`#VALUE!` when the message names none), without
+/// failing the other cells. When every list or area argument is a list the result is a list,
+/// otherwise an area (a list counting as a column).
+pub(crate) fn map_cells<F>(args: Vec<Value>, op: F) -> Result<Value, Box<dyn Error + Send + Sync>>
+where
+    F: Fn(Vec<Value>) -> Result<Value, Box<dyn Error + Send + Sync>>,
+{
+    use crate::excel_error::ExcelError;
+
+    enum Arg {
+        Single(Value),
+        List(Vec<Value>),
+        Area(Vec<Vec<Value>>),
+    }
+    let mut any_array = false;
+    let mut all_lists = true;
+    let args: Vec<Arg> = args
+        .into_iter()
+        .map(|value| match value {
+            Value::VecValue(values) | Value::OptionVecValue(Some(values)) => {
+                any_array = true;
+                Arg::List(values)
+            }
+            Value::AreaValue(rows) | Value::OptionAreaValue(Some(rows)) => {
+                any_array = true;
+                all_lists = false;
+                Arg::Area(rows)
+            }
+            other => Arg::Single(other),
+        })
+        .collect();
+    if !any_array {
+        return op(args
+            .into_iter()
+            .map(|arg| match arg {
+                Arg::Single(value) => value,
+                _ => unreachable!(),
+            })
+            .collect());
+    }
+
+    // A list is a row when every array argument is a list, else a column.
+    let size = |arg: &Arg| -> (usize, usize) {
+        match arg {
+            Arg::Single(_) => (1, 1),
+            Arg::List(values) if all_lists => (1, values.len()),
+            Arg::List(values) => (values.len(), 1),
+            Arg::Area(rows) => (rows.len(), rows.first().map_or(0, |row| row.len())),
+        }
+    };
+    let rows = args.iter().map(|arg| size(arg).0).max().unwrap_or(0);
+    let columns = args.iter().map(|arg| size(arg).1).max().unwrap_or(0);
+    let at = |arg: &Arg, row: usize, column: usize| -> Value {
+        let (arg_rows, arg_columns) = size(arg);
+        let r = if arg_rows == 1 { 0 } else { row };
+        let c = if arg_columns == 1 { 0 } else { column };
+        let cell = match arg {
+            Arg::Single(value) => Some(value),
+            Arg::List(values) if all_lists => values.get(c),
+            Arg::List(values) => values.get(r),
+            Arg::Area(grid) => grid.get(r).and_then(|cells| cells.get(c)),
+        };
+        cell.cloned().unwrap_or(Value::Error(ExcelError::Na))
+    };
+    let cell = |row: usize, column: usize| -> Value {
+        let values: Vec<Value> = args.iter().map(|arg| at(arg, row, column)).collect();
+        if let Some(e) = values.iter().find_map(|value| match value {
+            Value::Error(e) => Some(*e),
+            _ => None,
+        }) {
+            return Value::Error(e);
+        }
+        op(values).unwrap_or_else(|e| {
+            let message = e.to_string();
+            let error = message
+                .split_whitespace()
+                .find_map(|word| ExcelError::from_legacy_string(word.trim_end_matches([':', ','])))
+                .unwrap_or(ExcelError::Value);
+            Value::Error(error)
+        })
+    };
+    if all_lists {
+        Ok(Value::VecValue((0..columns).map(|c| cell(0, c)).collect()))
+    } else {
+        Ok(Value::AreaValue(
+            (0..rows).map(|r| (0..columns).map(|c| cell(r, c)).collect()).collect(),
+        ))
+    }
+}
+
 #[allow(clippy::type_complexity)]
 #[allow(clippy::too_many_arguments)]
 fn process_area<T, U, F>(
@@ -3556,4 +3662,74 @@ where
     let result = result?;
 
     Ok(Value::AreaValue(result))
+}
+
+#[cfg(test)]
+mod map_cells_tests {
+    use super::*;
+    use crate::arithmetic_base::{mround, round, round_down, round_up};
+    use crate::excel_error::ExcelError;
+
+    fn f(values: &[f64]) -> Vec<Value> {
+        values.iter().map(|v| Value::F64(*v)).collect()
+    }
+
+    #[test]
+    fn single_values_are_unchanged() {
+        let format = ValueFormat::default();
+        assert_eq!(round(Value::F64(2.345), Value::I32(2), &format).unwrap(), Value::F64(2.35));
+        assert!(round(Value::String("x".into()), Value::I32(2), &format).is_err());
+    }
+
+    #[test]
+    fn a_column_area_keeps_its_shape() {
+        let format = ValueFormat::default();
+        let column = Value::AreaValue(vec![f(&[0.2051]), f(&[0.8349])]);
+        assert_eq!(
+            round(column, Value::I32(2), &format).unwrap(),
+            Value::AreaValue(vec![f(&[0.21]), f(&[0.83])])
+        );
+    }
+
+    #[test]
+    fn lists_stay_lists_and_pair_up() {
+        let format = ValueFormat::default();
+        assert_eq!(
+            round(Value::VecValue(f(&[1.234, 5.678])), Value::VecValue(vec![Value::I32(1), Value::I32(2)]), &format)
+                .unwrap(),
+            Value::VecValue(f(&[1.2, 5.68]))
+        );
+        assert_eq!(round_up(Value::VecValue(f(&[1.21])), Value::I32(1), &format).unwrap(), Value::VecValue(f(&[1.3])));
+        assert_eq!(round_down(Value::VecValue(f(&[1.29])), Value::I32(1), &format).unwrap(), Value::VecValue(f(&[1.2])));
+        assert_eq!(mround(Value::VecValue(f(&[7.0])), Value::F64(5.0), &format).unwrap(), Value::VecValue(f(&[5.0])));
+    }
+
+    #[test]
+    fn a_bad_cell_gives_an_error_in_that_cell_only() {
+        let format = ValueFormat::default();
+        let values = Value::VecValue(vec![Value::Error(ExcelError::Div0), Value::String("x".into()), Value::F64(1.26)]);
+        assert_eq!(
+            round(values, Value::I32(1), &format).unwrap(),
+            Value::VecValue(vec![Value::Error(ExcelError::Div0), Value::Error(ExcelError::Value), Value::F64(1.3)])
+        );
+    }
+
+    #[test]
+    fn a_row_and_a_column_spread_to_a_grid_and_past_the_end_is_na() {
+        let column = Value::AreaValue(vec![f(&[1.0]), f(&[2.0])]);
+        let row = Value::AreaValue(vec![f(&[10.0, 20.0])]);
+        let add = |args: Vec<Value>| -> Result<Value, Box<dyn Error + Send + Sync>> {
+            Ok(Value::F64(args[0].f64(&ValueFormat::default())? + args[1].f64(&ValueFormat::default())?))
+        };
+        assert_eq!(
+            map_cells(vec![column, row], add).unwrap(),
+            Value::AreaValue(vec![f(&[11.0, 21.0]), f(&[12.0, 22.0])])
+        );
+        let two = Value::AreaValue(vec![f(&[1.0]), f(&[2.0])]);
+        let three = Value::AreaValue(vec![f(&[1.0]), f(&[2.0]), f(&[3.0])]);
+        assert_eq!(
+            map_cells(vec![two, three], add).unwrap(),
+            Value::AreaValue(vec![f(&[2.0]), f(&[4.0]), vec![Value::Error(ExcelError::Na)]])
+        );
+    }
 }
