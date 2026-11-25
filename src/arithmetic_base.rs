@@ -2939,15 +2939,38 @@ pub fn negative(
 ///
 /// # Returns
 /// Returns a `Value::Bool` containing the logical negation (true becomes false, false becomes true).
+/// A list or area is negated element by element and keeps its shape, as in Excel: an error
+/// element stays that error, and an element that is not a truth value gives `#VALUE!`.
 ///
 /// # Errors
-/// Returns an error if the value cannot be converted to a boolean.
+/// Returns an error if a single value cannot be converted to a boolean.
 pub fn not(
     value: Value,
     value_format: &ValueFormat,
 ) -> Result<Value, Box<dyn Error + Send + Sync>> {
-    let value = value.bool(value_format)?;
-    Ok(Value::Bool(codcel_not(value)?))
+    use crate::excel_error::ExcelError;
+    let element = |value: &Value| -> Value {
+        match value {
+            Value::Error(e) => Value::Error(*e),
+            other => match other.bool(value_format) {
+                Ok(b) => Value::Bool(!b),
+                Err(_) => Value::Error(ExcelError::Value),
+            },
+        }
+    };
+    let row = |values: &[Value]| -> Vec<Value> { values.iter().map(element).collect() };
+    match &value {
+        Value::VecValue(values) | Value::OptionVecValue(Some(values)) => {
+            Ok(Value::VecValue(row(values)))
+        }
+        Value::AreaValue(rows) | Value::OptionAreaValue(Some(rows)) => {
+            Ok(Value::AreaValue(rows.iter().map(|r| row(r)).collect()))
+        }
+        _ => {
+            let value = value.bool(value_format)?;
+            Ok(Value::Bool(codcel_not(value)?))
+        }
+    }
 }
 
 // LOGNORM.DIST
@@ -3472,6 +3495,35 @@ mod tests {
     use crate::value_format::ValueFormat;
     // Import moved compatibility functions
     use crate::compatibility_base::{st_dev, st_dev_p, var};
+
+    #[test]
+    fn test_not_array_elementwise() {
+        use crate::excel_error::ExcelError;
+        let format = ValueFormat::default();
+        assert_eq!(not(Value::Bool(true), &format).unwrap(), Value::Bool(false));
+        assert_eq!(
+            not(Value::VecValue(vec![Value::Bool(true), Value::Bool(false), Value::Bool(false)]), &format).unwrap(),
+            Value::VecValue(vec![Value::Bool(false), Value::Bool(true), Value::Bool(true)])
+        );
+        assert_eq!(
+            not(
+                Value::AreaValue(vec![
+                    vec![Value::Bool(true), Value::Bool(false), Value::Bool(true)],
+                    vec![Value::Bool(false), Value::Bool(false), Value::Bool(true)],
+                ]),
+                &format
+            )
+            .unwrap(),
+            Value::AreaValue(vec![
+                vec![Value::Bool(false), Value::Bool(true), Value::Bool(false)],
+                vec![Value::Bool(true), Value::Bool(true), Value::Bool(false)],
+            ])
+        );
+        assert_eq!(
+            not(Value::VecValue(vec![Value::Error(ExcelError::Na), Value::Bool(true)]), &format).unwrap(),
+            Value::VecValue(vec![Value::Error(ExcelError::Na), Value::Bool(false)])
+        );
+    }
     // Import moved engineering functions
     use crate::engineering_base::{
         bin_2_dec, complex, dec_2_bin, dec_2_hex, dec_2_oct, delta, erf, erfc, hex_2_dec, im_abs,
