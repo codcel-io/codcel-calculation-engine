@@ -77,7 +77,8 @@ pub fn sort_by(
     // Create a vector of (index, value) for sorting
     let mut indexed_values: Vec<(usize, &Value)> = row.iter().enumerate().collect();
 
-    // Whether each key is text, and its text, worked out once rather than on every comparison
+    // Whether each key is text, and its text, worked out once rather than on every comparison.
+    // The text is lowercased because Excel sorts text case-insensitively ("Mazda" before "MG").
     let key_texts: Vec<Vec<(bool, String)>> = by_areas
         .iter()
         .map(|(key_row, _)| {
@@ -86,7 +87,7 @@ pub fn sort_by(
                 .map(|key| {
                     (
                         key.is_single_string(),
-                        key.string(format).unwrap_or_default(),
+                        text_sort_key(&key.string(format).unwrap_or_default()),
                     )
                 })
                 .collect()
@@ -681,6 +682,12 @@ pub fn lenb(
     Ok(Value::AreaValue(result))
 }
 
+/// The key SORT and SORTBY order text by. Excel's sort ignores case, so "Mazda" comes before
+/// "MG" and "apple" before "Banana"; comparing the raw strings would put every capital first.
+fn text_sort_key(text: &str) -> String {
+    text.to_lowercase()
+}
+
 // Function to create a sorted copy of a vector of values based on sort_index
 fn sort_row(
     area: Vec<Vec<Value>>,
@@ -695,10 +702,15 @@ fn sort_row(
 
     if string_sort {
         // Each row's key is turned into text once, not on every comparison; the sort is stable
-        // as before.
+        // as before, so rows whose keys differ only in case keep their order, as in Excel.
         let mut keyed: Vec<(String, Vec<Value>)> = valid_rows
             .into_iter()
-            .map(|row| (row[sort_index].string(format).unwrap_or_default(), row))
+            .map(|row| {
+                (
+                    text_sort_key(&row[sort_index].string(format).unwrap_or_default()),
+                    row,
+                )
+            })
             .collect();
         if descending {
             keyed.sort_by(|a, b| b.0.cmp(&a.0));
@@ -864,5 +876,85 @@ mod tests {
         ]);
         let err = v_stack(envelope, &create_value_format()).unwrap_err();
         assert!(err.to_string().contains("same number of columns"));
+    }
+
+    fn strings(values: &[&str]) -> Vec<Value> {
+        values
+            .iter()
+            .map(|v| Value::String(v.to_string()))
+            .collect()
+    }
+
+    fn texts(row: &[Value]) -> Vec<String> {
+        row.iter()
+            .map(|v| v.string(&create_value_format()).unwrap())
+            .collect()
+    }
+
+    #[test]
+    fn sort_orders_text_ignoring_case_like_excel() {
+        let column = Value::AreaValue(
+            strings(&["MG", "Mazda", "apple", "Banana", "BMW"])
+                .into_iter()
+                .map(|v| vec![v])
+                .collect(),
+        );
+        let format = create_value_format();
+        let sorted = area(
+            sort(
+                column.clone(),
+                Value::I32(1),
+                Value::I32(1),
+                Value::Bool(false),
+                &format,
+            )
+            .unwrap(),
+        );
+        let sorted: Vec<String> = sorted.iter().map(|row| texts(row).remove(0)).collect();
+        assert_eq!(sorted, vec!["apple", "Banana", "BMW", "Mazda", "MG"]);
+
+        let descending = area(
+            sort(
+                column,
+                Value::I32(1),
+                Value::I32(-1),
+                Value::Bool(false),
+                &format,
+            )
+            .unwrap(),
+        );
+        let descending: Vec<String> = descending.iter().map(|row| texts(row).remove(0)).collect();
+        assert_eq!(descending, vec!["MG", "Mazda", "BMW", "Banana", "apple"]);
+    }
+
+    #[test]
+    fn sort_keeps_the_order_of_keys_that_differ_only_in_case() {
+        let column = Value::AreaValue(
+            strings(&["b", "A", "a", "B"])
+                .into_iter()
+                .map(|v| vec![v])
+                .collect(),
+        );
+        let sorted = area(
+            sort(
+                column,
+                Value::I32(1),
+                Value::I32(1),
+                Value::Bool(false),
+                &create_value_format(),
+            )
+            .unwrap(),
+        );
+        let sorted: Vec<String> = sorted.iter().map(|row| texts(row).remove(0)).collect();
+        assert_eq!(sorted, vec!["A", "a", "b", "B"]);
+    }
+
+    #[test]
+    fn sort_by_orders_text_keys_ignoring_case() {
+        let values = Value::AreaValue(vec![strings(&["one", "two", "three"])]);
+        let keys = Value::AreaValue(vec![strings(&["MG", "Mazda", "audi"])]);
+        let sorted =
+            area(sort_by(values, vec![(keys, Value::I32(1))], &create_value_format()).unwrap());
+        assert_eq!(texts(&sorted[0]), vec!["three", "two", "one"]);
     }
 }
