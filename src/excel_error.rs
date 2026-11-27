@@ -19,23 +19,30 @@ pub enum ExcelError {
     Name,  // #NAME?  -> 5
     Num,   // #NUM!   -> 6
     Na,    // #N/A    -> 7
+    /// A dynamic array that cannot spill: its range is blocked or too large.
+    Spill, // #SPILL! -> 9
+    /// A calculation Excel cannot do, such as FILTER with no match or an array with no element.
+    Calc,  // #CALC!  -> 14
 }
 
 impl ExcelError {
-    /// The error whose `ERROR.TYPE` number is `code` (1 for `#NULL!` ... 7 for `#N/A`): the
-    /// inverse of [`ExcelError::to_type_code`].
+    /// Every error kind, in declaration order.
+    pub const ALL: [ExcelError; 9] = [
+        ExcelError::Null,
+        ExcelError::Div0,
+        ExcelError::Value,
+        ExcelError::Ref,
+        ExcelError::Name,
+        ExcelError::Num,
+        ExcelError::Na,
+        ExcelError::Spill,
+        ExcelError::Calc,
+    ];
+
+    /// The error whose `ERROR.TYPE` number is `code` (1 for `#NULL!` ... 7 for `#N/A`, 9 for
+    /// `#SPILL!`, 14 for `#CALC!`): the inverse of [`ExcelError::to_type_code`].
     pub fn from_type_code(code: f64) -> Option<Self> {
-        [
-            ExcelError::Null,
-            ExcelError::Div0,
-            ExcelError::Value,
-            ExcelError::Ref,
-            ExcelError::Name,
-            ExcelError::Num,
-            ExcelError::Na,
-        ]
-        .into_iter()
-        .find(|e| e.to_type_code() == code)
+        Self::ALL.into_iter().find(|e| e.to_type_code() == code)
     }
 
     pub fn to_type_code(self) -> f64 {
@@ -47,6 +54,8 @@ impl ExcelError {
             ExcelError::Name => 5.0,
             ExcelError::Num => 6.0,
             ExcelError::Na => 7.0,
+            ExcelError::Spill => 9.0,
+            ExcelError::Calc => 14.0,
         }
     }
 
@@ -66,6 +75,8 @@ impl ExcelError {
             ExcelError::Name => "#NAME?",
             ExcelError::Num => "#NUM!",
             ExcelError::Na => "#N/A",
+            ExcelError::Spill => "#SPILL!",
+            ExcelError::Calc => "#CALC!",
         }
     }
 
@@ -89,6 +100,8 @@ impl ExcelError {
             ExcelError::Name => e.name,
             ExcelError::Num => e.num,
             ExcelError::Na => e.na,
+            ExcelError::Spill => e.spill,
+            ExcelError::Calc => e.calc,
         }
     }
 
@@ -101,6 +114,8 @@ impl ExcelError {
             "#NAME?" => Some(ExcelError::Name),
             "#NUM!" => Some(ExcelError::Num),
             "#N/A" => Some(ExcelError::Na),
+            "#SPILL!" => Some(ExcelError::Spill),
+            "#CALC!" => Some(ExcelError::Calc),
             _ => None,
         }
     }
@@ -199,15 +214,7 @@ mod tests_localized {
     /// compares against it and `from_legacy_string` parses it back.
     #[test]
     fn display_stays_english_and_round_trips() {
-        for e in [
-            ExcelError::Null,
-            ExcelError::Div0,
-            ExcelError::Value,
-            ExcelError::Ref,
-            ExcelError::Name,
-            ExcelError::Num,
-            ExcelError::Na,
-        ] {
+        for e in ExcelError::ALL {
             assert_eq!(ExcelError::from_legacy_string(e.display()), Some(e));
         }
         assert_eq!(ExcelError::Value.display(), "#VALUE!");
@@ -274,19 +281,13 @@ mod tests {
         assert_eq!(ExcelError::Name.to_type_code(), 5.0);
         assert_eq!(ExcelError::Num.to_type_code(), 6.0);
         assert_eq!(ExcelError::Na.to_type_code(), 7.0);
+        assert_eq!(ExcelError::Spill.to_type_code(), 9.0);
+        assert_eq!(ExcelError::Calc.to_type_code(), 14.0);
     }
 
     #[test]
     fn test_display_roundtrips_via_from_legacy_string() {
-        for e in [
-            ExcelError::Null,
-            ExcelError::Div0,
-            ExcelError::Value,
-            ExcelError::Ref,
-            ExcelError::Name,
-            ExcelError::Num,
-            ExcelError::Na,
-        ] {
+        for e in ExcelError::ALL {
             assert_eq!(ExcelError::from_legacy_string(e.display()), Some(e));
         }
     }
@@ -384,18 +385,12 @@ mod tests {
 
     #[test]
     fn from_type_code_is_the_inverse_of_to_type_code() {
-        for e in [
-            ExcelError::Null,
-            ExcelError::Div0,
-            ExcelError::Value,
-            ExcelError::Ref,
-            ExcelError::Name,
-            ExcelError::Num,
-            ExcelError::Na,
-        ] {
+        for e in ExcelError::ALL {
             assert_eq!(ExcelError::from_type_code(e.to_type_code()), Some(e));
         }
         assert_eq!(ExcelError::from_type_code(0.0), None);
         assert_eq!(ExcelError::from_type_code(8.0), None);
+        assert_eq!(ExcelError::from_type_code(9.0), Some(ExcelError::Spill));
+        assert_eq!(ExcelError::from_type_code(14.0), Some(ExcelError::Calc));
     }
 }

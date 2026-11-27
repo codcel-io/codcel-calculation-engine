@@ -431,7 +431,9 @@
       "#REF!",
       "#NAME?",
       "#NUM!",
-      "#N/A"
+      "#N/A",
+      "#SPILL!",
+      "#CALC!"
     ],
     "de": [
       "#NULL!",

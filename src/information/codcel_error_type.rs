@@ -20,6 +20,8 @@ use std::error::Error;
 /// - 6 for `#NUM!`
 /// - 7 for `#N/A` (this also covers legacy `f64::NAN` error values whose
 ///   type can't be distinguished further)
+/// - 9 for `#SPILL!`
+/// - 14 for `#CALC!`
 ///
 /// For non-error inputs, Excel itself returns `#N/A`. This implementation returns
 /// `f64::NAN` so the wrapping `process_area_value_to_float` produces a numeric

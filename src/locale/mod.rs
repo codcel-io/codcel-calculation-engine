@@ -127,6 +127,8 @@ pub struct ErrorNames {
     pub name: &'static str,
     pub num: &'static str,
     pub na: &'static str,
+    pub spill: &'static str,
+    pub calc: &'static str,
     /// Codcel's own annotation appended to an error message — *not* something
     /// Excel emits. Falls back to the English text for languages the table has
     /// no phrasing for.

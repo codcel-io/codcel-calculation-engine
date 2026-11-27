@@ -16,7 +16,7 @@ const cldr = JSON.parse(fs.readFileSync('cldr/cldr-condensed.json', 'utf8'));
 const excel = JSON.parse(fs.readFileSync('excel/excel-locale.json', 'utf8'));
 const functionNames = JSON.parse(fs.readFileSync('excel/function-names.json', 'utf8'));
 
-const ERROR_ORDER = ['Null', 'Div0', 'Value', 'Ref', 'Name', 'Num', 'Na'];
+const ERROR_ORDER = ['Null', 'Div0', 'Value', 'Ref', 'Name', 'Num', 'Na', 'Spill', 'Calc'];
 
 // Deprecated or macro-language codes that CLDR does not ship under their own
 // id. `ValueFormat` normalises `nb`/`nn` to the macro-language `no`, and older
@@ -181,7 +181,8 @@ function emitLocale(id, loc) {
     errors: ErrorNames {
 ${ERROR_ORDER.map((n, k) => {
       const f = n.toLowerCase();
-      return `        ${f === 'ref' ? 'r#ref' : f}: ${rustStr(errors[k])},`;
+      // A language with no name for a newer error (#SPILL!, #CALC!) reads the English one.
+      return `        ${f === 'ref' ? 'r#ref' : f}: ${rustStr(errors[k] ?? excel.errors.en[k])},`;
     }).join('\n')}
         suffix: ${rustStr(errorSuffix)},
     },

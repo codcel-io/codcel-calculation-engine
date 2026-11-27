@@ -25,7 +25,7 @@ use crate::value_format::ValueFormat;
 use std::error::Error;
 
 /// Raises the Excel error whose `ERROR.TYPE` number is `code` (1 `#NULL!`, 2 `#DIV/0!`,
-/// 3 `#VALUE!`, 4 `#REF!`, 5 `#NAME?`, 6 `#NUM!`, 7 `#N/A`).
+/// 3 `#VALUE!`, 4 `#REF!`, 5 `#NAME?`, 6 `#NUM!`, 7 `#N/A`, 9 `#SPILL!`, 14 `#CALC!`).
 ///
 /// Not an Excel function: it is the transpiler's `CODCEL.ERROR`, standing in for an error value
 /// typed into a cell (`#NAME?`), which a formula cannot otherwise write. An unknown code is
@@ -180,7 +180,13 @@ mod codcel_error_tests {
     #[test]
     fn codcel_error_raises_the_error_of_its_type_code() {
         let format = ValueFormat::default();
-        for (code, expected) in [(1.0, ExcelError::Null), (5.0, ExcelError::Name), (7.0, ExcelError::Na)] {
+        for (code, expected) in [
+            (1.0, ExcelError::Null),
+            (5.0, ExcelError::Name),
+            (7.0, ExcelError::Na),
+            (9.0, ExcelError::Spill),
+            (14.0, ExcelError::Calc),
+        ] {
             let error = codcel_error(Value::F64(code), &format).unwrap_err();
             assert_eq!(ExcelError::from_err(error.as_ref()), expected);
         }
