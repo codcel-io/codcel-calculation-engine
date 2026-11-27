@@ -22,6 +22,22 @@ pub enum ExcelError {
 }
 
 impl ExcelError {
+    /// The error whose `ERROR.TYPE` number is `code` (1 for `#NULL!` ... 7 for `#N/A`): the
+    /// inverse of [`ExcelError::to_type_code`].
+    pub fn from_type_code(code: f64) -> Option<Self> {
+        [
+            ExcelError::Null,
+            ExcelError::Div0,
+            ExcelError::Value,
+            ExcelError::Ref,
+            ExcelError::Name,
+            ExcelError::Num,
+            ExcelError::Na,
+        ]
+        .into_iter()
+        .find(|e| e.to_type_code() == code)
+    }
+
     pub fn to_type_code(self) -> f64 {
         match self {
             ExcelError::Null => 1.0,
@@ -364,5 +380,22 @@ mod tests {
         assert_eq!(excel_error_message(prose.as_ref()), "#VALUE! Cannot convert \"x\" to a number");
         let coded: Box<dyn Error + Send + Sync> = "#DIV/0! Cannot divide by zero".into();
         assert_eq!(excel_error_message(coded.as_ref()), "#DIV/0! Cannot divide by zero");
+    }
+
+    #[test]
+    fn from_type_code_is_the_inverse_of_to_type_code() {
+        for e in [
+            ExcelError::Null,
+            ExcelError::Div0,
+            ExcelError::Value,
+            ExcelError::Ref,
+            ExcelError::Name,
+            ExcelError::Num,
+            ExcelError::Na,
+        ] {
+            assert_eq!(ExcelError::from_type_code(e.to_type_code()), Some(e));
+        }
+        assert_eq!(ExcelError::from_type_code(0.0), None);
+        assert_eq!(ExcelError::from_type_code(8.0), None);
     }
 }

@@ -19,9 +19,21 @@ use crate::information::codcel_iserror::codcel_iserror;
 use crate::information::codcel_isna::codcel_isna;
 use crate::information::codcel_n::codcel_n;
 use crate::information::codcel_type::codcel_type;
+use crate::excel_error::{err_to_box, ExcelError};
 use crate::value::Value;
 use crate::value_format::ValueFormat;
 use std::error::Error;
+
+/// Raises the Excel error whose `ERROR.TYPE` number is `code` (1 `#NULL!`, 2 `#DIV/0!`,
+/// 3 `#VALUE!`, 4 `#REF!`, 5 `#NAME?`, 6 `#NUM!`, 7 `#N/A`).
+///
+/// Not an Excel function: it is the transpiler's `CODCEL.ERROR`, standing in for an error value
+/// typed into a cell (`#NAME?`), which a formula cannot otherwise write. An unknown code is
+/// `#VALUE!`.
+pub fn codcel_error(code: Value, value_format: &ValueFormat) -> Result<Value, Box<dyn Error + Send + Sync>> {
+    let code = code.f64(value_format)?;
+    Err(err_to_box(ExcelError::from_type_code(code).unwrap_or(ExcelError::Value)))
+}
 
 pub fn n(
     value: Value,
@@ -158,4 +170,21 @@ pub fn error_type(
         value_format,
         codcel_error_type,
     )
+}
+
+#[cfg(test)]
+mod codcel_error_tests {
+    use super::*;
+    use crate::value_format::ValueFormat;
+
+    #[test]
+    fn codcel_error_raises_the_error_of_its_type_code() {
+        let format = ValueFormat::default();
+        for (code, expected) in [(1.0, ExcelError::Null), (5.0, ExcelError::Name), (7.0, ExcelError::Na)] {
+            let error = codcel_error(Value::F64(code), &format).unwrap_err();
+            assert_eq!(ExcelError::from_err(error.as_ref()), expected);
+        }
+        let unknown = codcel_error(Value::F64(42.0), &format).unwrap_err();
+        assert_eq!(ExcelError::from_err(unknown.as_ref()), ExcelError::Value);
+    }
 }
