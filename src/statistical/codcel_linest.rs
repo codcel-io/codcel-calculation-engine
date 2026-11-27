@@ -191,19 +191,22 @@ pub fn codcel_linest(
     let mut row2 = se_slopes;
     row2.push(se_intercept);
 
-    // Row 3: R-squared, standard error of regression
+    // Rows 3 to 5 have two statistics each. With more than one x-column the array is wider, and
+    // Excel fills the rest of these rows with #N/A (NaN here), not 0.
     let width = row1.len();
-    let mut row3 = vec![0.0; width];
+
+    // Row 3: R-squared, standard error of regression
+    let mut row3 = vec![f64::NAN; width];
     row3[0] = r_squared;
     row3[1] = se_regression;
 
     // Row 4: F-statistic, degrees of freedom
-    let mut row4 = vec![0.0; width];
+    let mut row4 = vec![f64::NAN; width];
     row4[0] = f_statistic;
     row4[1] = df_residual;
 
     // Row 5: Regression SS, Residual SS
-    let mut row5 = vec![0.0; width];
+    let mut row5 = vec![f64::NAN; width];
     row5[0] = ssr;
     row5[1] = sse;
 
@@ -398,5 +401,29 @@ mod tests {
         let known_xs = xs_1d(vec![0.0, 1.0]);
         let result = codcel_linest(known_ys, known_xs, Some(true), Some(true));
         assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_linest_multiple_regression_stats_fill_with_na() {
+        // Two x-columns: rows 3 to 5 hold two statistics each, and Excel shows #N/A in the
+        // third column
+        let known_ys = vec![1.0, 3.0, 7.0, 10.0, 15.0];
+        let known_xs = Some(vec![
+            vec![1.0, 2.0],
+            vec![3.0, 1.0],
+            vec![2.0, 4.0],
+            vec![4.0, 3.0],
+            vec![5.0, 2.0],
+        ]);
+        let result = codcel_linest(known_ys, known_xs, Some(true), Some(true)).unwrap();
+        assert_eq!(result.len(), 5);
+        assert!(result.iter().all(|row| row.len() == 3));
+        // Rows 1 and 2: m2, m1, b and their standard errors, all numbers
+        assert!(result[0].iter().chain(&result[1]).all(|v| v.is_finite()));
+        for row in &result[2..] {
+            assert!(row[0].is_finite() && row[1].is_finite());
+            assert!(row[2].is_nan());
+        }
+        assert_eq!(result[3][1], 2.0); // df = n - k - 1
     }
 }
