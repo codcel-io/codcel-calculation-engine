@@ -48,7 +48,7 @@ pub fn codcel_im_sech(
 
     // Check for division by zero
     if denominator.abs() < 1e-14 {
-        return Err("IMSECH: Division by zero".into());
+        return Err("#NUM! IMSECH: Division by zero".into());
     }
 
     // Calculate real and imaginary parts

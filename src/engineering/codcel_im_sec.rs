@@ -48,7 +48,7 @@ pub fn codcel_im_sec(
 
     // Check for division by zero
     if denominator.abs() < 1e-14 {
-        return Err("IMSEC: Division by zero".into());
+        return Err("#NUM! IMSEC: Division by zero".into());
     }
 
     // Calculate real and imaginary parts

@@ -77,16 +77,12 @@ mod tests {
     }
 
     #[test]
-    fn test_error_type_legacy_string_errors() {
+    fn test_error_type_of_text_that_reads_like_an_error_is_not_a_code() {
+        // ERROR.TYPE("#NUM!") is #N/A in Excel: the text is not an error. The engine marks
+        // "not an error" with NaN.
         let result =
             codcel_error_type(&Value::String("#NUM!".to_string()), &default_format()).unwrap();
-        assert_eq!(result, 6.0);
-        let result =
-            codcel_error_type(&Value::String("#DIV/0!".to_string()), &default_format()).unwrap();
-        assert_eq!(result, 2.0);
-        let result =
-            codcel_error_type(&Value::String("#VALUE!".to_string()), &default_format()).unwrap();
-        assert_eq!(result, 3.0);
+        assert!(result.is_nan());
     }
 
     #[test]

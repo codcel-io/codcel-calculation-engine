@@ -5,13 +5,14 @@
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
 use crate::database::criteria_match::{match_db_criteria, resolve_field};
+use crate::excel_error::{err_to_box, ExcelError};
 use crate::value::Value;
 use crate::value_format::ValueFormat;
 use std::error::Error;
 
 /// Excel-compatible `DGET(database, field, criteria)`.
 /// Returns the single value at `(matched_row, field)`.
-/// Returns `#NUM!` if no rows match, `#VALUE!` if more than one row matches.
+/// As in Excel, fails with `#VALUE!` if no row matches and `#NUM!` if more than one does.
 pub fn codcel_dget(
     database: Value,
     field: Value,
@@ -24,7 +25,7 @@ pub fn codcel_dget(
     let matched = match_db_criteria(&database, &criteria, value_format)?;
 
     match matched.len() {
-        0 => Ok(Value::String("#NUM!".into())),
+        0 => Err(err_to_box(ExcelError::Value)),
         1 => {
             let row_idx = matched[0];
             let data_rows = &database[1..];
@@ -34,7 +35,7 @@ pub fn codcel_dget(
                 .cloned()
                 .ok_or_else(|| "DGET: matched row missing field column".into())
         }
-        _ => Ok(Value::String("#VALUE!".into())),
+        _ => Err(err_to_box(ExcelError::Num)),
     }
 }
 
@@ -82,22 +83,22 @@ mod tests {
     }
 
     #[test]
-    fn dget_multiple_matches_returns_value_error() {
+    fn dget_multiple_matches_is_a_num_error() {
         let crit = Value::AreaValue(vec![
             vec![Value::String("Dept".into())],
             vec![Value::String("Eng".into())],
         ]);
-        let result = codcel_dget(db(), Value::String("Salary".into()), crit, &vf()).unwrap();
-        assert_eq!(result, Value::String("#VALUE!".into()));
+        let error = codcel_dget(db(), Value::String("Salary".into()), crit, &vf()).unwrap_err();
+        assert_eq!(ExcelError::from_err(error.as_ref()), ExcelError::Num);
     }
 
     #[test]
-    fn dget_no_match_returns_num_error() {
+    fn dget_no_match_is_a_value_error() {
         let crit = Value::AreaValue(vec![
             vec![Value::String("Dept".into())],
             vec![Value::String("HR".into())],
         ]);
-        let result = codcel_dget(db(), Value::String("Salary".into()), crit, &vf()).unwrap();
-        assert_eq!(result, Value::String("#NUM!".into()));
+        let error = codcel_dget(db(), Value::String("Salary".into()), crit, &vf()).unwrap_err();
+        assert_eq!(ExcelError::from_err(error.as_ref()), ExcelError::Value);
     }
 }

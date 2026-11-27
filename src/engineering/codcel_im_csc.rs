@@ -27,7 +27,7 @@ pub fn codcel_im_csc(
             // Check for division by zero
             let sin_val = crate::portable_math::sin(real);
             if sin_val.abs() < 1e-14 {
-                return Err("IMCSC: Division by zero".into());
+                return Err("#NUM! IMCSC: Division by zero".into());
             }
             return Ok(number_to_string(
                 1.0 / sin_val,
@@ -43,7 +43,7 @@ pub fn codcel_im_csc(
 
     // Check for zero input
     if real == 0.0 && imag == 0.0 {
-        return Err("IMCSC: Division by zero".into());
+        return Err("#NUM! IMCSC: Division by zero".into());
     }
 
     // Calculate components
@@ -56,7 +56,7 @@ pub fn codcel_im_csc(
     let denominator = sin_x * sin_x + sinh_y * sinh_y;
 
     if denominator.abs() < 1e-14 {
-        return Err("IMCSC: Division by zero".into());
+        return Err("#NUM! IMCSC: Division by zero".into());
     }
 
     // Calculate real and imaginary parts

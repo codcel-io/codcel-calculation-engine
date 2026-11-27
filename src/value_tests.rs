@@ -21,6 +21,30 @@ mod tests {
         }
     }
 
+    /// An error cell in a list fails the conversion to text with its own kind. It used to become
+    /// an empty string, which reads as a real result.
+    #[test]
+    fn test_vec_string_fails_on_an_error_cell() {
+        let format = default_value_format();
+        for list in [
+            Value::VecValue(vec![Value::F64(1.0), Value::Error(ExcelError::Na)]),
+            Value::AreaValue(vec![
+                vec![Value::String("a".into())],
+                vec![Value::Error(ExcelError::Na)],
+            ]),
+        ] {
+            let error = list
+                .vec_string(&format)
+                .expect_err("an #N/A cell must not become text");
+            assert_eq!(ExcelError::from_err(error.as_ref()), ExcelError::Na);
+        }
+        let text = Value::VecValue(vec![Value::String("N/A".into()), Value::F64(2.0)]);
+        assert_eq!(
+            text.vec_string(&format).unwrap(),
+            vec!["N/A".to_string(), "2".to_string()]
+        );
+    }
+
     /// A cell that will not coerce must surface as `#VALUE!`, and an in-band error must
     /// propagate unchanged. Both paths used to be `.expect(...)`, i.e. a process abort.
     #[test]

@@ -27,7 +27,7 @@ pub fn codcel_im_cot(
             // Check for division by zero
             let tan_val = crate::portable_math::tan(real);
             if tan_val.abs() < 1e-14 {
-                return Err("IMCOT: Division by zero".into());
+                return Err("#NUM! IMCOT: Division by zero".into());
             }
             return Ok(number_to_string(
                 1.0 / tan_val,
@@ -43,7 +43,7 @@ pub fn codcel_im_cot(
 
     // Handle special cases
     if real == 0.0 && imag == 0.0 {
-        return Err("IMCOT: Division by zero".into());
+        return Err("#NUM! IMCOT: Division by zero".into());
     }
 
     // Calculate using the formula: cot(x + yi) = (sin(2x) - i*sinh(2y))/(cosh(2y) - cos(2x))
@@ -59,7 +59,7 @@ pub fn codcel_im_cot(
 
     // Check for division by zero
     if denominator.abs() < 1e-14 {
-        return Err("IMCOT: Division by zero".into());
+        return Err("#NUM! IMCOT: Division by zero".into());
     }
 
     let real_part = sin_2x / denominator;

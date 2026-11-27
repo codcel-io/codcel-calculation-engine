@@ -584,7 +584,7 @@ pub fn excel_mod(
 ) -> Result<Value, Box<dyn Error + Send + Sync>> {
     let divisor = divisor.f64(value_format)?;
     if divisor == 0.0 {
-        return Err("MOD: Division by zero error".into());
+        return Err("#DIV/0! MOD: Division by zero error".into());
     }
 
     let values = area.into_area_of_value()?;

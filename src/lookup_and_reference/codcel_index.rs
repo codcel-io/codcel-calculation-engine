@@ -41,28 +41,28 @@ pub fn codcel_index(
         if let Some(value) = array.get(row_num).and_then(|row| row.get(column_num)) {
             Ok(value.clone())
         } else {
-            Err("INDEX: Row number and column number combination are out of range".into())
+            Err("#REF! INDEX: Row number and column number combination are out of range".into())
         }
     } else if array.len() == 1 {
         // Single-row array: row_num selects the column
         if let Some(value) = array[0].get(row_num) {
             Ok(value.clone())
         } else {
-            Err("INDEX: Row number is out of range".into())
+            Err("#REF! INDEX: Row number is out of range".into())
         }
     } else if array[0].len() == 1 {
         // Single-column array: row_num selects the row
         if let Some(row) = array.get(row_num) {
             Ok(row[0].clone())
         } else {
-            Err("INDEX: Row number is out of range".into())
+            Err("#REF! INDEX: Row number is out of range".into())
         }
     } else {
         // Multi-row, multi-column array: row_num selects the entire row
         if let Some(row) = array.get(row_num) {
             Ok(Value::AreaValue(vec![row.clone()]))
         } else {
-            Err("INDEX: Row number is out of range".into())
+            Err("#REF! INDEX: Row number is out of range".into())
         }
     }
 }

@@ -5,6 +5,7 @@
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
 use crate::database::criteria_match::{collect_numeric_column, match_db_criteria, resolve_field};
+use crate::excel_error::{err_to_box, ExcelError};
 use crate::statistical::codcel_st_dev_dot_p::codcel_st_dev_dot_p;
 use crate::value::Value;
 use crate::value_format::ValueFormat;
@@ -12,7 +13,7 @@ use std::error::Error;
 
 /// Excel-compatible `DSTDEVP(database, field, criteria)`.
 /// Population standard deviation of `field` over matched rows (n divisor).
-/// Zero numeric values ⇒ `#NUM!`.
+/// No numeric values ⇒ `#DIV/0!`, as in Excel.
 pub fn codcel_dstdevp(
     database: Value,
     field: Value,
@@ -25,7 +26,7 @@ pub fn codcel_dstdevp(
     let matched = match_db_criteria(&database, &criteria, value_format)?;
     let values = collect_numeric_column(&database, field_idx, &matched, value_format);
     if values.is_empty() {
-        return Ok(Value::String("#NUM!".into()));
+        return Err(err_to_box(ExcelError::Div0));
     }
     Ok(Value::F64(codcel_st_dev_dot_p(values)?))
 }
@@ -68,12 +69,12 @@ mod tests {
     }
 
     #[test]
-    fn dstdevp_no_match_returns_num_error() {
+    fn dstdevp_no_match_is_a_div0_error() {
         let crit = Value::AreaValue(vec![
             vec![Value::String("G".into())],
             vec![Value::String("Z".into())],
         ]);
-        let result = codcel_dstdevp(db(), Value::String("V".into()), crit, &vf()).unwrap();
-        assert_eq!(result, Value::String("#NUM!".into()));
+        let error = codcel_dstdevp(db(), Value::String("V".into()), crit, &vf()).unwrap_err();
+        assert_eq!(ExcelError::from_err(error.as_ref()), ExcelError::Div0);
     }
 }

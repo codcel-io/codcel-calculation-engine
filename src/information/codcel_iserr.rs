@@ -53,11 +53,11 @@ mod tests {
     }
 
     #[test]
-    fn test_iserr_with_legacy_string_errors() {
-        // Database functions historically return error strings; these are not #N/A.
-        assert!(codcel_iserr(&Value::String("#NUM!".to_string()), &default_format()).unwrap());
-        assert!(codcel_iserr(&Value::String("#DIV/0!".to_string()), &default_format()).unwrap());
-        assert!(codcel_iserr(&Value::String("#VALUE!".to_string()), &default_format()).unwrap());
+    fn test_iserr_text_that_reads_like_an_error_is_text() {
+        // As in Excel, ISERR("#NUM!") is FALSE: only an error value is an error.
+        for text in ["#NUM!", "#DIV/0!", "#VALUE!", "N/A"] {
+            assert!(!codcel_iserr(&Value::String(text.to_string()), &default_format()).unwrap());
+        }
     }
 
     // --- FALSE cases ---
@@ -72,11 +72,6 @@ mod tests {
         // Legacy NaN errors are treated as #N/A, which ISERR excludes.
         assert!(!codcel_iserr(&Value::F64(f64::NAN), &default_format()).unwrap());
         assert!(!codcel_iserr(&Value::OptionF64(Some(f64::NAN)), &default_format()).unwrap());
-    }
-
-    #[test]
-    fn test_iserr_with_legacy_na_string_is_false() {
-        assert!(!codcel_iserr(&Value::String("#N/A".to_string()), &default_format()).unwrap());
     }
 
     #[test]

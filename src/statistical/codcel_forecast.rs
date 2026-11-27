@@ -41,7 +41,7 @@ pub fn codcel_forecast(
         .compensated_sum();
 
     if variance_x == 0.0 {
-        return Err("FORECAST: Division by zero due to zero variance in known_xs.".into());
+        return Err("#DIV/0! FORECAST: Division by zero due to zero variance in known_xs.".into());
     }
 
     let slope = covariance / variance_x;

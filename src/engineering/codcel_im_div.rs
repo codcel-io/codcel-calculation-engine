@@ -37,7 +37,7 @@ pub fn codcel_im_div(
     // Check for division by zero
     let denominator_magnitude = den_real * den_real + den_imag * den_imag;
     if denominator_magnitude < 1e-14 {
-        return Err("IMDIV: Division by zero".into());
+        return Err("#NUM! IMDIV: Division by zero".into());
     }
 
     // Perform complex division using the formula:

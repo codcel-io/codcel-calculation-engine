@@ -28,7 +28,7 @@ pub fn codcel_kurt(values: Vec<f64>) -> Result<f64, Box<dyn Error + Send + Sync>
     let variance = values.iter().map(|x| (x - mean).powi(2)).compensated_sum() / (n - 1.0);
 
     if variance == 0.0 {
-        return Err("KURT: Division by zero: variance is 0".into());
+        return Err("#DIV/0! KURT: Division by zero: variance is 0".into());
     }
 
     let std_dev = crate::portable_math::sqrt(variance);

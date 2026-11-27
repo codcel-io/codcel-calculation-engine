@@ -41,7 +41,7 @@ pub fn codcel_x_match(
     search_mode: Option<i32>,
 ) -> Result<i32, Box<dyn Error + Send + Sync>> {
     if lookup_array.is_empty() {
-        return Err("XMATCH: Array cannot be empty".into());
+        return Err("#N/A XMATCH: Array cannot be empty".into());
     }
 
     let match_mode = match_mode.unwrap_or(0);
@@ -100,7 +100,7 @@ fn exact_match_x_match(
             return binary_search_exact(lookup_value, lookup_array, search_mode);
         }
     }
-    Err("XMATCH: Exact match not found".into())
+    Err("#N/A XMATCH: Exact match not found".into())
 }
 
 fn exact_or_next_smaller_match(
@@ -218,7 +218,7 @@ fn wildcard_match(
         }
     }
 
-    Err("XMATCH: No wildcard match found".into())
+    Err("#N/A XMATCH: No wildcard match found".into())
 }
 
 fn binary_search_exact(
@@ -254,7 +254,7 @@ fn binary_search_exact(
         }
     }
 
-    Err("XMATCH: Binary search exact match not found".into())
+    Err("#N/A XMATCH: Binary search exact match not found".into())
 }
 
 fn binary_search_next_smaller(

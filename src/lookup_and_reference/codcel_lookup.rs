@@ -105,7 +105,7 @@ fn vector_lookup(
 
     best_match_index
         .map(|i| result_vector[i].clone())
-        .ok_or_else(|| "LOOKUP: No suitable match found".into())
+        .ok_or_else(|| "#N/A LOOKUP: No suitable match found".into())
 }
 
 // Array form: LOOKUP(lookup_value, array) - simplified version for single vector
@@ -132,7 +132,7 @@ fn array_lookup(
 
     best_match_index
         .map(|i| lookup_vector[i].clone())
-        .ok_or_else(|| "LOOKUP: No suitable match found".into())
+        .ok_or_else(|| "#N/A LOOKUP: No suitable match found".into())
 }
 
 #[cfg(test)]

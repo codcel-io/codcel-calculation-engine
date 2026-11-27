@@ -55,7 +55,7 @@ pub fn codcel_im_tan(
 
     // Check for division by zero
     if denominator.abs() < 1e-14 {
-        return Err("IMTAN: Division by zero".into());
+        return Err("#NUM! IMTAN: Division by zero".into());
     }
 
     // Calculate the result using the formula

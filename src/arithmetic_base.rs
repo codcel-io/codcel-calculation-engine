@@ -3492,7 +3492,7 @@ pub fn sum_xmy2(
 #[inline]
 pub fn codcel_maths(result: f64) -> Result<Value, Box<dyn Error + Send + Sync>> {
     if result.is_nan() || result.is_infinite() {
-        Err("Arithmetic overflow or invalid operation".into())
+        Err("#NUM! Arithmetic overflow or invalid operation".into())
     } else {
         Ok(Value::F64(result))
     }

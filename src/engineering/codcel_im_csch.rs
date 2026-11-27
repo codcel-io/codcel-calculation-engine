@@ -25,7 +25,7 @@ pub fn codcel_im_csch(
     if !complex.contains('i') && !complex.contains('j') {
         if let Ok(real) = complex.parse::<f64>() {
             if real == 0.0 {
-                return Err("Division by zero in IMCSCH".into());
+                return Err("#NUM! Division by zero in IMCSCH".into());
             }
             return Ok(number_to_string(
                 1.0 / crate::portable_math::sinh(real),
@@ -41,7 +41,7 @@ pub fn codcel_im_csch(
 
     // Check for zero input
     if real == 0.0 && imag == 0.0 {
-        return Err("Division by zero in IMCSCH".into());
+        return Err("#NUM! Division by zero in IMCSCH".into());
     }
 
     // Calculate components
@@ -54,7 +54,7 @@ pub fn codcel_im_csch(
     let denominator = sinh_x * sinh_x + sin_y * sin_y;
 
     if denominator.abs() < 1e-14 {
-        return Err("Division by zero in IMCSCH".into());
+        return Err("#NUM! Division by zero in IMCSCH".into());
     }
 
     // Calculate real and imaginary parts

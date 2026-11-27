@@ -14,7 +14,7 @@ use crate::area::{
     process_area_string_to_string, process_area_value_opt_bool_to_string,
     process_area_value_to_float, process_area_value_to_string,
 };
-use crate::excel_error::coercion_error;
+use crate::excel_error::{coercion_error, err_to_box, ExcelError};
 use crate::text::{
     codcel_array_to_text::codcel_array_to_text, codcel_asc::codcel_asc,
     character_set::CharacterSet, codcel_bahttext::codcel_bahttext, codcel_clean::codcel_clean,
@@ -712,9 +712,11 @@ pub fn concatenate(
     let mut result_string = String::new();
 
     for value in values {
+        // A list has no error kind of its own: keep the kind of the cell that failed (#N/A for
+        // an #N/A cell, as in Excel)
         let strings_in_array = value
             .vec_string(value_format)
-            .map_err(|_| coercion_error(&value))?;
+            .map_err(|e| err_to_box(ExcelError::from_err(e.as_ref())))?;
         for s in strings_in_array {
             result_string.push_str(&s);
         }
@@ -764,7 +766,7 @@ pub fn text_join(
             value_strings.extend(
                 value
                     .vec_string(value_format)
-                    .map_err(|_| coercion_error(&value))?,
+                    .map_err(|e| err_to_box(ExcelError::from_err(e.as_ref())))?,
             );
         } else {
             // Get the single string value

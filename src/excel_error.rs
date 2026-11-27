@@ -90,6 +90,27 @@ impl ExcelError {
     }
 }
 
+impl ExcelError {
+    /// The kind of a failed calculation's error, read from its message.
+    ///
+    /// Errors travel as `Err(Box<dyn Error>)`, so the kind survives only in the message:
+    /// [`err_to_box`] writes `#N/A (Excel error)`, and some functions start their message with the
+    /// error value (`#VALUE! Substring not found.`). The first word that is an error value gives
+    /// the kind; a message without one is `#VALUE!`, Excel's error for an argument a function
+    /// cannot use.
+    pub fn from_message(message: &str) -> Self {
+        message
+            .split_whitespace()
+            .find_map(|word| ExcelError::from_legacy_string(word.trim_end_matches([':', ',', '.'])))
+            .unwrap_or(ExcelError::Value)
+    }
+
+    /// [`ExcelError::from_message`] of an error.
+    pub fn from_err(error: &(dyn Error + Send + Sync)) -> Self {
+        Self::from_message(&error.to_string())
+    }
+}
+
 pub fn err_to_box(e: ExcelError) -> Box<dyn Error + Send + Sync> {
     format!("{} (Excel error)", e.display()).into()
 }
@@ -108,18 +129,18 @@ pub fn err_to_box_localized(
 
 /// Returns the specific Excel error kind for `value`, if any.
 ///
-/// Recognizes three legacy error representations to keep the engine
-/// migrating cleanly:
-/// - `Value::Error(e)` — the typed variant going forward.
-/// - `Value::F64`/`OptionF64` carrying `NaN` — generic legacy error, treated as `#N/A`.
-/// - `Value::String("#…!")` — string sentinel used by some database functions.
+/// Recognizes:
+/// - `Value::Error(e)` — the typed variant.
+/// - `Value::F64`/`OptionF64` carrying `NaN` — how `NA()` and the padding cells of LINEST and
+///   LOGEST carry `#N/A` inside the engine.
+///
+/// Text is never an error, even text that reads `#N/A`: in Excel `ISERROR("#N/A")` is FALSE, and
+/// a workbook author who writes `IF(x, "N/A", …)` means the text.
 pub fn error_type(value: &Value) -> Option<ExcelError> {
     match value {
         Value::Error(e) => Some(*e),
         Value::F64(v) if v.is_nan() => Some(ExcelError::Na),
         Value::OptionF64(Some(v)) if v.is_nan() => Some(ExcelError::Na),
-        Value::String(s) => ExcelError::from_legacy_string(s),
-        Value::OptionString(Some(s)) => ExcelError::from_legacy_string(s),
         _ => None,
     }
 }
@@ -263,18 +284,6 @@ mod tests {
     }
 
     #[test]
-    fn test_error_type_legacy_string() {
-        assert_eq!(
-            error_type(&Value::String("#NUM!".to_string())),
-            Some(ExcelError::Num)
-        );
-        assert_eq!(
-            error_type(&Value::OptionString(Some("#DIV/0!".to_string()))),
-            Some(ExcelError::Div0)
-        );
-    }
-
-    #[test]
     fn test_error_type_non_error_values() {
         assert_eq!(error_type(&Value::F64(1.0)), None);
         assert_eq!(error_type(&Value::I32(0)), None);
@@ -287,8 +296,47 @@ mod tests {
     fn test_is_error() {
         assert!(is_error(&Value::Error(ExcelError::Ref)));
         assert!(is_error(&Value::F64(f64::NAN)));
-        assert!(is_error(&Value::String("#REF!".to_string())));
+        assert!(!is_error(&Value::String("#REF!".to_string())));
         assert!(!is_error(&Value::F64(1.0)));
         assert!(!is_error(&Value::None));
+    }
+
+    #[test]
+    fn from_message_reads_the_error_value_in_the_message() {
+        let cases = [
+            ("#N/A (Excel error)", ExcelError::Na),
+            ("#VALUE! Substring not found.", ExcelError::Value),
+            ("#N/A REGEXEXTRACT: No match found.", ExcelError::Na),
+            ("INDEX: #REF!, row out of range", ExcelError::Ref),
+            ("#DIV/0! (Excel error)", ExcelError::Div0),
+        ];
+        for (message, kind) in cases {
+            assert_eq!(ExcelError::from_message(message), kind, "{message}");
+        }
+    }
+
+    #[test]
+    fn from_message_without_an_error_value_is_a_value_error() {
+        assert_eq!(
+            ExcelError::from_message("MATCH: Match type must be 0, 1 or -1"),
+            ExcelError::Value
+        );
+        let boxed = err_to_box(ExcelError::Num);
+        assert_eq!(ExcelError::from_err(boxed.as_ref()), ExcelError::Num);
+    }
+
+    #[test]
+    fn text_is_never_an_error() {
+        for text in ["#N/A", "N/A", "#VALUE!", "#DIV/0!"] {
+            assert_eq!(error_type(&Value::String(text.to_string())), None);
+            assert_eq!(
+                error_type(&Value::OptionString(Some(text.to_string()))),
+                None
+            );
+        }
+        assert_eq!(
+            error_type(&Value::Error(ExcelError::Na)),
+            Some(ExcelError::Na)
+        );
     }
 }

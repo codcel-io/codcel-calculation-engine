@@ -97,14 +97,7 @@ where
         }) {
             return Value::Error(e);
         }
-        op(values).unwrap_or_else(|e| {
-            let message = e.to_string();
-            let error = message
-                .split_whitespace()
-                .find_map(|word| ExcelError::from_legacy_string(word.trim_end_matches([':', ','])))
-                .unwrap_or(ExcelError::Value);
-            Value::Error(error)
-        })
+        op(values).unwrap_or_else(|e| Value::Error(ExcelError::from_err(e.as_ref())))
     };
     if all_lists {
         Ok(Value::VecValue((0..columns).map(|c| cell(0, c)).collect()))

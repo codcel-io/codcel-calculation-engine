@@ -21,7 +21,7 @@ pub fn codcel_quotient(
 
     // Division by zero check
     if denominator == 0.0 {
-        return Err("QUOTIENT: Division by zero is not allowed".into());
+        return Err("#DIV/0! QUOTIENT: Division by zero is not allowed".into());
     }
 
     // Perform integer division

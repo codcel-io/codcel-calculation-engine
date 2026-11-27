@@ -40,7 +40,7 @@ pub fn codcel_correl(x: Vec<f64>, y: Vec<f64>) -> Result<f64, Box<dyn Error + Se
     }
 
     if x_denominator.total() == 0.0 || y_denominator.total() == 0.0 {
-        return Err("CORREL: Division by zero.".into());
+        return Err("#DIV/0! CORREL: Division by zero.".into());
     }
 
     // Calculate and return the correlation coefficient

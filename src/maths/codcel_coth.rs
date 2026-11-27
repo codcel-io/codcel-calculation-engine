@@ -19,7 +19,7 @@ pub fn codcel_coth(x: f64) -> Result<f64, Box<dyn Error + Send + Sync>> {
     // Calculate coth(x) using the formula: cosh(x) / sinh(x)
     let sinh = crate::portable_math::sinh(x);
     if sinh == 0.0 {
-        return Err("COTH is undefined due to division by zero".into());
+        return Err("#DIV/0! COTH is undefined due to division by zero".into());
     }
 
     Ok(crate::portable_math::cosh(x) / sinh)

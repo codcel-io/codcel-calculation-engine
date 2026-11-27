@@ -82,7 +82,7 @@ pub fn codcel_x_lookup(
             if let Some(not_found_value) = if_not_found {
                 Ok(not_found_value)
             } else {
-                Err("XLOOKUP: No match found".into())
+                Err("#N/A XLOOKUP: No match found".into())
             }
         }
     }

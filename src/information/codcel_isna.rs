@@ -45,8 +45,11 @@ mod tests {
     }
 
     #[test]
-    fn test_isna_with_legacy_string() {
-        assert!(codcel_isna(&Value::String("#N/A".to_string()), &default_format()).unwrap());
+    fn test_isna_text_that_reads_like_an_error_is_text() {
+        // As in Excel, ISNA("#N/A") is FALSE: the author typed text, not an error.
+        for text in ["#N/A", "N/A", "#NUM!"] {
+            assert!(!codcel_isna(&Value::String(text.to_string()), &default_format()).unwrap());
+        }
     }
 
     // --- FALSE cases (other errors and non-errors) ---
@@ -63,12 +66,6 @@ mod tests {
         ] {
             assert!(!codcel_isna(&Value::Error(e), &default_format()).unwrap());
         }
-    }
-
-    #[test]
-    fn test_isna_with_legacy_non_na_string_errors() {
-        assert!(!codcel_isna(&Value::String("#NUM!".to_string()), &default_format()).unwrap());
-        assert!(!codcel_isna(&Value::String("#DIV/0!".to_string()), &default_format()).unwrap());
     }
 
     #[test]

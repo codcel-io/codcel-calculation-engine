@@ -36,7 +36,7 @@ pub fn codcel_intercept(
 
     let denominator = n * sum_x2 - sum_x.powi(2);
     if denominator == 0.0 {
-        return Err("INTERCEPT: Division by zero error due to collinear data.".into());
+        return Err("#DIV/0! INTERCEPT: Division by zero error due to collinear data.".into());
     }
 
     let slope = (n * sum_xy - sum_x * sum_y) / denominator;

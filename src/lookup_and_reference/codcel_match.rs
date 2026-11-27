@@ -26,7 +26,7 @@ where
     T: PartialEq + PartialOrd + Clone,
 {
     if lookup_array.is_empty() {
-        return Err("MATCH: Array cannot be empty".into());
+        return Err("#N/A MATCH: Array cannot be empty".into());
     }
 
     let match_type = match_type.unwrap_or(1);
@@ -51,7 +51,7 @@ where
             return Ok(i as i32 + 1); // Excel uses 1-based indexing
         }
     }
-    Err("MATCH: Exact match not found.".into())
+    Err("#N/A MATCH: Exact match not found.".into())
 }
 
 fn largest_less_or_equal_match<T>(
@@ -75,7 +75,7 @@ where
 
     best_match
         .map(|i| i as i32 + 1)
-        .ok_or_else(|| "MATCH: Largest less or equal match not found.".into())
+        .ok_or_else(|| "#N/A MATCH: Largest less or equal match not found.".into())
 }
 
 fn smallest_greater_or_equal_match<T>(
@@ -95,7 +95,7 @@ where
         }
     }
 
-    Err("MATCH: Smallest greater or equal match not found.".into())
+    Err("#N/A MATCH: Smallest greater or equal match not found.".into())
 }
 
 #[test]

@@ -2337,10 +2337,12 @@ impl Value {
                 if value.is_empty() {
                     Ok(vec![String::new()])
                 } else {
+                    // An error cell fails the conversion, as in `vec_f64`, rather than
+                    // turning into an empty string that reads as a real result
                     let vector: Vec<String> = value
                         .iter()
-                        .map(|val| val.string(value_format).unwrap_or_default())
-                        .collect();
+                        .map(|val| val.string(value_format))
+                        .collect::<Result<_, _>>()?;
                     Ok(vector)
                 }
             }
@@ -2352,8 +2354,8 @@ impl Value {
                     } else {
                         let vector: Vec<String> = value
                             .iter()
-                            .map(|val| val.string(value_format).unwrap_or_default())
-                            .collect();
+                            .map(|val| val.string(value_format))
+                            .collect::<Result<_, _>>()?;
                         Ok(vector)
                     }
                 }
@@ -2361,12 +2363,9 @@ impl Value {
             Value::AreaValue(value) => {
                 let values: Vec<String> = value
                     .iter()
-                    .flat_map(|inner_vec| {
-                        inner_vec
-                            .iter()
-                            .map(|val| val.string(value_format).unwrap_or_default())
-                    })
-                    .collect();
+                    .flatten()
+                    .map(|val| val.string(value_format))
+                    .collect::<Result<_, _>>()?;
 
                 if !values.is_empty() {
                     Ok(values)
@@ -2378,12 +2377,9 @@ impl Value {
                 if let Some(value) = value {
                     let values: Vec<String> = value
                         .iter()
-                        .flat_map(|inner_vec| {
-                            inner_vec
-                                .iter()
-                                .map(|val| val.string(value_format).unwrap_or_default())
-                        })
-                        .collect();
+                        .flatten()
+                        .map(|val| val.string(value_format))
+                        .collect::<Result<_, _>>()?;
 
                     if !values.is_empty() {
                         return Ok(values);

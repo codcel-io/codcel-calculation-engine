@@ -360,7 +360,7 @@ pub fn max_ifs(
 
     // Find the maximum value among the matching indexes
     if common_indexes.is_empty() {
-        Ok(Value::F64(f64::NAN)) // Return NaN if no matching cells are found
+        Ok(Value::F64(0.0)) // As in Excel, no matching cell gives 0
     } else {
         let max_value = common_indexes.iter().try_fold(
             f64::NEG_INFINITY,
@@ -387,7 +387,7 @@ pub fn min_ifs(
 
     // Find the minimum value among the matching indexes
     if common_indexes.is_empty() {
-        Ok(Value::F64(f64::NAN)) // Return NaN if no matching cells are found
+        Ok(Value::F64(0.0)) // As in Excel, no matching cell gives 0
     } else {
         let min_value = common_indexes.iter().try_fold(
             f64::INFINITY,
@@ -605,5 +605,30 @@ mod tests {
         )
         .unwrap();
         assert_eq!(result.f64(&value_format).unwrap(), 0.1);
+    }
+
+    #[test]
+    fn maxifs_and_minifs_with_no_matching_cell_are_zero_like_excel() {
+        let format = create_value_format();
+        let range = value_area_f64(vec![vec![1.0], vec![5.0], vec![3.0]]);
+        let no_match = || Value::VecValue(vec![range.clone(), value_str(">100")]);
+        assert_eq!(
+            max_ifs(range.clone(), no_match(), &format).unwrap(),
+            Value::F64(0.0)
+        );
+        assert_eq!(
+            min_ifs(range.clone(), no_match(), &format).unwrap(),
+            Value::F64(0.0)
+        );
+
+        let some_match = || Value::VecValue(vec![range.clone(), value_str(">1")]);
+        assert_eq!(
+            max_ifs(range.clone(), some_match(), &format).unwrap(),
+            Value::F64(5.0)
+        );
+        assert_eq!(
+            min_ifs(range.clone(), some_match(), &format).unwrap(),
+            Value::F64(3.0)
+        );
     }
 }

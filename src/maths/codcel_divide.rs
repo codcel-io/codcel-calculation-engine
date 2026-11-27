@@ -15,7 +15,7 @@ use std::error::Error;
 pub fn codcel_divide(lhs: f64, rhs: f64) -> Result<f64, Box<dyn Error + Send + Sync>> {
     check_bin_op(lhs, rhs, "DIVIDE")?;
     if rhs == 0.0 {
-        Err("Cannot divide by zero".into())
+        Err("#DIV/0! Cannot divide by zero".into())
     } else {
         Ok(lhs / rhs)
     }
@@ -28,7 +28,7 @@ pub fn codcel_divide(lhs: f64, rhs: f64) -> Result<f64, Box<dyn Error + Send + S
 #[inline]
 pub fn codcel_safe_div(lhs: f64, rhs: f64) -> Result<f64, Box<dyn Error + Send + Sync>> {
     if rhs == 0.0 {
-        Err("Cannot divide by zero".into())
+        Err("#DIV/0! Cannot divide by zero".into())
     } else {
         Ok(lhs / rhs)
     }
@@ -102,5 +102,14 @@ mod tests {
         // =10/0 in German format - should return an error
         let result = codcel_divide(10.0, 0.0);
         assert!(result.is_err());
+    }
+
+    #[test]
+    fn dividing_by_zero_is_a_div0_error() {
+        use crate::excel_error::ExcelError;
+        let error = codcel_divide(1.0, 0.0).unwrap_err();
+        assert_eq!(ExcelError::from_err(error.as_ref()), ExcelError::Div0);
+        let error = codcel_safe_div(1.0, 0.0).unwrap_err();
+        assert_eq!(ExcelError::from_err(error.as_ref()), ExcelError::Div0);
     }
 }

@@ -23,7 +23,7 @@ pub fn codcel_cot(angle_in_radians: f64) -> Result<f64, Box<dyn Error + Send + S
     // Calculate cotangent as 1 / tan(angle)
     let tangent = crate::portable_math::tan(angle_in_radians);
     if tangent == 0.0 {
-        return Err("COT: Cotangent is undefined due to division by zero".into());
+        return Err("#DIV/0! COT: Cotangent is undefined due to division by zero".into());
     }
 
     Ok(1.0 / tangent)

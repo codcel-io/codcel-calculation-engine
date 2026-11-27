@@ -5,6 +5,7 @@
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
 use crate::database::criteria_match::{collect_numeric_column, match_db_criteria, resolve_field};
+use crate::excel_error::{err_to_box, ExcelError};
 use crate::statistical::codcel_st_dev_s::codcel_st_dev_s;
 use crate::value::Value;
 use crate::value_format::ValueFormat;
@@ -25,7 +26,7 @@ pub fn codcel_dstdev(
     let matched = match_db_criteria(&database, &criteria, value_format)?;
     let values = collect_numeric_column(&database, field_idx, &matched, value_format);
     if values.len() < 2 {
-        return Ok(Value::String("#DIV/0!".into()));
+        return Err(err_to_box(ExcelError::Div0));
     }
     Ok(Value::F64(codcel_st_dev_s(values)?))
 }
@@ -73,7 +74,7 @@ mod tests {
             vec![Value::String("V".into())],
             vec![Value::String("=2".into())],
         ]);
-        let result = codcel_dstdev(db(), Value::String("V".into()), crit, &vf()).unwrap();
-        assert_eq!(result, Value::String("#DIV/0!".into()));
+        let error = codcel_dstdev(db(), Value::String("V".into()), crit, &vf()).unwrap_err();
+        assert_eq!(ExcelError::from_err(error.as_ref()), ExcelError::Div0);
     }
 }
