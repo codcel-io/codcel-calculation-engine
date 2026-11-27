@@ -21,6 +21,24 @@ mod tests {
         }
     }
 
+    /// Numbers with error cells: an error cell (typed, or NaN as NA() carries it) is None.
+    #[test]
+    fn test_nullable_f64_conversions() {
+        let format = default_value_format();
+        let list = Value::VecValue(vec![Value::F64(1.5), Value::Error(ExcelError::Na), Value::F64(f64::NAN)]);
+        assert_eq!(list.vec_nullable_f64(&format).unwrap(), vec![Some(1.5), None, None]);
+        let grid = Value::AreaValue(vec![
+            vec![Value::F64(1.0), Value::Error(ExcelError::Div0)],
+            vec![Value::I32(2), Value::F64(3.0)],
+        ]);
+        assert_eq!(
+            grid.area_nullable_f64(&format).unwrap(),
+            vec![vec![Some(1.0), None], vec![Some(2.0), Some(3.0)]]
+        );
+        let text = Value::VecValue(vec![Value::String("abc".into())]);
+        assert!(text.vec_nullable_f64(&format).is_err());
+    }
+
     /// An error cell in a list fails the conversion to text with its own kind. It used to become
     /// an empty string, which reads as a real result.
     #[test]

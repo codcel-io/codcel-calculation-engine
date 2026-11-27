@@ -111,6 +111,22 @@ impl ExcelError {
     }
 }
 
+/// The message of a failed calculation, starting with its Excel error value: `#N/A (Excel error)`
+/// and `#VALUE! Substring not found.` are kept, and a message without an error value (`Cannot
+/// convert "x" to a number`) gets the `#VALUE!` it stands for in front. Every language's
+/// wrapper hands this message on, so code calling it can tell an `#N/A` from a `#DIV/0!`.
+pub fn excel_error_message(error: &(dyn Error + Send + Sync)) -> String {
+    let message = error.to_string();
+    let has_error_value = message
+        .split_whitespace()
+        .any(|word| ExcelError::from_legacy_string(word.trim_end_matches([':', ',', '.'])).is_some());
+    if has_error_value {
+        message
+    } else {
+        format!("{} {message}", ExcelError::Value.display())
+    }
+}
+
 pub fn err_to_box(e: ExcelError) -> Box<dyn Error + Send + Sync> {
     format!("{} (Excel error)", e.display()).into()
 }
@@ -338,5 +354,15 @@ mod tests {
             error_type(&Value::Error(ExcelError::Na)),
             Some(ExcelError::Na)
         );
+    }
+
+    #[test]
+    fn excel_error_message_always_starts_with_an_error_value() {
+        let boxed = err_to_box(ExcelError::Na);
+        assert_eq!(excel_error_message(boxed.as_ref()), "#N/A (Excel error)");
+        let prose: Box<dyn Error + Send + Sync> = "Cannot convert \"x\" to a number".into();
+        assert_eq!(excel_error_message(prose.as_ref()), "#VALUE! Cannot convert \"x\" to a number");
+        let coded: Box<dyn Error + Send + Sync> = "#DIV/0! Cannot divide by zero".into();
+        assert_eq!(excel_error_message(coded.as_ref()), "#DIV/0! Cannot divide by zero");
     }
 }

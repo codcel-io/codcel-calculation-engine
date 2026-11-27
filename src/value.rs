@@ -1035,6 +1035,30 @@ impl Value {
         }
     }
 
+    /// The numbers of a list output in which an error cell is `None` (null in JSON), as Excel
+    /// shows `#N/A` in, say, LINEST's unused statistics cells. NaN (how `NA()` is carried) and
+    /// infinities are errors too. Any other value that is not a number still fails.
+    pub fn vec_nullable_f64(
+        &self,
+        value_format: &ValueFormat,
+    ) -> Result<Vec<Option<f64>>, Box<dyn Error + Send + Sync>> {
+        self.vec_value()?
+            .iter()
+            .map(|cell| nullable_f64(cell, value_format))
+            .collect()
+    }
+
+    /// [`Value::vec_nullable_f64`] for a grid.
+    pub fn area_nullable_f64(
+        &self,
+        value_format: &ValueFormat,
+    ) -> Result<Vec<Vec<Option<f64>>>, Box<dyn Error + Send + Sync>> {
+        self.area_of_value()?
+            .iter()
+            .map(|row| row.iter().map(|cell| nullable_f64(cell, value_format)).collect())
+            .collect()
+    }
+
     pub fn vec_value(&self) -> Result<Vec<Value>, Box<dyn Error + Send + Sync>> {
         match self {
             Value::F64(value) => Ok(vec![Value::F64(*value)]),
@@ -3389,6 +3413,18 @@ pub fn none() -> Value {
 
 pub fn error(value: ExcelError) -> Value {
     Value::Error(value)
+}
+
+/// A number, or `None` for an Excel error (see [`Value::vec_nullable_f64`]).
+fn nullable_f64(
+    cell: &Value,
+    value_format: &ValueFormat,
+) -> Result<Option<f64>, Box<dyn Error + Send + Sync>> {
+    if crate::excel_error::is_error(cell) {
+        return Ok(None);
+    }
+    let number = cell.f64(value_format)?;
+    Ok(number.is_finite().then_some(number))
 }
 
 pub fn area_f64(value: Vec<Vec<f64>>) -> Value {
