@@ -18,7 +18,8 @@ use std::error::Error;
 /// - `stats`: if `true`, returns additional regression statistics; if `false` or omitted, returns only coefficients.
 ///
 /// Returns an array containing slope(s) and intercept (in reverse order: m_k, ..., m_1, b),
-/// and optionally additional regression statistics.
+/// and optionally additional regression statistics. As in Excel, the intercept column is there
+/// even when `constant` is `false`: b is 0, and its standard error is #N/A (NaN).
 pub fn codcel_linest(
     known_ys: Vec<f64>,
     known_xs: Option<Vec<Vec<f64>>>,
@@ -114,9 +115,7 @@ pub fn codcel_linest(
 
     if !stats {
         let mut row = slopes;
-        if constant {
-            row.push(intercept);
-        }
+        row.push(intercept);
         return Ok(vec![row]);
     }
 
@@ -175,9 +174,9 @@ pub fn codcel_linest(
     se_slopes.reverse();
     let se_intercept = if constant { se_coeffs[k] } else { f64::NAN };
 
-    // F-statistic
+    // F-statistic. Without a constant Excel still reports it, from the uncentred sums of squares.
     let df_regression = k as f64;
-    let f_statistic = if constant && sst != 0.0 && df_residual > 0.0 {
+    let f_statistic = if sst != 0.0 && df_residual > 0.0 {
         (ssr / df_regression) / (sse / df_residual)
     } else {
         f64::NAN
@@ -186,15 +185,11 @@ pub fn codcel_linest(
     // Build result array
     // Row 1: coefficients (m_k, ..., m_1, b)
     let mut row1 = slopes;
-    if constant {
-        row1.push(intercept);
-    }
+    row1.push(intercept);
 
-    // Row 2: standard errors
+    // Row 2: standard errors (#N/A for the intercept when it is forced to 0)
     let mut row2 = se_slopes;
-    if constant {
-        row2.push(se_intercept);
-    }
+    row2.push(se_intercept);
 
     // Row 3: R-squared, standard error of regression
     let width = row1.len();
@@ -235,11 +230,44 @@ mod tests {
 
     #[test]
     fn test_linest_no_constant() {
-        // y = 2x (b = 0)
+        // y = 2x (b = 0). Excel still returns the intercept column: {m, 0}
         let known_ys = vec![0.0, 2.0, 4.0, 6.0];
         let known_xs = xs_1d(vec![0.0, 1.0, 2.0, 3.0]);
         let result = codcel_linest(known_ys, known_xs, Some(false), Some(false)).unwrap();
+        assert_eq!(result, vec![vec![result[0][0], 0.0]]);
         assert!((result[0][0] - 2.0).abs() < 0.0001);
+    }
+
+    #[test]
+    fn test_linest_no_constant_matches_excel() {
+        // =LINEST(B2:B15,C2:C15,FALSE,FALSE) in the statistical regression workbook
+        let known_ys = vec![
+            1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 7.0, 9.0, 10.0, 12.0, 13.0, 17.0, 18.0,
+        ];
+        let known_xs = xs_1d(vec![
+            4.0, 6.0, 5.0, 5.0, 7.0, 8.0, 7.0, 8.0, 9.0, 14.0, 10.0, 13.0, 14.0, 17.0,
+        ]);
+        let result = codcel_linest(known_ys, known_xs, Some(false), Some(false)).unwrap();
+        assert_eq!(result.len(), 1);
+        assert_eq!(result[0].len(), 2);
+        assert!((result[0][0] - 0.9514348785871963).abs() < 1e-9);
+        assert_eq!(result[0][1], 0.0);
+    }
+
+    #[test]
+    fn test_linest_no_constant_with_stats() {
+        let known_ys = vec![1.0, 3.0, 4.0, 8.0, 9.0];
+        let known_xs = xs_1d(vec![1.0, 2.0, 3.0, 4.0, 5.0]);
+        let result = codcel_linest(known_ys, known_xs, Some(false), Some(true)).unwrap();
+        assert_eq!(result.len(), 5);
+        assert!(result.iter().all(|row| row.len() == 2));
+        assert_eq!(result[0][1], 0.0); // b
+        assert!(result[1][1].is_nan()); // se(b) is #N/A
+
+        // F from the uncentred sums of squares: (SSreg / k) / (SSresid / df)
+        let (ssr, sse, df) = (result[4][0], result[4][1], result[3][1]);
+        assert_eq!(df, 4.0);
+        assert!((result[3][0] - (ssr / 1.0) / (sse / df)).abs() < 1e-9);
     }
 
     #[test]

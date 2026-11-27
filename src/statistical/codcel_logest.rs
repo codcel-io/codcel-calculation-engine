@@ -4,7 +4,7 @@
 // This file is part of Codcel (https://codcel.io).
 // See LICENSE-MIT and LICENSE-APACHE in the project root.
 
-use crate::compensated_sum::CompensatedSumExt;
+use crate::statistical::codcel_linest::codcel_linest;
 use std::error::Error;
 
 /// Excel-compatible `LOGEST` that returns statistics for an exponential regression curve.
@@ -14,216 +14,49 @@ use std::error::Error;
 ///   if `false`, forces b to 1 in the equation y = b * m^x.
 /// - `stats`: if `true`, returns additional regression statistics; if `false` or omitted, returns only coefficients.
 ///
-/// Returns an array containing the coefficient(s) m and constant b for the exponential curve y = b * m^x.
+/// Returns an array containing the coefficient m and constant b for the exponential curve y = b * m^x
+/// (b is 1 when `constant` is `false`, and still returned, as in Excel).
+///
+/// As Excel defines it, this is LINEST of ln(y): the coefficients are exponentiated
+/// (m = e^slope, b = e^intercept), and every statistic, standard errors included, is
+/// the one for the fit of ln(y), not exponentiated.
 pub fn codcel_logest(
     known_ys: Vec<f64>,
     known_xs: Option<Vec<f64>>,
     constant: Option<bool>,
     stats: Option<bool>,
 ) -> Result<Vec<Vec<f64>>, Box<dyn Error + Send + Sync>> {
-    // Default values for optional parameters
-    let constant = constant.unwrap_or(true);
-    let stats = stats.unwrap_or(false);
-
-    // Input validation
     if known_ys.is_empty() {
         return Err("LOGEST: known_ys must not be empty.".into());
     }
 
-    // If known_xs is None, generate sequential x values (1, 2, 3, ...)
-    let known_xs = match known_xs {
-        Some(xs) => {
-            // Validate that known_xs has the same length as known_ys
-            if known_ys.len() != xs.len() {
-                return Err("LOGEST: known_ys and known_xs must have the same size.".into());
-            }
-            if xs.is_empty() {
-                return Err("LOGEST: known_xs must not be empty.".into());
-            }
-            xs
+    if let Some(xs) = &known_xs {
+        if xs.is_empty() {
+            return Err("LOGEST: known_xs must not be empty.".into());
         }
-        None => {
-            // Generate sequential x values starting from 1
-            (1..=known_ys.len()).map(|i| i as f64).collect()
+        if known_ys.len() != xs.len() {
+            return Err("LOGEST: known_ys and known_xs must have the same size.".into());
         }
-    };
+    }
 
-    // Check for non-positive y values (can't take logarithm)
+    // Can't take the logarithm of a non-positive y
     if known_ys.iter().any(|&y| y <= 0.0) {
         return Err("LOGEST: All y values must be positive for exponential regression.".into());
     }
 
-    // Take logarithm of y values for linear regression
     let ln_ys: Vec<f64> = known_ys
         .iter()
         .map(|&y| crate::portable_math::ln(y))
         .collect();
+    // One observation per row, as LINEST takes them
+    let xs = known_xs.map(|xs| xs.into_iter().map(|x| vec![x]).collect());
 
-    // Calculate means
-    let mean_x = known_xs.iter().compensated_sum() / known_xs.len() as f64;
-    let mean_ln_y = ln_ys.iter().compensated_sum() / ln_ys.len() as f64;
+    let mut result = codcel_linest(ln_ys, xs, constant, stats)
+        .map_err(|e| e.to_string().replacen("LINEST", "LOGEST", 1))?;
 
-    // Calculate variance_x (needed for both cases and for statistics)
-    let variance_x = known_xs
-        .iter()
-        .map(|&xi| (xi - mean_x).powi(2))
-        .compensated_sum();
-
-    if variance_x == 0.0 {
-        return Err("LOGEST: Division by zero due to zero variance in known_xs.".into());
-    }
-
-    // Calculate slope and intercept
-    let (slope, intercept) = if constant {
-        // With constant term: y = b * m^x
-        let covariance = known_xs
-            .iter()
-            .zip(&ln_ys)
-            .map(|(&xi, &ln_yi)| (xi - mean_x) * (ln_yi - mean_ln_y))
-            .compensated_sum();
-
-        let slope = covariance / variance_x;
-        let intercept = mean_ln_y - slope * mean_x;
-
-        (slope, intercept)
-    } else {
-        // Without constant term: y = m^x (or ln(y) = x * ln(m))
-        let sum_x_ln_y = known_xs
-            .iter()
-            .zip(&ln_ys)
-            .map(|(&xi, &ln_yi)| xi * ln_yi)
-            .compensated_sum();
-        let sum_x_squared = known_xs.iter().map(|&xi| xi.powi(2)).compensated_sum();
-
-        if sum_x_squared == 0.0 {
-            return Err("LOGEST: Division by zero due to zero sum of squares in known_xs.".into());
-        }
-
-        let slope = sum_x_ln_y / sum_x_squared;
-
-        // No intercept in this model
-        (slope, 0.0)
-    };
-
-    // Convert back to exponential form
-    let m = crate::portable_math::exp(slope); // m in y = b * m^x
-    let b = if constant {
-        crate::portable_math::exp(intercept)
-    } else {
-        1.0
-    }; // b in y = b * m^x
-
-    if !stats {
-        // Return just the coefficients
-        if constant {
-            // Return [m, b] as a 1x2 array
-            return Ok(vec![vec![m, b]]);
-        } else {
-            // Return [m] as a 1x1 array
-            return Ok(vec![vec![m]]);
-        }
-    }
-
-    // Calculate additional statistics for the regression
-    let n = known_ys.len() as f64;
-    let df = if constant { n - 2.0 } else { n - 1.0 };
-
-    if df <= 0.0 {
-        return Err("LOGEST: Not enough data points for regression statistics.".into());
-    }
-
-    // Calculate fitted values and residuals
-    let fitted_ln_ys: Vec<f64> = known_xs
-        .iter()
-        .map(|&x| {
-            if constant {
-                slope * x + intercept
-            } else {
-                slope * x
-            }
-        })
-        .collect();
-
-    let residuals: Vec<f64> = ln_ys
-        .iter()
-        .zip(&fitted_ln_ys)
-        .map(|(&actual, &fitted)| actual - fitted)
-        .collect();
-
-    // Sum of squared residuals
-    let sse = residuals.iter().map(|&r| r.powi(2)).compensated_sum();
-
-    // Total sum of squares
-    let sst = if constant {
-        ln_ys
-            .iter()
-            .map(|&y| (y - mean_ln_y).powi(2))
-            .compensated_sum()
-    } else {
-        ln_ys.iter().map(|&y| y.powi(2)).compensated_sum()
-    };
-
-    // R-squared
-    let r_squared = if sst == 0.0 { 0.0 } else { 1.0 - (sse / sst) };
-
-    // Standard error of the regression
-    let se_regression = crate::portable_math::sqrt(sse / df);
-
-    // Standard errors of coefficients
-    let se_slope = if variance_x == 0.0 {
-        f64::NAN
-    } else {
-        se_regression / crate::portable_math::sqrt(variance_x)
-    };
-
-    let se_intercept = if constant {
-        se_regression * crate::portable_math::sqrt((1.0 / n) + (mean_x.powi(2) / variance_x))
-    } else {
-        f64::NAN
-    };
-
-    // F statistic
-    let f_statistic = if constant && sst != 0.0 && df > 0.0 {
-        (sst - sse) / (sse / df)
-    } else {
-        f64::NAN
-    };
-
-    // Degrees of freedom
-    let df_regression = 1.0;
-    let df_residual = n - df_regression - (if constant { 1.0 } else { 0.0 });
-
-    // Regression sum of squares
-    let ssr = sst - sse;
-
-    // Prepare the result array
-    let mut result = Vec::new();
-
-    if constant {
-        // First row: coefficients
-        result.push(vec![m, b]);
-        // Second row: standard errors
-        result.push(vec![
-            crate::portable_math::exp(se_slope),
-            crate::portable_math::exp(se_intercept),
-        ]);
-        // Third row: R-squared and standard error of the regression
-        result.push(vec![r_squared, se_regression]);
-        // Fourth row: F-statistic and degrees of freedom
-        result.push(vec![f_statistic, df_residual]);
-        // Fifth row: Regression SS and Residual SS
-        result.push(vec![ssr, sse]);
-    } else {
-        // First row: coefficient
-        result.push(vec![m]);
-        // Second row: standard error
-        result.push(vec![crate::portable_math::exp(se_slope)]);
-        // Third row: R-squared and standard error of the regression
-        result.push(vec![r_squared, se_regression]);
-        // Fourth row: F-statistic and degrees of freedom
-        result.push(vec![f_statistic, df_residual]);
-        // Fifth row: Regression SS and Residual SS
-        result.push(vec![ssr, sse]);
+    // Only the coefficients go back to exponential form; b = e^0 = 1 when there is no constant
+    for coefficient in result[0].iter_mut() {
+        *coefficient = crate::portable_math::exp(*coefficient);
     }
 
     Ok(result)
@@ -256,8 +89,9 @@ mod tests {
 
         let result = codcel_logest(known_ys, Some(known_xs), Some(false), Some(false)).unwrap();
 
-        // Should return [m] where y = m^x
+        // Should return [m, 1] where y = m^x: Excel still returns b
         assert!((result[0][0] - 3.0).abs() < 0.0001); // m should be approximately 3
+        assert_eq!(result[0][1], 1.0);
     }
 
     #[test]
@@ -468,11 +302,10 @@ mod tests {
         assert!((result[0][0] - 3.0).abs() < 0.0001); // m
         assert!((result[0][1] - 2.0).abs() < 0.0001); // b
 
-        // Second row: standard errors
-        // For exponential regression, standard errors can be larger
-        // Just verify they are positive and finite
-        assert!(result[1][0] > 0.0 && !result[1][0].is_infinite());
-        assert!(result[1][1] > 0.0 && !result[1][1].is_infinite());
+        // Second row: standard errors of ln(m) and ln(b), as Excel reports them (not
+        // exponentiated). The fit is perfect, so they are 0 up to rounding.
+        assert!(result[1][0].abs() < 1e-9);
+        assert!(result[1][1].abs() < 1e-9);
 
         // Third row: R-squared and standard error of regression
         assert!(result[2][0] > 0.99); // R-squared close to 1
@@ -500,10 +333,9 @@ mod tests {
         // First row: coefficient [m]
         assert!((result[0][0] - 3.0).abs() < 0.0001); // m
 
-        // Second row: standard error
-        // For exponential regression without constant, standard errors can be larger
-        // Just verify it is positive and finite
-        assert!(result[1][0] > 0.0 && !result[1][0].is_infinite());
+        // Second row: standard error of ln(m), as Excel reports it (not exponentiated).
+        // The fit is perfect, so it is 0 up to rounding.
+        assert!(result[1][0].abs() < 1e-9);
 
         // Third row: R-squared and standard error of regression
         assert!(result[2][0] > 0.99); // R-squared close to 1
@@ -512,8 +344,9 @@ mod tests {
         assert!(!result[2][1].is_sign_negative() && !result[2][1].is_infinite());
 
         // Fourth row: F-statistic and degrees of freedom
-        // For no-constant model, F-statistic is set to NaN in the implementation
-        assert!(result[3][0].is_nan()); // F-statistic should be NaN
+        // Excel reports F for a no-constant model too, from the uncentred sums of squares
+        assert!(result[3][0] > 1000.0);
+        assert!(result[1][1].is_nan()); // se(b) is #N/A
         assert!((result[3][1] - 4.0).abs() < 0.0001); // df = n - 1 = 5 - 1 = 4
 
         // Fifth row: Regression SS and Residual SS
@@ -629,5 +462,37 @@ mod tests {
         // Should return [m, b] where y = b * m^x
         assert!((result[0][0] - 3.0).abs() < 0.0001); // m should be approximately 3
         assert!((result[0][1] - 2.0).abs() < 0.0001); // b should be approximately 2
+    }
+
+    #[test]
+    fn test_logest_no_constant_matches_excel() {
+        // =LOGEST(B2:B11,C2:C11, FALSE, FALSE) in the statistical regression workbook
+        let known_ys = vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0];
+        let known_xs = vec![2.0, 4.0, 7.0, 11.0, 17.0, 25.0, 35.0, 47.0, 62.0, 80.0];
+        let result = codcel_logest(known_ys, Some(known_xs), Some(false), Some(false)).unwrap();
+        assert_eq!(result.len(), 1);
+        assert!((result[0][0] - 1.0403082957930034).abs() < 1e-9);
+        assert_eq!(result[0][1], 1.0);
+    }
+
+    #[test]
+    fn test_logest_stats_match_excel() {
+        // =LOGEST(B2:B11,C2:C11, TRUE, TRUE) in the statistical regression workbook
+        let known_ys = vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0];
+        let known_xs = vec![2.0, 4.0, 7.0, 11.0, 17.0, 25.0, 35.0, 47.0, 62.0, 80.0];
+        let result = codcel_logest(known_ys, Some(known_xs), Some(true), Some(true)).unwrap();
+        let excel = [
+            [1.0231955489991669, 2.3290331926283376],
+            [0.005398133910020889, 0.2075440335015363],
+            [0.6928331648390377, 0.43090500386444447],
+            [18.04447838845564, 8.0],
+            [3.3504829105297307, 1.4854329788433351],
+        ];
+        assert_eq!(result.len(), 5);
+        for (row, expected) in result.iter().zip(excel) {
+            for (got, want) in row.iter().zip(expected) {
+                assert!((got - want).abs() < 1e-9, "got {got}, Excel {want}");
+            }
+        }
     }
 }
