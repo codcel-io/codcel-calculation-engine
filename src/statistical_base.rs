@@ -1129,6 +1129,38 @@ pub fn intercept(
     Ok(Value::F64(codcel_intercept(known_ys, known_xs)?))
 }
 
+/// The y-values and x-values of a LINEST or LOGEST call, the x-values with one observation per
+/// row and one independent variable per column, as `codcel_linest` takes them.
+///
+/// Excel reads the variables from the shape of `known_ys`: when it is a single row, each row of
+/// `known_xs` is a variable (so `known_xs` is turned round here); otherwise each column is one.
+fn regression_inputs(
+    known_ys: Value,
+    known_xs: Value,
+    value_format: &ValueFormat,
+) -> Result<(Vec<f64>, Option<Vec<Vec<f64>>>), Box<dyn Error + Send + Sync>> {
+    let ys_is_a_row =
+        matches!(&known_ys, Value::AreaValue(rows) if rows.len() == 1 && rows[0].len() > 1);
+    let known_ys = known_ys.to_flatterned_vec_f64(value_format)?;
+
+    let Some(known_xs) = known_xs.into_option_area_of_value()? else {
+        return Ok((known_ys, None));
+    };
+    let mut xs: Vec<Vec<f64>> = known_xs
+        .iter()
+        .map(|row| row.iter().map(|cell| cell.f64(value_format)).collect())
+        .collect::<Result<_, _>>()?;
+
+    // Variables in rows: turn them into columns, when every row has one value per observation
+    if ys_is_a_row && !xs.is_empty() && xs.iter().all(|row| row.len() == known_ys.len()) {
+        xs = (0..known_ys.len())
+            .map(|i| xs.iter().map(|row| row[i]).collect())
+            .collect();
+    }
+
+    Ok((known_ys, Some(xs)))
+}
+
 /// Excel-compatible `LINEST` function.
 /// Returns statistics describing a linear trend fitting the data using least squares.
 /// - `known_ys`: dependent data set (array of known y-values).
@@ -1144,22 +1176,7 @@ pub fn linest(
     stats: Value,
     value_format: &ValueFormat,
 ) -> Result<Value, Box<dyn Error + Send + Sync>> {
-    let known_ys = known_ys.to_flatterned_vec_f64(value_format)?;
-    let known_xs = known_xs.into_option_area_of_value()?;
-    let known_xs = if let Some(known_xs) = known_xs {
-        // Convert to Vec<Vec<f64>> preserving 2D structure (rows x cols)
-        let mut xs_2d: Vec<Vec<f64>> = Vec::new();
-        for row in &known_xs {
-            let mut r: Vec<f64> = Vec::new();
-            for cell in row {
-                r.push(cell.f64(value_format)?);
-            }
-            xs_2d.push(r);
-        }
-        Some(xs_2d)
-    } else {
-        None
-    };
+    let (known_ys, known_xs) = regression_inputs(known_ys, known_xs, value_format)?;
     let constant = constant.option_bool(value_format)?;
     let stats = stats.option_bool(value_format)?;
 
@@ -1183,14 +1200,7 @@ pub fn logest(
     stats: Value,
     value_format: &ValueFormat,
 ) -> Result<Value, Box<dyn Error + Send + Sync>> {
-    let known_ys = known_ys.to_flatterned_vec_f64(value_format)?;
-    let known_xs = known_xs.into_option_area_of_value()?;
-    let known_xs = if let Some(known_xs) = known_xs {
-        let values = Value::AreaValue(known_xs);
-        Some(values.to_flatterned_vec_f64(value_format)?)
-    } else {
-        None
-    };
+    let (known_ys, known_xs) = regression_inputs(known_ys, known_xs, value_format)?;
     let constant = constant.option_bool(value_format)?;
     let stats = stats.option_bool(value_format)?;
 
@@ -2694,5 +2704,111 @@ mod tests {
         // Every value equals the mean exactly once the mean is computed without drift.
         let result = ave_dev(vec![tenths_column(10_000)], true, &value_format).unwrap();
         assert_eq!(result.f64(&value_format).unwrap(), 0.0);
+    }
+
+    fn f64_area(rows: &[&[f64]]) -> Value {
+        Value::AreaValue(
+            rows.iter()
+                .map(|row| row.iter().map(|v| Value::F64(*v)).collect())
+                .collect(),
+        )
+    }
+
+    fn coefficients(result: Value) -> Vec<f64> {
+        match result {
+            Value::AreaValue(rows) => rows[0]
+                .iter()
+                .map(|v| v.f64(&ValueFormat::default()).unwrap())
+                .collect(),
+            other => panic!("expected an area, got {other:?}"),
+        }
+    }
+
+    #[test]
+    fn logest_takes_one_variable_per_column_when_ys_is_a_column() {
+        // y = 2 * 3^x1 * 5^x2, observations in rows
+        let xs: [[f64; 2]; 5] = [[0.0, 0.0], [1.0, 0.0], [0.0, 1.0], [1.0, 1.0], [2.0, 1.0]];
+        let ys: Vec<[f64; 1]> = xs
+            .iter()
+            .map(|[a, b]| [2.0 * 3f64.powf(*a) * 5f64.powf(*b)])
+            .collect();
+        let ys: Vec<&[f64]> = ys.iter().map(|r| r.as_slice()).collect();
+        let xs: Vec<&[f64]> = xs.iter().map(|r| r.as_slice()).collect();
+        let format = ValueFormat::default();
+        let result = logest(
+            f64_area(&ys),
+            f64_area(&xs),
+            Value::None,
+            Value::None,
+            &format,
+        )
+        .unwrap();
+        let m = coefficients(result);
+        assert_eq!(m.len(), 3);
+        assert!(
+            (m[0] - 5.0).abs() < 1e-9 && (m[1] - 3.0).abs() < 1e-9 && (m[2] - 2.0).abs() < 1e-9
+        );
+    }
+
+    #[test]
+    fn logest_and_linest_take_one_variable_per_row_when_ys_is_a_row() {
+        // The same data turned round: ys in one row, each row of xs one variable
+        let x1 = [0.0, 1.0, 0.0, 1.0, 2.0];
+        let x2 = [0.0, 0.0, 1.0, 1.0, 1.0];
+        let ys: Vec<f64> = x1
+            .iter()
+            .zip(&x2)
+            .map(|(a, b)| 2.0 * 3f64.powf(*a) * 5f64.powf(*b))
+            .collect();
+        let format = ValueFormat::default();
+        let result = logest(
+            f64_area(&[&ys]),
+            f64_area(&[&x1, &x2]),
+            Value::None,
+            Value::None,
+            &format,
+        )
+        .unwrap();
+        let m = coefficients(result);
+        assert!(
+            (m[0] - 5.0).abs() < 1e-9 && (m[1] - 3.0).abs() < 1e-9 && (m[2] - 2.0).abs() < 1e-9
+        );
+
+        // y = 1 + 2*x1 + 4*x2
+        let ys: Vec<f64> = x1
+            .iter()
+            .zip(&x2)
+            .map(|(a, b)| 1.0 + 2.0 * a + 4.0 * b)
+            .collect();
+        let result = linest(
+            f64_area(&[&ys]),
+            f64_area(&[&x1, &x2]),
+            Value::None,
+            Value::None,
+            &format,
+        )
+        .unwrap();
+        let m = coefficients(result);
+        assert!(
+            (m[0] - 4.0).abs() < 1e-9 && (m[1] - 2.0).abs() < 1e-9 && (m[2] - 1.0).abs() < 1e-9
+        );
+    }
+
+    #[test]
+    fn logest_with_one_x_row_and_ys_in_a_column() {
+        // A single row of x-values against a column of ys is still one variable, as before
+        let ys = [[2.0], [6.0], [18.0], [54.0]];
+        let ys: Vec<&[f64]> = ys.iter().map(|r| r.as_slice()).collect();
+        let format = ValueFormat::default();
+        let result = logest(
+            f64_area(&ys),
+            f64_area(&[&[0.0, 1.0, 2.0, 3.0]]),
+            Value::None,
+            Value::None,
+            &format,
+        )
+        .unwrap();
+        let m = coefficients(result);
+        assert!((m[0] - 3.0).abs() < 1e-9 && (m[1] - 2.0).abs() < 1e-9);
     }
 }

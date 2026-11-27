@@ -9,34 +9,26 @@ use std::error::Error;
 
 /// Excel-compatible `LOGEST` that returns statistics for an exponential regression curve.
 /// - `known_ys`: the dependent array of known y-values (must be positive).
-/// - `known_xs`: optional independent array of known x-values (defaults to 1, 2, 3, ...).
+/// - `known_xs`: optional 2D array of known x-values. Each row is one observation, each column
+///   one independent variable, as for `codcel_linest`. Defaults to {1, 2, 3, ...}.
 /// - `constant`: if `true` or omitted, calculates the constant b normally;
 ///   if `false`, forces b to 1 in the equation y = b * m^x.
 /// - `stats`: if `true`, returns additional regression statistics; if `false` or omitted, returns only coefficients.
 ///
-/// Returns an array containing the coefficient m and constant b for the exponential curve y = b * m^x
-/// (b is 1 when `constant` is `false`, and still returned, as in Excel).
+/// Returns the coefficients for the exponential curve y = b * m_1^x_1 * ... * m_k^x_k, in Excel's
+/// order {m_k, ..., m_1, b} (b is 1 when `constant` is `false`, and still returned, as in Excel).
 ///
 /// As Excel defines it, this is LINEST of ln(y): the coefficients are exponentiated
 /// (m = e^slope, b = e^intercept), and every statistic, standard errors included, is
 /// the one for the fit of ln(y), not exponentiated.
 pub fn codcel_logest(
     known_ys: Vec<f64>,
-    known_xs: Option<Vec<f64>>,
+    known_xs: Option<Vec<Vec<f64>>>,
     constant: Option<bool>,
     stats: Option<bool>,
 ) -> Result<Vec<Vec<f64>>, Box<dyn Error + Send + Sync>> {
     if known_ys.is_empty() {
         return Err("LOGEST: known_ys must not be empty.".into());
-    }
-
-    if let Some(xs) = &known_xs {
-        if xs.is_empty() {
-            return Err("LOGEST: known_xs must not be empty.".into());
-        }
-        if known_ys.len() != xs.len() {
-            return Err("LOGEST: known_ys and known_xs must have the same size.".into());
-        }
     }
 
     // Can't take the logarithm of a non-positive y
@@ -48,10 +40,8 @@ pub fn codcel_logest(
         .iter()
         .map(|&y| crate::portable_math::ln(y))
         .collect();
-    // One observation per row, as LINEST takes them
-    let xs = known_xs.map(|xs| xs.into_iter().map(|x| vec![x]).collect());
-
-    let mut result = codcel_linest(ln_ys, xs, constant, stats)
+    // LINEST checks the x-values (size, shape and emptiness)
+    let mut result = codcel_linest(ln_ys, known_xs, constant, stats)
         .map_err(|e| e.to_string().replacen("LINEST", "LOGEST", 1))?;
 
     // Only the coefficients go back to exponential form; b = e^0 = 1 when there is no constant
@@ -66,6 +56,10 @@ pub fn codcel_logest(
 mod tests {
     use super::*;
 
+    fn xs_1d(xs: Vec<f64>) -> Option<Vec<Vec<f64>>> {
+        Some(xs.into_iter().map(|x| vec![x]).collect())
+    }
+
     #[test]
     fn test_logest_basic() {
         // Test with a simple exponential dataset
@@ -73,7 +67,7 @@ mod tests {
         let known_ys = vec![2.0, 6.0, 18.0, 54.0];
         let known_xs = vec![0.0, 1.0, 2.0, 3.0];
 
-        let result = codcel_logest(known_ys, Some(known_xs), Some(true), Some(false)).unwrap();
+        let result = codcel_logest(known_ys, xs_1d(known_xs), Some(true), Some(false)).unwrap();
 
         // Should return [m, b] where y = b * m^x
         assert!((result[0][0] - 3.0).abs() < 0.0001); // m should be approximately 3
@@ -87,7 +81,7 @@ mod tests {
         let known_ys = vec![1.0, 3.0, 9.0, 27.0];
         let known_xs = vec![0.0, 1.0, 2.0, 3.0];
 
-        let result = codcel_logest(known_ys, Some(known_xs), Some(false), Some(false)).unwrap();
+        let result = codcel_logest(known_ys, xs_1d(known_xs), Some(false), Some(false)).unwrap();
 
         // Should return [m, 1] where y = m^x: Excel still returns b
         assert!((result[0][0] - 3.0).abs() < 0.0001); // m should be approximately 3
@@ -100,7 +94,7 @@ mod tests {
         let known_ys = vec![2.0, 6.0, 18.0, 54.0];
         let known_xs = vec![0.0, 1.0, 2.0, 3.0];
 
-        let result = codcel_logest(known_ys, Some(known_xs), Some(true), Some(true)).unwrap();
+        let result = codcel_logest(known_ys, xs_1d(known_xs), Some(true), Some(true)).unwrap();
 
         // Should return a 5x2 array with regression statistics
         assert_eq!(result.len(), 5);
@@ -133,7 +127,7 @@ mod tests {
         let known_ys = vec![-2.0, 6.0, 18.0, 54.0];
         let known_xs = vec![0.0, 1.0, 2.0, 3.0];
 
-        let result = codcel_logest(known_ys, Some(known_xs), None, None);
+        let result = codcel_logest(known_ys, xs_1d(known_xs), None, None);
         assert!(result.is_err());
     }
 
@@ -143,7 +137,7 @@ mod tests {
         let known_ys = vec![0.0, 6.0, 18.0, 54.0];
         let known_xs = vec![0.0, 1.0, 2.0, 3.0];
 
-        let result = codcel_logest(known_ys, Some(known_xs), None, None);
+        let result = codcel_logest(known_ys, xs_1d(known_xs), None, None);
         assert!(result.is_err());
     }
 
@@ -153,7 +147,7 @@ mod tests {
         let known_ys = vec![2.0, 6.0, 18.0];
         let known_xs = vec![0.0, 1.0, 2.0, 3.0];
 
-        let result = codcel_logest(known_ys, Some(known_xs), None, None);
+        let result = codcel_logest(known_ys, xs_1d(known_xs), None, None);
         assert!(result.is_err());
     }
 
@@ -163,7 +157,7 @@ mod tests {
         let known_ys: Vec<f64> = vec![];
         let known_xs: Vec<f64> = vec![];
 
-        let result = codcel_logest(known_ys, Some(known_xs), None, None);
+        let result = codcel_logest(known_ys, xs_1d(known_xs), None, None);
         assert!(result.is_err());
     }
 
@@ -173,7 +167,7 @@ mod tests {
         let known_ys = vec![2.0, 6.0, 18.0, 54.0];
         let known_xs = vec![1.0, 1.0, 1.0, 1.0];
 
-        let result = codcel_logest(known_ys, Some(known_xs), None, None);
+        let result = codcel_logest(known_ys, xs_1d(known_xs), None, None);
         assert!(result.is_err());
     }
 
@@ -183,7 +177,7 @@ mod tests {
         let known_ys = vec![8.0, 18.0, 33.0, 74.0, 148.0];
         let known_xs = vec![1.0, 2.0, 3.0, 4.0, 5.0];
 
-        let result = codcel_logest(known_ys, Some(known_xs), Some(true), Some(false)).unwrap();
+        let result = codcel_logest(known_ys, xs_1d(known_xs), Some(true), Some(false)).unwrap();
 
         // The growth factor should be approximately 2
         assert!((result[0][0] - 2.0).abs() < 0.1);
@@ -196,7 +190,7 @@ mod tests {
         let known_ys = vec![2.0, 6.0, 18.0, 54.0, 162.0, 486.0, 1458.0, 4374.0];
         let known_xs = vec![0.0, 1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0];
 
-        let result = codcel_logest(known_ys, Some(known_xs), Some(true), Some(false)).unwrap();
+        let result = codcel_logest(known_ys, xs_1d(known_xs), Some(true), Some(false)).unwrap();
 
         // Should return [m, b] where y = b * m^x
         assert!((result[0][0] - 3.0).abs() < 0.0001); // m should be approximately 3
@@ -210,7 +204,7 @@ mod tests {
         let known_ys = vec![0.5, 0.35, 0.245, 0.1715, 0.12005];
         let known_xs = vec![0.0, 1.0, 2.0, 3.0, 4.0];
 
-        let result = codcel_logest(known_ys, Some(known_xs), Some(true), Some(false)).unwrap();
+        let result = codcel_logest(known_ys, xs_1d(known_xs), Some(true), Some(false)).unwrap();
 
         // Should return [m, b] where y = b * m^x
         assert!((result[0][0] - 0.7).abs() < 0.0001); // m should be approximately 0.7
@@ -224,7 +218,7 @@ mod tests {
         let known_ys = vec![2.0, 3.464, 6.0, 10.392, 18.0];
         let known_xs = vec![0.0, 0.5, 1.0, 1.5, 2.0];
 
-        let result = codcel_logest(known_ys, Some(known_xs), Some(true), Some(false)).unwrap();
+        let result = codcel_logest(known_ys, xs_1d(known_xs), Some(true), Some(false)).unwrap();
 
         // Should return [m, b] where y = b * m^x
         assert!((result[0][0] - 3.0).abs() < 0.0001); // m should be approximately 3
@@ -238,7 +232,7 @@ mod tests {
         let known_ys = vec![2.0, 18.0, 162.0, 1458.0];
         let known_xs = vec![0.0, 2.0, 4.0, 6.0];
 
-        let result = codcel_logest(known_ys, Some(known_xs), Some(true), Some(false)).unwrap();
+        let result = codcel_logest(known_ys, xs_1d(known_xs), Some(true), Some(false)).unwrap();
 
         // Should return [m, b] where y = b * m^x
         assert!((result[0][0] - 3.0).abs() < 0.0001); // m should be approximately 3
@@ -252,7 +246,7 @@ mod tests {
         let known_ys = vec![2.0, 6.0];
         let known_xs = vec![0.0, 1.0];
 
-        let result = codcel_logest(known_ys, Some(known_xs), Some(true), Some(false)).unwrap();
+        let result = codcel_logest(known_ys, xs_1d(known_xs), Some(true), Some(false)).unwrap();
 
         // Should return [m, b] where y = b * m^x
         assert!((result[0][0] - 3.0).abs() < 0.0001); // m should be approximately 3
@@ -266,7 +260,7 @@ mod tests {
         let known_ys = vec![1.0, 3.0];
         let known_xs = vec![0.0, 1.0];
 
-        let result = codcel_logest(known_ys, Some(known_xs), Some(false), Some(false)).unwrap();
+        let result = codcel_logest(known_ys, xs_1d(known_xs), Some(false), Some(false)).unwrap();
 
         // Should return [m] where y = m^x
         assert!((result[0][0] - 3.0).abs() < 0.0001); // m should be approximately 3
@@ -279,7 +273,7 @@ mod tests {
         let known_ys = vec![2.1, 5.8, 18.3, 53.7, 163.2];
         let known_xs = vec![0.0, 1.0, 2.0, 3.0, 4.0];
 
-        let result = codcel_logest(known_ys, Some(known_xs), Some(true), Some(true)).unwrap();
+        let result = codcel_logest(known_ys, xs_1d(known_xs), Some(true), Some(true)).unwrap();
 
         // Check that R-squared is less than 1 but still high for this good fit
         assert!(result[2][0] < 1.0);
@@ -296,7 +290,7 @@ mod tests {
         let known_ys = vec![2.0, 6.0, 18.0, 54.0, 162.0];
         let known_xs = vec![0.0, 1.0, 2.0, 3.0, 4.0];
 
-        let result = codcel_logest(known_ys, Some(known_xs), Some(true), Some(true)).unwrap();
+        let result = codcel_logest(known_ys, xs_1d(known_xs), Some(true), Some(true)).unwrap();
 
         // First row: coefficients [m, b]
         assert!((result[0][0] - 3.0).abs() < 0.0001); // m
@@ -328,7 +322,7 @@ mod tests {
         let known_ys = vec![1.0, 3.0, 9.0, 27.0, 81.0];
         let known_xs = vec![0.0, 1.0, 2.0, 3.0, 4.0];
 
-        let result = codcel_logest(known_ys, Some(known_xs), Some(false), Some(true)).unwrap();
+        let result = codcel_logest(known_ys, xs_1d(known_xs), Some(false), Some(true)).unwrap();
 
         // First row: coefficient [m]
         assert!((result[0][0] - 3.0).abs() < 0.0001); // m
@@ -361,7 +355,7 @@ mod tests {
         let known_ys = vec![2.0, 6.0];
         let known_xs = vec![0.0, 1.0];
 
-        let result = codcel_logest(known_ys, Some(known_xs), Some(true), Some(true));
+        let result = codcel_logest(known_ys, xs_1d(known_xs), Some(true), Some(true));
         assert!(result.is_err());
     }
 
@@ -372,7 +366,7 @@ mod tests {
         let known_ys = vec![100.0, 50.0, 25.0, 12.5, 6.25];
         let known_xs = vec![0.0, 1.0, 2.0, 3.0, 4.0];
 
-        let result = codcel_logest(known_ys, Some(known_xs), Some(true), Some(false)).unwrap();
+        let result = codcel_logest(known_ys, xs_1d(known_xs), Some(true), Some(false)).unwrap();
 
         // Should return [m, b] where y = b * m^x
         assert!((result[0][0] - 0.5).abs() < 0.0001); // m should be approximately 0.5
@@ -386,7 +380,7 @@ mod tests {
         let known_ys = vec![10.0, 10.1, 10.201, 10.303, 10.406];
         let known_xs = vec![0.0, 1.0, 2.0, 3.0, 4.0];
 
-        let result = codcel_logest(known_ys, Some(known_xs), Some(true), Some(false)).unwrap();
+        let result = codcel_logest(known_ys, xs_1d(known_xs), Some(true), Some(false)).unwrap();
 
         // Should return [m, b] where y = b * m^x
         assert!((result[0][0] - 1.01).abs() < 0.0001); // m should be approximately 1.01
@@ -400,7 +394,7 @@ mod tests {
         let known_ys = vec![1.0, 10.0, 100.0, 1000.0, 10000.0];
         let known_xs = vec![0.0, 1.0, 2.0, 3.0, 4.0];
 
-        let result = codcel_logest(known_ys, Some(known_xs), Some(true), Some(false)).unwrap();
+        let result = codcel_logest(known_ys, xs_1d(known_xs), Some(true), Some(false)).unwrap();
 
         // Should return [m, b] where y = b * m^x
         assert!((result[0][0] - 10.0).abs() < 0.0001); // m should be approximately 10
@@ -414,7 +408,7 @@ mod tests {
         let known_ys = vec![2.0, 6.0, 18.0, 54.0];
         let known_xs = vec![0.0, 1.0, 2.0, 3.0];
 
-        let result = codcel_logest(known_ys, Some(known_xs), None, None).unwrap();
+        let result = codcel_logest(known_ys, xs_1d(known_xs), None, None).unwrap();
 
         // Should return [m, b] where y = b * m^x
         assert!((result[0][0] - 3.0).abs() < 0.0001); // m should be approximately 3
@@ -428,7 +422,7 @@ mod tests {
         let known_ys = vec![5.0, 6.667, 8.889, 11.852, 15.802];
         let known_xs = vec![0.0, 1.0, 2.0, 3.0, 4.0];
 
-        let result = codcel_logest(known_ys, Some(known_xs), Some(true), Some(false)).unwrap();
+        let result = codcel_logest(known_ys, xs_1d(known_xs), Some(true), Some(false)).unwrap();
 
         // Should return [m, b] where y = b * m^x
         assert!((result[0][0] - 4.0 / 3.0).abs() < 0.0001); // m should be approximately 4/3
@@ -443,7 +437,7 @@ mod tests {
         let known_ys = vec![1e-10, 2e-10, 4e-10, 8e-10, 16e-10];
         let known_xs = vec![0.0, 1.0, 2.0, 3.0, 4.0];
 
-        let result = codcel_logest(known_ys, Some(known_xs), Some(true), Some(false)).unwrap();
+        let result = codcel_logest(known_ys, xs_1d(known_xs), Some(true), Some(false)).unwrap();
 
         // Should return [m, b] where y = b * m^x
         assert!((result[0][0] - 2.0).abs() < 0.0001); // m should be approximately 2
@@ -457,7 +451,7 @@ mod tests {
         let known_ys = vec![2.0 / 9.0, 2.0 / 3.0, 2.0, 6.0, 18.0];
         let known_xs = vec![-2.0, -1.0, 0.0, 1.0, 2.0];
 
-        let result = codcel_logest(known_ys, Some(known_xs), Some(true), Some(false)).unwrap();
+        let result = codcel_logest(known_ys, xs_1d(known_xs), Some(true), Some(false)).unwrap();
 
         // Should return [m, b] where y = b * m^x
         assert!((result[0][0] - 3.0).abs() < 0.0001); // m should be approximately 3
@@ -469,7 +463,7 @@ mod tests {
         // =LOGEST(B2:B11,C2:C11, FALSE, FALSE) in the statistical regression workbook
         let known_ys = vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0];
         let known_xs = vec![2.0, 4.0, 7.0, 11.0, 17.0, 25.0, 35.0, 47.0, 62.0, 80.0];
-        let result = codcel_logest(known_ys, Some(known_xs), Some(false), Some(false)).unwrap();
+        let result = codcel_logest(known_ys, xs_1d(known_xs), Some(false), Some(false)).unwrap();
         assert_eq!(result.len(), 1);
         assert!((result[0][0] - 1.0403082957930034).abs() < 1e-9);
         assert_eq!(result[0][1], 1.0);
@@ -480,7 +474,7 @@ mod tests {
         // =LOGEST(B2:B11,C2:C11, TRUE, TRUE) in the statistical regression workbook
         let known_ys = vec![1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0];
         let known_xs = vec![2.0, 4.0, 7.0, 11.0, 17.0, 25.0, 35.0, 47.0, 62.0, 80.0];
-        let result = codcel_logest(known_ys, Some(known_xs), Some(true), Some(true)).unwrap();
+        let result = codcel_logest(known_ys, xs_1d(known_xs), Some(true), Some(true)).unwrap();
         let excel = [
             [1.0231955489991669, 2.3290331926283376],
             [0.005398133910020889, 0.2075440335015363],
@@ -494,5 +488,47 @@ mod tests {
                 assert!((got - want).abs() < 1e-9, "got {got}, Excel {want}");
             }
         }
+    }
+
+    #[test]
+    fn test_logest_multiple_x_columns() {
+        // y = 2 * 3^x1 * 5^x2: LOGEST returns {m2, m1, b}, as Excel does
+        let rows = [
+            [0.0, 0.0],
+            [1.0, 0.0],
+            [0.0, 1.0],
+            [1.0, 1.0],
+            [2.0, 1.0],
+            [1.0, 2.0],
+        ];
+        let known_ys: Vec<f64> = rows
+            .iter()
+            .map(|[x1, x2]| 2.0 * 3f64.powf(*x1) * 5f64.powf(*x2))
+            .collect();
+        let known_xs = Some(rows.iter().map(|r| r.to_vec()).collect());
+        let result = codcel_logest(known_ys, known_xs, Some(true), Some(true)).unwrap();
+        assert_eq!(result.len(), 5);
+        assert!(result.iter().all(|row| row.len() == 3));
+        assert!((result[0][0] - 5.0).abs() < 1e-9); // m2
+        assert!((result[0][1] - 3.0).abs() < 1e-9); // m1
+        assert!((result[0][2] - 2.0).abs() < 1e-9); // b
+        assert_eq!(result[3][1], 3.0); // df = n - k - 1
+        assert!(result[2][2].is_nan()); // #N/A beyond the two statistics in rows 3 to 5
+    }
+
+    #[test]
+    fn test_logest_multiple_x_columns_no_constant() {
+        // y = 3^x1 * 5^x2: {m2, m1, 1}
+        let rows = [[1.0, 0.0], [0.0, 1.0], [1.0, 1.0], [2.0, 1.0]];
+        let known_ys: Vec<f64> = rows
+            .iter()
+            .map(|[x1, x2]| 3f64.powf(*x1) * 5f64.powf(*x2))
+            .collect();
+        let known_xs = Some(rows.iter().map(|r| r.to_vec()).collect());
+        let result = codcel_logest(known_ys, known_xs, Some(false), None).unwrap();
+        assert_eq!(result.len(), 1);
+        assert!((result[0][0] - 5.0).abs() < 1e-9);
+        assert!((result[0][1] - 3.0).abs() < 1e-9);
+        assert_eq!(result[0][2], 1.0);
     }
 }
