@@ -14,7 +14,7 @@ use std::error::Error;
 pub fn codcel_sqrt(value: f64) -> Result<f64, Box<dyn Error + Send + Sync>> {
     check_value_f64("SQRT", value)?;
     if value < 0.0 {
-        return Err(format!("SQRT: Input must be non-negative: {value:}").into());
+        return Err(format!("#NUM! SQRT: Input must be non-negative: {value:}").into());
     }
     Ok(crate::portable_math::sqrt(value))
 }
@@ -79,6 +79,9 @@ mod tests {
         // =SQRT(-4) in US format (returns #NUM! error)
         // =SQRT(-4) in German format (returns #NUM! error)
         let result = codcel_sqrt(-4.0);
-        assert!(result.is_err());
+        assert_eq!(
+            crate::excel_error::ExcelError::from_err(result.unwrap_err().as_ref()),
+            crate::excel_error::ExcelError::Num
+        );
     }
 }

@@ -10,13 +10,13 @@ pub(crate) fn check_value_f64(
     function: &str,
     value: f64,
 ) -> Result<(), Box<dyn Error + Send + Sync>> {
-    // TODO: PERHAPS WE NEED THIS CHECK ON ALL FUNCTIONS
-    // PERHAPS IF IT HAPPENS WE SHOULD RETURN 0.0?????
+    // NaN is the engine's #N/A (NA(), the #N/A cells of LINEST), so a calculation on it is #N/A,
+    // as in Excel. Infinity only comes from an overflow, which Excel reports as #NUM!.
     if value.is_nan() {
-        return Err(format!("{function}: Input is NaN.").into());
+        return Err(format!("#N/A {function}: Input is NaN.").into());
     }
     if value.is_infinite() {
-        return Err(format!("{function}: Input is infinity.").into());
+        return Err(format!("#NUM! {function}: Input is infinity.").into());
     }
 
     Ok(())
@@ -34,4 +34,18 @@ pub(crate) fn check_bin_op(
     check_value_f64(&format!("{op_name}: - 1st"), lhs)?;
     check_value_f64(&format!("{op_name}: - 2nd"), rhs)?;
     Ok(())
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::excel_error::ExcelError;
+
+    #[test]
+    fn a_nan_operand_is_na_and_an_infinite_one_is_num() {
+        let nan = check_bin_op(f64::NAN, 1.0, "ADD").unwrap_err();
+        assert_eq!(ExcelError::from_err(nan.as_ref()), ExcelError::Na);
+        let inf = check_bin_op(1.0, f64::INFINITY, "ADD").unwrap_err();
+        assert_eq!(ExcelError::from_err(inf.as_ref()), ExcelError::Num);
+    }
 }
