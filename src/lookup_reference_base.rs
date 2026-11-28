@@ -346,13 +346,24 @@ fn filter_area(
     Ok(None)
 }
 
+/// The error of a FILTER that keeps nothing and has no `if_empty`: Excel's `#CALC!`, with a
+/// message saying what happened. Table engines raise the same one.
+///
+/// Nothing matching is often expected; a workbook that expects it gives FILTER an `if_empty`
+/// (`FILTER(A:A, B:B="x", "")`), which then comes back as an ordinary result, as in Excel.
+pub fn filter_no_match_error() -> Box<dyn Error + Send + Sync> {
+    "#CALC! FILTER: no rows match the condition (give FILTER an if_empty argument for a result to use instead)".into()
+}
+
 /// Excel-compatible `FILTER` function for array values.
 /// Filters an array based on a boolean include mask.
 /// Used when FILTER is called inside a lambda (BYROW, MAP, etc.) with lambda parameters.
 ///
 /// - `array`: the array to filter
 /// - `include`: boolean array (same size) - true keeps element, false excludes
-/// - `if_empty`: value to return if all elements are filtered out
+/// - `if_empty`: value to return if all elements are filtered out; `Value::None` when FILTER has
+///   none, which makes keeping nothing [`filter_no_match_error`] (`#CALC!`), as in Excel. (An
+///   `if_empty` that is a blank cell also reads as none: Excel would return 0 there.)
 /// - `value_format`: locale settings for type conversion
 ///
 /// Returns filtered array containing only elements where include is truthy.
@@ -366,7 +377,7 @@ pub fn filter_array(
     if is_area(&array) || is_area(&include) {
         if let Some(result) = filter_area(&array, &include, value_format)? {
             if result.is_empty() || result[0].is_empty() {
-                return Ok(if_empty);
+                return if_empty_or_no_match(if_empty);
             }
             // A single column stays a list, as before (a list reads as a column).
             if result.len() > 1 && result.iter().all(|row| row.len() == 1) {
@@ -389,9 +400,18 @@ pub fn filter_array(
     }
 
     if results.is_empty() {
-        Ok(if_empty)
+        if_empty_or_no_match(if_empty)
     } else {
         Ok(Value::VecValue(results))
+    }
+}
+
+/// FILTER's result when it keeps nothing: its `if_empty`, or `#CALC!` when it has none. The
+/// generated table code uses it too, for a table FILTER that matched no rows.
+pub fn if_empty_or_no_match(if_empty: Value) -> Result<Value, Box<dyn Error + Send + Sync>> {
+    match if_empty {
+        Value::None | Value::OptionString(None) | Value::OptionF64(None) => Err(filter_no_match_error()),
+        given => Ok(given),
     }
 }
 
@@ -433,5 +453,30 @@ mod filter_array_shape_tests {
         let include = Value::AreaValue(vec![vec![Value::Bool(false)], vec![Value::Bool(false)]]);
         let result = filter_array(array, include, Value::String("none".into()), &ValueFormat::default()).unwrap();
         assert_eq!(result, Value::String("none".into()));
+    }
+
+    /// Excel's FILTER with nothing kept and no if_empty is #CALC!, and the message says why.
+    #[test]
+    fn nothing_kept_without_if_empty_is_calc() {
+        use crate::excel_error::ExcelError;
+        let area = Value::AreaValue(vec![vec![f(1.0)], vec![f(2.0)]]);
+        let none_kept = Value::AreaValue(vec![vec![Value::Bool(false)], vec![Value::Bool(false)]]);
+        let error = filter_array(area, none_kept.clone(), Value::None, &ValueFormat::default()).unwrap_err();
+        assert_eq!(ExcelError::from_err(error.as_ref()), ExcelError::Calc);
+        assert!(error.to_string().contains("no rows match"), "{error}");
+
+        let list = Value::VecValue(vec![f(1.0), f(2.0)]);
+        let mask = Value::VecValue(vec![Value::Bool(false), Value::Bool(false)]);
+        let error = filter_array(list, mask, Value::None, &ValueFormat::default()).unwrap_err();
+        assert_eq!(ExcelError::from_err(error.as_ref()), ExcelError::Calc);
+    }
+
+    /// An empty-text if_empty is a result, not a missing one.
+    #[test]
+    fn an_empty_text_if_empty_is_returned() {
+        let array = Value::AreaValue(vec![vec![f(1.0)], vec![f(2.0)]]);
+        let include = Value::AreaValue(vec![vec![Value::Bool(false)], vec![Value::Bool(false)]]);
+        let result = filter_array(array, include, Value::String(String::new()), &ValueFormat::default()).unwrap();
+        assert_eq!(result, Value::String(String::new()));
     }
 }
