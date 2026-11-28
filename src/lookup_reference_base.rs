@@ -14,6 +14,7 @@ use crate::lookup_and_reference::codcel_x_lookup::codcel_x_lookup;
 use crate::lookup_and_reference::codcel_x_match::codcel_x_match;
 use crate::value::Value::VecValue;
 use crate::value::{vec_value_to_vec_value, FlatRef, Value};
+use crate::excel_error::{err_to_box, ExcelError};
 use crate::value_format::ValueFormat;
 use std::error::Error;
 
@@ -361,9 +362,9 @@ pub fn filter_no_match_error() -> Box<dyn Error + Send + Sync> {
 ///
 /// - `array`: the array to filter
 /// - `include`: boolean array (same size) - true keeps element, false excludes
-/// - `if_empty`: value to return if all elements are filtered out; `Value::None` when FILTER has
-///   none, which makes keeping nothing [`filter_no_match_error`] (`#CALC!`), as in Excel. (An
-///   `if_empty` that is a blank cell also reads as none: Excel would return 0 there.)
+/// - `if_empty`: value to return if all elements are filtered out; [`filter_without_if_empty`]
+///   when FILTER has none, which makes keeping nothing `#CALC!`, as in Excel. A blank cell as
+///   `if_empty` is 0, as in Excel.
 /// - `value_format`: locale settings for type conversion
 ///
 /// Returns filtered array containing only elements where include is truthy.
@@ -406,11 +407,26 @@ pub fn filter_array(
     }
 }
 
-/// FILTER's result when it keeps nothing: its `if_empty`, or `#CALC!` when it has none. The
-/// generated table code uses it too, for a table FILTER that matched no rows.
+/// The `if_empty` of a FILTER written without one (`FILTER(A:A, B:B="x")`, or with the argument
+/// left empty, `FILTER(A:A, B:B="x", )`): keeping nothing is then `#CALC!`. It is that error, so
+/// a blank cell (`Value::None`) can stay a blank cell.
+pub fn filter_without_if_empty() -> Value {
+    Value::Error(ExcelError::Calc)
+}
+
+/// FILTER's result when it keeps nothing, as Excel gives it: `#CALC!` (saying no rows match) for
+/// a FILTER without `if_empty`, the error of an `if_empty` that is one, 0 for a blank cell, and
+/// any other `if_empty` as it is. The generated table code uses it too, for a table FILTER that
+/// matched no rows.
 pub fn if_empty_or_no_match(if_empty: Value) -> Result<Value, Box<dyn Error + Send + Sync>> {
     match if_empty {
-        Value::None | Value::OptionString(None) | Value::OptionF64(None) => Err(filter_no_match_error()),
+        Value::Error(ExcelError::Calc) => Err(filter_no_match_error()),
+        Value::Error(error) => Err(err_to_box(error)),
+        Value::None
+        | Value::OptionF64(None)
+        | Value::OptionI32(None)
+        | Value::OptionString(None)
+        | Value::OptionBool(None) => Ok(Value::F64(0.0)),
         given => Ok(given),
     }
 }
@@ -461,14 +477,34 @@ mod filter_array_shape_tests {
         use crate::excel_error::ExcelError;
         let area = Value::AreaValue(vec![vec![f(1.0)], vec![f(2.0)]]);
         let none_kept = Value::AreaValue(vec![vec![Value::Bool(false)], vec![Value::Bool(false)]]);
-        let error = filter_array(area, none_kept.clone(), Value::None, &ValueFormat::default()).unwrap_err();
+        let error = filter_array(area, none_kept.clone(), filter_without_if_empty(), &ValueFormat::default()).unwrap_err();
         assert_eq!(ExcelError::from_err(error.as_ref()), ExcelError::Calc);
         assert!(error.to_string().contains("no rows match"), "{error}");
 
         let list = Value::VecValue(vec![f(1.0), f(2.0)]);
         let mask = Value::VecValue(vec![Value::Bool(false), Value::Bool(false)]);
-        let error = filter_array(list, mask, Value::None, &ValueFormat::default()).unwrap_err();
+        let error = filter_array(list, mask, filter_without_if_empty(), &ValueFormat::default()).unwrap_err();
         assert_eq!(ExcelError::from_err(error.as_ref()), ExcelError::Calc);
+    }
+
+    /// Excel: an if_empty that is a blank cell is 0 (`=FILTER({1;2},{1;2}>5,C5)` with C5 empty).
+    #[test]
+    fn a_blank_if_empty_is_zero() {
+        for blank in [Value::None, Value::OptionF64(None), Value::OptionString(None)] {
+            let area = Value::AreaValue(vec![vec![f(1.0)], vec![f(2.0)]]);
+            let none_kept = Value::AreaValue(vec![vec![Value::Bool(false)], vec![Value::Bool(false)]]);
+            assert_eq!(filter_array(area, none_kept, blank, &ValueFormat::default()).unwrap(), f(0.0));
+        }
+    }
+
+    /// An if_empty that is an error gives that error.
+    #[test]
+    fn an_error_if_empty_is_that_error() {
+        use crate::excel_error::ExcelError;
+        let area = Value::AreaValue(vec![vec![f(1.0)], vec![f(2.0)]]);
+        let none_kept = Value::AreaValue(vec![vec![Value::Bool(false)], vec![Value::Bool(false)]]);
+        let error = filter_array(area, none_kept, Value::Error(ExcelError::Na), &ValueFormat::default()).unwrap_err();
+        assert_eq!(ExcelError::from_err(error.as_ref()), ExcelError::Na);
     }
 
     /// An empty-text if_empty is a result, not a missing one.
